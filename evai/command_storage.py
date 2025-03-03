@@ -2,8 +2,10 @@
 
 import os
 import logging
+import subprocess
+import tempfile
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Tuple
 
 import yaml
 
@@ -108,4 +110,138 @@ def save_command_metadata(path: str, data: Dict[str, Any]) -> None:
         raise
     except Exception as e:
         logger.error(f"Error saving command metadata: {e}")
-        raise 
+        raise
+
+
+def get_editor() -> str:
+    """
+    Get the user's preferred editor from the EDITOR environment variable.
+    
+    Returns:
+        The editor command to use (defaults to 'vi' if EDITOR is not set)
+    """
+    return os.environ.get('EDITOR', 'vi')
+
+
+def edit_command_metadata(command_dir: str) -> Tuple[bool, Optional[Dict[str, Any]]]:
+    """
+    Open the command.yaml file in the user's preferred editor and validate it after editing.
+    
+    Args:
+        command_dir: Path to the command directory
+        
+    Returns:
+        A tuple containing:
+        - A boolean indicating whether the edit was successful
+        - The updated metadata dictionary if successful, None otherwise
+        
+    Raises:
+        FileNotFoundError: If the command.yaml file doesn't exist
+        subprocess.SubprocessError: If the editor process fails
+    """
+    yaml_path = os.path.join(command_dir, "command.yaml")
+    
+    if not os.path.exists(yaml_path):
+        logger.error(f"Command metadata file not found: {yaml_path}")
+        raise FileNotFoundError(f"Command metadata file not found: {yaml_path}")
+    
+    editor = get_editor()
+    logger.debug(f"Using editor: {editor}")
+    
+    try:
+        # Open the editor for the user to edit the file
+        subprocess.run([editor, yaml_path], check=True)
+        logger.debug(f"Editor closed for {yaml_path}")
+        
+        # Try to load the edited file
+        try:
+            metadata = load_command_metadata(command_dir)
+            return True, metadata
+        except yaml.YAMLError as e:
+            logger.error(f"Invalid YAML after editing: {e}")
+            return False, None
+            
+    except subprocess.SubprocessError as e:
+        logger.error(f"Error running editor: {e}")
+        raise
+
+
+def edit_command_implementation(command_dir: str) -> bool:
+    """
+    Open the command.py file in the user's preferred editor.
+    
+    Args:
+        command_dir: Path to the command directory
+        
+    Returns:
+        A boolean indicating whether the edit was successful
+        
+    Raises:
+        FileNotFoundError: If the command.py file doesn't exist
+        subprocess.SubprocessError: If the editor process fails
+    """
+    py_path = os.path.join(command_dir, "command.py")
+    
+    if not os.path.exists(py_path):
+        logger.error(f"Command implementation file not found: {py_path}")
+        raise FileNotFoundError(f"Command implementation file not found: {py_path}")
+    
+    editor = get_editor()
+    logger.debug(f"Using editor: {editor}")
+    
+    try:
+        # Open the editor for the user to edit the file
+        subprocess.run([editor, py_path], check=True)
+        logger.debug(f"Editor closed for {py_path}")
+        return True
+            
+    except subprocess.SubprocessError as e:
+        logger.error(f"Error running editor: {e}")
+        raise
+
+
+def run_lint_check(command_dir: str) -> Tuple[bool, Optional[str]]:
+    """
+    Run flake8 on the command.py file to check for linting errors.
+    
+    Args:
+        command_dir: Path to the command directory
+        
+    Returns:
+        A tuple containing:
+        - A boolean indicating whether the lint check passed
+        - The lint error output if the check failed, None otherwise
+        
+    Raises:
+        FileNotFoundError: If the command.py file doesn't exist
+    """
+    py_path = os.path.join(command_dir, "command.py")
+    
+    if not os.path.exists(py_path):
+        logger.error(f"Command implementation file not found: {py_path}")
+        raise FileNotFoundError(f"Command implementation file not found: {py_path}")
+    
+    try:
+        # Run flake8 on the file
+        result = subprocess.run(
+            ["flake8", py_path],
+            capture_output=True,
+            text=True,
+            check=False  # Don't raise an exception if flake8 finds errors
+        )
+        
+        # Check if flake8 found any errors
+        if result.returncode == 0:
+            logger.debug(f"Lint check passed for {py_path}")
+            return True, None
+        else:
+            logger.debug(f"Lint check failed for {py_path}: {result.stdout}")
+            return False, result.stdout
+            
+    except FileNotFoundError:
+        # flake8 command not found
+        logger.error("flake8 command not found. Please install flake8.")
+        return False, "flake8 command not found. Please install flake8."
+    except Exception as e:
+        logger.error(f"Error running lint check: {e}")
+        return False, str(e) 

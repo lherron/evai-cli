@@ -18,50 +18,51 @@ A comprehensive, step-by-step checklist to guide the development of the EVAI CLI
 ---
 
 ## 2. Command Directory & YAML Management
-- [ ] **Utility Functions**  
-  - [ ] `get_command_dir(command_name)`: Return (and create if needed) `~/.evai/commands/<command-name>/`.
-  - [ ] `load_command_metadata(path) -> dict`: Load YAML from `command.yaml`.
-  - [ ] `save_command_metadata(path, data: dict) -> None`: Write YAML data to `command.yaml`.
-- [ ] **Testing**  
-  - [ ] Write `test_metadata.py` to cover file I/O, YAML parse/write, and directory creation.
-  - [ ] Confirm that all tests pass before proceeding.
+- [X] **Utility Functions**  
+  - [X] `get_command_dir(command_name)`: Return (and create if needed) `~/.evai/commands/<command-name>/`.
+  - [X] `load_command_metadata(path) -> dict`: Load YAML from `command.yaml`.
+  - [X] `save_command_metadata(path, data: dict) -> None`: Write YAML data to `command.yaml`.
+- [X] **Testing**  
+  - [X] Write `test_metadata.py` to cover file I/O, YAML parse/write, and directory creation.
+  - [X] Confirm that all tests pass before proceeding.
 
 ---
 
 ## 3. `command add` Workflow (Initial Version)
-- [ ] **CLI Subcommand**  
-  - [ ] Implement `evai command add <command-name>` in `cli.py`.
-- [ ] **File Creation**  
-  - [ ] Within this subcommand, create default `command.yaml` with standard fields and placeholders.
-  - [ ] Create default `command.py` with a stub `def run(**kwargs): print("Hello World")`.
-- [ ] **Testing**  
-  - [ ] In `test_add_command.py`, confirm the directory and files are created with correct content.
+- [X] **CLI Subcommand**  
+  - [X] Implement `evai command add <command-name>` in `cli.py`.
+- [X] **File Creation**  
+  - [X] Within this subcommand, create default `command.yaml` with standard fields and placeholders.
+  - [X] Create default `command.py` with a stub `def run(**kwargs): print("Hello World")`.
+- [X] **Testing**  
+  - [X] In `test_add_command.py`, confirm the directory and files are created with correct content.
 
 ---
 
-## 4. Interactive Editing of `command.yaml`
-- [ ] **Environment Variable `$EDITOR`**  
-  - [ ] Check `$EDITOR`; default to `vi` if not set.
-- [ ] **Editing Loop**  
-  - [ ] Open the newly created `command.yaml` in the editor.
-  - [ ] Parse YAML on save.  
-  - [ ] If invalid, prompt user to fix it. Offer to abort if needed.
-- [ ] **Testing**  
-  - [ ] Mock the editor call in `test_add_command.py` or a new test file to simulate user edits.
-  - [ ] Validate re-editing behavior on invalid YAML.
+## 4. Editing of `command.yaml`
+- [X] **Non-interactive editing**
+- [X] **Environment Variable `$EDITOR`**  
+  - [X] Check `$EDITOR`; default to `vi` if not set.
+- [X] **Editing Loop**
+  - [X] Open the newly created `command.yaml` in the editor.
+  - [X] Parse YAML on save.  
+  - [X] If invalid, prompt user to fix it. Offer to abort if needed.
+- [X] **Testing**  
+  - [X] Mock the editor call in `test_add_command.py` or a new test file to simulate user edits.
+  - [X] Validate re-editing behavior on invalid YAML.
 
 ---
 
 ## 5. Implementation Editing & Lint Checking
-- [ ] **Editor Invocation**  
-  - [ ] Open `command.py` in `$EDITOR`.
-- [ ] **Lint Check**  
-  - [ ] Run `flake8` on `command.py` programmatically.
-  - [ ] If lint errors, show them to the user and re-open editor.
-  - [ ] Offer user the option to abort if unresolved.
-- [ ] **Testing**  
-  - [ ] Create `test_edit_implementation.py` to ensure a known lint error triggers re-edit.
-  - [ ] Confirm passing code requires no further edits.
+- [X] **Editor Invocation**  
+  - [X] Open `command.py` in `$EDITOR`.
+- [X] **Lint Check**  
+  - [X] Run `flake8` on `command.py` programmatically.
+  - [X] If lint errors, show them to the user and re-open editor.
+  - [X] Offer user the option to abort if unresolved.
+- [X] **Testing**  
+  - [X] Create `test_edit_implementation.py` to ensure a known lint error triggers re-edit.
+  - [X] Confirm passing code requires no further edits.
 
 ---
 
