@@ -1,0 +1,11 @@
+---
+description: Rules for creating new test classes
+globs: test_*.py
+---
+
+# Database Test Rules
+
+Fixtures to create other entities should use the DB library from that class.  For example, to create a test user as a fixture, use the methods in user_db.py.  Tests should not use raw SQL to create entities.
+
+Use [test_user_db.py](mdc:tests/db/test_user_db.py) as an example of how to create tests for database classes.
+Read the entity db table before beginning test creation.

@@ -1,0 +1,34 @@
+---
+description: Use when creating or updating database scripts or database entities
+globs: *_db.py,database.py
+---
+## Database Rules
+- Use [user_db.py](mdc:podthing/db/user_db.py) as the default reference for new database entities
+- Each DB class should:
+   - Take a Database instance in constructor
+   - Use consistent error handling
+   - Include proper type hints
+   - Follow existing patterns from `user_db.py`
+- Common utilities to keep in `database.py`:
+   - Connection management
+   - Transaction handling
+   - Base query methods (fetch_one, fetch_all, etc.)
+   - Row to model conversion utilities
+- Error handling:
+   - Use custom exceptions from `errors.py`
+   - Consistent error messages
+   - Proper logging
+- Testing:
+   - Each DB class should have its own test file
+   - Follow existing test patterns
+   - Include both success and error cases 
+
+### Hints on using async postgresql
+- Use asyncpg for PostgreSQL async operations
+- PostgreSQL uses $1, $2 etc for parameterized queries instead of ?
+- PostgreSQL has native JSON/JSONB support
+- Use TIMESTAMP WITH TIME ZONE for proper timezone handling
+- Use transactions for multi-statement operations
+- PostgreSQL pool management is different from SQLite connections
+- Always use CASCADE when dropping tables in PostgreSQL to handle foreign key constraints
+- Initialize JSONB fields with default values in test fixtures

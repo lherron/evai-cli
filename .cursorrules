@@ -1,0 +1,168 @@
+# Instructions
+- When using an entity, use:  db.entity_name.method_name to CRUD the entity, DO NOT IMPORT THE ENTITY DB CLASS, JUST USE THE METHODS ON THE DATABASE INSTANCE
+
+## Lessons
+During your interaction with the user, if you find anything reusable in this project (e.g. version of a library, model name), especially about a fix to a mistake you made or a correction you received, you should take note in the `Lessons` section in the `.cursorrules` file so you will not make the same mistake again. 
+
+## Scratchpad
+Always use the ./evai/docs/XXXXX_todo.md file (replace XXXXX as appropriate) in docs as a scratchpad to organize your thoughts. Especially when you receive a new task, you should first review the content of the scratchpad if it alreadye exists, clear old tasks if necessary, first explain the task, and plan the steps you need to take to complete the task. Use todo markers to indicate the progress, e.g.
+[X] Task 1
+[ ] Task 2
+
+Also update the progress of the task in the Scratchpad when you finish a subtask.
+Especially when you finished a milestone, it will help to improve your depth of task accomplishment to use the scratchpad to reflect and plan.
+The goal is to help you maintain a big picture as well as the progress of the task. Always refer to the Scratchpad when you plan the next step.
+
+## Project Rules:
+Never use SQLAlchemy.  Always use straight SQL.
+Never use SQLite.  Always use PostgreSQL.
+We are not using JWT in the python api.
+DB Migrations are in the db/migrations directory.  Use <datetime>_<name>.sql to name the migration files.
+To run a db migration, use the following shell command:
+```
+dbmate up
+```
+To roll back a migration, use the following shell command:
+```
+dbmate down
+```   
+To see current migrations, use the following shell command:
+```
+dbmate status
+```   
+
+
+## LLM
+
+You always have an LLM at your side to help you with the task. For simple tasks, you could invoke the LLM by running the following command:
+```
+llm --prompt "What is the capital of France?"
+```
+
+# History
+### generated_feed renamed to user_feed
+We renamed the generated_feed to user_feed to better reflect the purpose of the feed.
+
+# Lessons
+
+## User Specified Lessons
+- You have a python venv in ./.venv. Use it.
+- Do not use SQLAlchemy
+- Use Pydantic 2 syntax for all data structures
+- Include logging useful for debugging in the program output.
+- Read the file before you try to edit it.
+- Due to Cursor's limit, when you use `git` and `gh` and need to submit a multiline commit message, first write the message in a file, and then use `git commit -F <filename>` or similar command to commit. And then remove the file. Include "[Cursor] " in the commit message and PR title.
+
+### Testing
+- Tests should always be executed from the ~/projects/evai directory, not ~/projects/evai/evai
+- Always run one test module at a time
+
+## Cursor learned
+
+- Use UUID4 for auto-generating unique identifiers in database models, do not use TEXT fields for IDs.
+- When passing UUID fields between models, convert to string if the receiving model expects a string type field
+- Always use timezone-aware datetime objects with UTC (from datetime import datetime, UTC) to avoid deprecation warnings and ensure consistent timezone handling
+- When working with UUID fields in database operations:
+  - Always convert UUID objects to strings before passing to database queries
+  - Update type hints to accept both str and uuid.UUID where appropriate
+  - Use explicit string conversion (str(uuid_value)) before using in queries
+  - Handle cases where foreign key references might not exist by validating data before insertion
+- When working with foreign key constraints:
+  - Never use special values (like "all") as IDs that need to reference other tables
+  - Consider using a separate system/metadata table for tracking operations that do not map directly to entities
+  - Handle cases where foreign key references might not exist by validating data before insertion
+
+## Database
+- All entities are in their own db classes and are composed into the Database class in database.py
+- When using an entity, use:  db.entity_name.method_name to CRUD the entity, DO NOT IMPORT THE ENTITY DB CLASS, JUST USE THE METHODS ON THE DATABASE INSTANCE
+
+- Use asyncpg for PostgreSQL async operations
+- PostgreSQL uses $1, $2 etc for parameterized queries instead of ?
+- PostgreSQL has native JSON/JSONB support
+- Use TIMESTAMP WITH TIME ZONE for proper timezone handling
+- Use transactions for multi-statement operations
+- PostgreSQL pool management is different from SQLite connections
+- Always use CASCADE when dropping tables in PostgreSQL to handle foreign key constraints
+- Initialize JSONB fields with default values in test fixtures
+- When using UUID fields:
+   - Store UUIDs as TEXT in PostgreSQL
+   - Always convert UUID objects to strings before passing to database functions
+   - Convert back to UUID objects in model layer if needed
+   - Be consistent with string conversion in tests and assertions
+- Each DB class should:
+   - Take a Database instance in constructor
+   - Use consistent error handling
+   - Include proper type hints
+   - Follow existing patterns from `user_db.py`
+- Common utilities to keep in `database.py`:
+   - Connection management
+   - Transaction handling
+   - Base query methods (fetch_one, fetch_all, etc.)
+   - Row to model conversion utilities
+- Error handling:
+   - Use custom exceptions from `errors.py`
+   - Consistent error messages
+   - Proper logging
+- Testing:
+   - Each DB class should have its own test file
+   - Follow existing test patterns
+   - Include both success and error cases 
+
+## Directory Structure Conventions
+
+```
+evai/
+├── evai/
+│   ├── main.py                 # FastAPI initialization
+│   ├── api/
+│   │   ├── dependencies.py     # Shared dependencies (DB sessions, auth, etc.)
+│   │   └── v1/
+│   │       ├── user_api.py         # Routes for user operations
+│   │       ├── user_feed_api.py    # Routes for user feed operations
+│   │       ├── source_feed_api.py  # Routes for source feed operations
+│   ├── models/                 # Pydantic models
+│   │   ├── user.py             # User entity model
+│   │   ├── user_feed.py        # User feed entity model
+│   │   ├── source_feed.py      # Source feed entity model
+│   ├── db/                     # Database operations
+│   │   ├── user_db.py             # CRUD for user
+│   │   ├── user_feed_db.py        # CRUD for user feed
+│   │   ├── source_feed_db.py      # CRUD for source feed
+│   ├── util/                   # Utility functions
+│   └── config.py               # Application-wide configuration
+├── tests/                      # Unit and integration tests
+│   ├── api/                    # Tests for API routes
+│   │   ├── test_user_api.py
+│   │   ├── test_user_feed_api.py
+│   │   ├── test_source_feed_api.py
+│   ├── models/                 # Tests for models
+│   │   ├── test_user_model.py
+│   │   ├── test_user_feed_model.py
+│   │   ├── test_source_feed_model.py
+│   ├── db/                     # Tests for database operations
+│   │   ├── test_user_db.py
+│   │   ├── test_user_feed_db.py
+│   │   ├── test_source_feed_db.py
+│   └── util/
+├── scripts/                     # Utility scripts
+├── .gitignore
+├── pyproject.toml                # Build system configuration
+├── requirements.txt               # Dependencies
+└── README.md                      # Project documentation
+```
+
+## Naming Conventions
+
+- **Python Modules & Directories**: `snake_case`
+- **Classes**: `PascalCase`
+- **Functions & Variables**: `snake_case`
+- **Constants**: `UPPER_CASE`
+- **API Routes**: `kebab-case`
+- **Database Models**:
+  - Class: `PascalCase`
+  - Table: `snake_case`
+- **Pydantic Schemas**:
+  - `UserBase`: Base schema
+  - `UserCreate`: Creation
+  - `UserUpdate`: Update
+  - `UserRead`: API responses
