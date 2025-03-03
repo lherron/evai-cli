@@ -1,0 +1,8 @@
+click==8.1.8
+-e file:///Users/lherron/projects/evai-cli
+iniconfig==2.0.0
+packaging==24.2
+pip==25.0.1
+pluggy==1.5.0
+pytest==8.3.5
+pyyaml==6.0.2

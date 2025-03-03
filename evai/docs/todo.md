@@ -5,16 +5,15 @@ A comprehensive, step-by-step checklist to guide the development of the EVAI CLI
 ---
 
 ## 1. Project Scaffolding
-- [ ] **Create Project Structure**  
-  - [ ] Make a new folder `evai/` (Python package).
-  - [ ] Create `__init__.py` inside `evai/`.
-  - [ ] Create `cli.py` with a basic `main()` function.
-- [ ] **Command-Line Entry Point**  
-  - [ ] Decide on `argparse`, `click`, or similar.
-  - [ ] Implement minimal CLI that prints help/version info.
-- [ ] **Basic Testing**  
-  - [ ] Create `tests/` folder with a simple test (`test_cli.py`).
-  - [ ] Verify that invoking CLI with `python -m evai.cli` works.
+- [X] **Create Project Structure**  
+  - [X] Create `__init__.py` inside `evai/`.
+  - [X] Create `cli.py` with a basic `main()` function.
+- [X] **Command-Line Entry Point**  
+  - [X] Decide on `argparse`, `click`, or similar.
+  - [X] Implement minimal CLI that prints help/version info.
+- [X] **Basic Testing**  
+  - [X] Create `tests/` folder with a simple test (`test_cli.py`).
+  - [X] Verify that invoking CLI with `python -m evai.cli` works.
 
 ---
 
