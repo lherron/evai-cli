@@ -1,0 +1,207 @@
+# EVAI CLI
+
+A powerful command-line interface for creating, managing, and executing custom commands with LLM assistance.
+
+## Overview
+
+EVAI CLI is a tool that allows you to create, manage, and run custom commands with the help of Large Language Models (LLMs). It provides a seamless way to:
+
+- Create custom commands with LLM assistance
+- Edit command metadata and implementation
+- Run commands with parameters
+- Integrate with MCP (Machine Control Protocol) for advanced AI interactions
+- Expose your commands as a local API server
+
+## Installation
+
+### Prerequisites
+
+- Python 3.12 or higher
+- pip (Python package installer)
+
+### Install from source
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/evai-cli.git
+cd evai-cli
+
+# Create and activate a virtual environment (recommended)
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install the package in development mode
+pip install -e .
+```
+
+## Usage
+
+### Basic Commands
+
+```bash
+# Show help
+evai --help
+
+# Show version
+evai --version
+
+# List all available commands
+evai command list
+
+# Add a new command
+evai command add <command_name>
+
+# Add a new command with LLM assistance
+evai command llmadd <command_name>
+
+# Edit an existing command
+evai command edit <command_name>
+
+# Run a command
+evai command run <command_name> --param key=value
+```
+
+### MCP Server
+
+Start the MCP server to expose your commands as a local API:
+
+```bash
+evai server --name "My EVAI Commands"
+```
+
+## Command Structure
+
+Each command consists of:
+
+1. **Metadata** - A YAML file describing the command, its parameters, and integration options
+2. **Implementation** - A Python file containing the actual command logic
+
+Commands are stored in `~/.evai/commands/<command_name>/` with the following structure:
+
+```
+~/.evai/commands/<command_name>/
+├── metadata.yaml    # Command metadata
+└── implementation.py # Command implementation
+```
+
+### Command Metadata
+
+The metadata file (`metadata.yaml`) contains information about the command:
+
+```yaml
+name: command_name
+description: Description of what the command does
+params:
+  - name: param1
+    description: Description of parameter 1
+    required: true
+  - name: param2
+    description: Description of parameter 2
+    required: false
+hidden: false
+disabled: false
+mcp_integration:
+  enabled: true
+  metadata:
+    endpoint: ""
+    method: POST
+    authentication_required: false
+llm_interaction:
+  enabled: false
+  auto_apply: true
+  max_llm_turns: 15
+```
+
+### Command Implementation
+
+The implementation file (`implementation.py`) contains the actual command logic:
+
+```python
+"""Custom command implementation."""
+
+def run(**kwargs):
+    """Run the command with the given arguments."""
+    # Your command logic here
+    return {"status": "success", "data": {...}}
+```
+
+## Project Structure
+
+```
+evai-cli/
+├── evai/                      # Main package
+│   ├── __init__.py            # Package initialization
+│   ├── cli/                   # CLI module
+│   │   ├── __init__.py        # CLI package initialization
+│   │   ├── cli.py             # Main CLI implementation
+│   │   └── commands/          # CLI command modules
+│   │       ├── __init__.py    # Commands package initialization
+│   │       └── llmadd.py      # LLM-assisted command creation
+│   ├── command_storage.py     # Command storage utilities
+│   ├── llm_client.py          # LLM client for AI assistance
+│   └── mcp_server.py          # MCP server integration
+├── tests/                     # Test suite
+├── .venv/                     # Virtual environment (created during setup)
+├── pyproject.toml             # Project metadata and dependencies
+├── requirements.txt           # Pinned dependencies
+└── README.md                  # This file
+```
+
+## LLM Integration
+
+EVAI CLI integrates with LLMs to help you:
+
+1. Generate command metadata based on your description
+2. Generate command implementation based on metadata
+3. Suggest additional information needed for better command generation
+
+## MCP Integration
+
+EVAI CLI integrates with the Machine Control Protocol (MCP) to:
+
+1. Expose your commands as tools in an MCP server
+2. Provide built-in tools for managing commands
+3. Support prompt templates for common tasks
+
+## Development
+
+### Setup Development Environment
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/evai-cli.git
+cd evai-cli
+
+# Create and activate a virtual environment
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install development dependencies
+pip install -e ".[dev]"
+```
+
+### Running Tests
+
+```bash
+pytest
+```
+
+## Troubleshooting
+
+### Missing `__init__.py` in Commands Directory
+
+If you encounter an error like:
+
+```
+TypeError: expected str, bytes or os.PathLike object, not NoneType
+```
+
+When running the `evai` command, ensure that there is an `__init__.py` file in the `evai/cli/commands/` directory. This file is required to make the commands directory a proper Python package.
+
+## License
+
+[MIT License](LICENSE)
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.

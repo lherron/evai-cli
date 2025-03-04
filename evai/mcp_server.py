@@ -10,6 +10,39 @@ from typing import Dict, Any, List, Optional, Tuple
 
 try:
     from mcp.server.fastmcp import FastMCP, Context
+    import mcp.types as types
+    from mcp.types import PromptMessage
+
+    # Define available prompts
+    PROMPTS = {
+        "git-commit": types.Prompt(
+            name="git-commit",
+            description="Generate a Git commit message",
+            arguments=[
+                types.PromptArgument(
+                    name="changes",
+                    description="Git diff or description of changes",
+                    required=True
+                )
+            ],
+        ),
+        "explain-code": types.Prompt(
+            name="explain-code",
+            description="Explain how code works",
+            arguments=[
+                types.PromptArgument(
+                    name="code",
+                    description="Code to explain",
+                    required=True
+                ),
+                types.PromptArgument(
+                    name="language",
+                    description="Programming language",
+                    required=False
+                )
+            ],
+        )
+    }
 except ImportError:
     # Provide a helpful error message if MCP is not installed
     raise ImportError(
@@ -51,6 +84,7 @@ class EVAIServer:
         self.mcp = mcp
         self.commands = {}
         self._register_built_in_tools()
+        self._register_prompts()
         self._register_commands()
         print(f"[DEBUG] Exiting EVAIServer.__init__", file=sys.stderr)
     
@@ -308,6 +342,31 @@ class EVAIServer:
         
         print(f"[DEBUG] Exiting EVAIServer._register_command_tool", file=sys.stderr)
     
+    def _register_prompts(self) -> None:
+        """Register all available prompts as MCP tools."""
+        print(f"[DEBUG] Entering EVAIServer._register_prompts", file=sys.stderr)
+
+        @self.mcp.prompt(name="analyze-file", description="Analyze a file")
+        async def analyze_file(path: str) -> list[PromptMessage]:
+            content = self.read_file(path)
+            return [
+                {
+                    "role": "user",
+                    "content": {
+                        "type": "resource",
+                        "resource": {
+                            "uri": f"file://{path}",
+                            "text": f"Analyze thefollowing file and summarize the project: {content}"
+                        }
+                    }
+                }
+            ]
+
+        
+    def read_file(self, path: str) -> str:
+        with open(path, "r") as f:
+            return f.read()
+
     def run(self) -> None:
         """Run the MCP server."""
         print(f"[DEBUG] Entering EVAIServer.run", file=sys.stderr)
@@ -322,7 +381,7 @@ class EVAIServer:
             print(f"[DEBUG] Error running MCP server: {e}", file=sys.stderr)
             sys.exit(1)
         print(f"[DEBUG] Exiting EVAIServer.run", file=sys.stderr)
-
+    
 
 def create_server(name: str = "EVAI Commands") -> EVAIServer:
     """
