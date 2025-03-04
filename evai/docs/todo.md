@@ -67,29 +67,33 @@ A comprehensive, step-by-step checklist to guide the development of the EVAI CLI
 ---
 
 ## 6. Command Execution & MCP Exposure
-- [ ] **List & Run**  
-  - [ ] `evai command list`: Scan `~/.evai/commands` and list command names.
-  - [ ] `evai command run <command-name>`: Dynamically import `command.py` and call `run(**kwargs)`.
-- [ ] **MCP Server**  
-  - [ ] Create a minimal server that:
-    - [ ] Scans `command.yaml` files.
-    - [ ] For each command with `mcp_integration.enabled = true`, exposes `/commands/<command-name>` (POST).
-    - [ ] Executes corresponding `run()` with JSON data as kwargs.
-- [ ] **Testing**  
-  - [ ] `test_list_and_run.py`: CLI tests for listing and running commands.
-  - [ ] `test_mcp_exposure.py`: Confirm commands are reachable via MCP server, verifying correct endpoints and data flow.
+- [X] **List & Run**  
+  - [X] `evai command list`: Scan `~/.evai/commands` and list command names.
+  - [X] `evai command run <command-name>`: Dynamically import `command.py` and call `run(**kwargs)`.
+- [X] **MCP Server**  
+  - [X] Create a minimal server that:
+    - [X] Scans `command.yaml` files.
+    - [X] For each command with `mcp_integration.enabled = true`, exposes `/commands/<command-name>` (POST).
+    - [X] Executes corresponding `run()` with JSON data as kwargs.
+- [X] **Testing**  
+  - [X] `test_list_and_run.py`: CLI tests for listing and running commands.
+  - [X] `test_mcp_exposure.py`: Confirm commands are reachable via MCP server, verifying correct endpoints and data flow.
 
 ---
 
-## 7. Optional LLM Interaction
-- [ ] **LLM for Default Metadata**  
-  - [ ] `generate_default_metadata_with_llm(command_name)`: Populate YAML metadata from an LLM.
-  - [ ] Fallback to basic defaults if LLM is unreachable or disabled.
-- [ ] **LLM in Command Execution**  
-  - [ ] If `llm_interaction.enabled` is `true`, integrate a call to the LLM inside `command.py` logic as needed.
-- [ ] **Testing**  
-  - [ ] `test_llm.py`: Mock the LLM.  
-  - [ ] Ensure graceful fallback on LLM failures.
+## 7. LLM Interaction - Use OpenAI API
+- [X] Create new CLI command `evai command llmadd <command-name>`
+- [X] Query user for command description
+- [X] Call LLM with description and name to see if additional information is needed, and if so, display the response to the user and allow them to provide additional details.
+- [X] Build templates for metadata and implementation
+- [X] **LLM for Default Metadata**  
+  - [X] `generate_default_metadata_with_llm(command_name)`: Populate YAML metadata from an LLM.
+  - [X] Fallback to basic defaults if LLM is unreachable or disabled.
+- [X] **LLM for Command Implementation**  
+  - [X] If `llm_interaction.enabled` is `true`, integrate a call to the LLM inside `command.py` logic as needed.
+- [X] **Testing**  
+  - [X] `test_llm.py`: Mock the LLM.  
+  - [X] Ensure graceful fallback on LLM failures.
 
 ---
 

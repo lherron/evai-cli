@@ -38,12 +38,11 @@ class TestAddCommand:
     def test_add_command(self):
         """Test adding a new command."""
         runner = CliRunner()
-        result = runner.invoke(cli, ['command', 'add', 'test-command', '--test-mode'], catch_exceptions=False)
+        result = runner.invoke(cli, ['command', 'add', 'test-command'], catch_exceptions=False)
         
         # Check that the command was successful
         assert result.exit_code == 0
         assert "Command 'test-command' created successfully." in result.output
-        assert "Test mode: Skipping editor." in result.output
         
         # Check that the command directory was created
         command_dir = os.path.join(self.temp_dir, '.evai', 'commands', 'test-command')
@@ -83,7 +82,7 @@ class TestAddCommand:
     def test_add_command_invalid_name(self):
         """Test adding a command with an invalid name."""
         runner = CliRunner()
-        result = runner.invoke(cli, ['command', 'add', 'test command', '--test-mode'], catch_exceptions=False)  # Space in name
+        result = runner.invoke(cli, ['command', 'add', 'test command'], catch_exceptions=False)  # Space in name
         
         # Check that the command failed
         assert result.exit_code == 1
@@ -92,169 +91,3 @@ class TestAddCommand:
         # Check that the command directory was not created
         command_dir = os.path.join(self.temp_dir, '.evai', 'commands', 'test command')
         assert not os.path.exists(command_dir)
-        
-    @mock.patch('evai.command_storage.edit_command_metadata')
-    @mock.patch('evai.command_storage.edit_command_implementation')
-    @mock.patch('evai.command_storage.run_lint_check')
-    def test_add_command_with_editing_and_lint_check(self, mock_lint, mock_edit_impl, mock_edit_meta):
-        """Test adding a command with editing and lint checking."""
-        # Mock the edit_command_metadata function to return success
-        mock_edit_meta.return_value = (True, {
-            "name": "test-command",
-            "description": "Edited description",
-            "params": [],
-            "hidden": False,
-            "disabled": False,
-            "mcp_integration": {
-                "enabled": True,
-                "metadata": {
-                    "endpoint": "",
-                    "method": "POST",
-                    "authentication_required": False
-                }
-            },
-            "llm_interaction": {
-                "enabled": False,
-                "auto_apply": True,
-                "max_llm_turns": 15
-            }
-        })
-        
-        # Mock the edit_command_implementation function to return success
-        mock_edit_impl.return_value = True
-        
-        # Mock the run_lint_check function to return success
-        mock_lint.return_value = (True, None)
-        
-        # Run the command
-        runner = CliRunner()
-        result = runner.invoke(cli, ['command', 'add', 'test-command'], catch_exceptions=False, input='y\n')
-        
-        # Check that the command was successful
-        assert result.exit_code == 0
-        assert "Command 'test-command' created successfully." in result.output
-        assert "Opening command.yaml for editing" in result.output
-        assert "Command metadata saved successfully." in result.output
-        assert "Opening command.py for editing" in result.output
-        assert "Running lint check on command.py" in result.output
-        assert "Lint check passed. Command implementation saved successfully." in result.output
-        assert "Command 'test-command' setup complete." in result.output
-        
-        # Verify that the mock functions were called
-        mock_edit_meta.assert_called_once()
-        mock_edit_impl.assert_called_once()
-        mock_lint.assert_called_once()
-        
-    @mock.patch('evai.command_storage.edit_command_metadata')
-    @mock.patch('evai.command_storage.edit_command_implementation')
-    @mock.patch('evai.command_storage.run_lint_check')
-    def test_add_command_with_lint_failure_then_success(self, mock_lint, mock_edit_impl, mock_edit_meta):
-        """Test adding a command with lint failure followed by success."""
-        # Mock the edit_command_metadata function to return success
-        mock_edit_meta.return_value = (True, {
-            "name": "test-command",
-            "description": "Edited description",
-            "params": [],
-            "hidden": False,
-            "disabled": False,
-            "mcp_integration": {
-                "enabled": True,
-                "metadata": {
-                    "endpoint": "",
-                    "method": "POST",
-                    "authentication_required": False
-                }
-            },
-            "llm_interaction": {
-                "enabled": False,
-                "auto_apply": True,
-                "max_llm_turns": 15
-            }
-        })
-        
-        # Mock the edit_command_implementation function to return success
-        mock_edit_impl.return_value = True
-        
-        # Mock the run_lint_check function to return failure then success
-        mock_lint.side_effect = [
-            (False, "test-command/command.py:7:5: F841 local variable 'y' is assigned to but never used"),
-            (True, None)
-        ]
-        
-        # Run the command
-        runner = CliRunner()
-        result = runner.invoke(cli, ['command', 'add', 'test-command'], catch_exceptions=False, input='y\ny\n')
-        
-        # Check that the command was successful
-        assert result.exit_code == 0
-        assert "Command 'test-command' created successfully." in result.output
-        assert "Opening command.yaml for editing" in result.output
-        assert "Command metadata saved successfully." in result.output
-        assert "Opening command.py for editing" in result.output
-        assert "Running lint check on command.py" in result.output
-        assert "Lint check failed. Please fix the following issues:" in result.output
-        assert "local variable 'y' is assigned to but never used" in result.output
-        assert "Would you like to edit the file again?" in result.output
-        assert "Opening command.py for editing again" in result.output
-        assert "Lint check passed. Command implementation saved successfully." in result.output
-        assert "Command 'test-command' setup complete." in result.output
-        
-        # Verify that the mock functions were called
-        mock_edit_meta.assert_called_once()
-        assert mock_edit_impl.call_count == 2
-        assert mock_lint.call_count == 2
-        
-    @mock.patch('evai.command_storage.edit_command_metadata')
-    @mock.patch('evai.command_storage.edit_command_implementation')
-    @mock.patch('evai.command_storage.run_lint_check')
-    def test_add_command_with_lint_failure_and_abort(self, mock_lint, mock_edit_impl, mock_edit_meta):
-        """Test adding a command with lint failure and user choosing to abort."""
-        # Mock the edit_command_metadata function to return success
-        mock_edit_meta.return_value = (True, {
-            "name": "test-command",
-            "description": "Edited description",
-            "params": [],
-            "hidden": False,
-            "disabled": False,
-            "mcp_integration": {
-                "enabled": True,
-                "metadata": {
-                    "endpoint": "",
-                    "method": "POST",
-                    "authentication_required": False
-                }
-            },
-            "llm_interaction": {
-                "enabled": False,
-                "auto_apply": True,
-                "max_llm_turns": 15
-            }
-        })
-        
-        # Mock the edit_command_implementation function to return success
-        mock_edit_impl.return_value = True
-        
-        # Mock the run_lint_check function to return failure
-        mock_lint.return_value = (False, "test-command/command.py:7:5: F841 local variable 'y' is assigned to but never used")
-        
-        # Run the command
-        runner = CliRunner()
-        result = runner.invoke(cli, ['command', 'add', 'test-command'], catch_exceptions=False, input='y\nn\n')
-        
-        # Check that the command was successful but with a warning
-        assert result.exit_code == 0
-        assert "Command 'test-command' created successfully." in result.output
-        assert "Opening command.yaml for editing" in result.output
-        assert "Command metadata saved successfully." in result.output
-        assert "Opening command.py for editing" in result.output
-        assert "Running lint check on command.py" in result.output
-        assert "Lint check failed. Please fix the following issues:" in result.output
-        assert "local variable 'y' is assigned to but never used" in result.output
-        assert "Would you like to edit the file again?" in result.output
-        assert "Aborting. The command has been created but may contain lint errors." in result.output
-        assert "Command 'test-command' setup complete." in result.output
-        
-        # Verify that the mock functions were called
-        mock_edit_meta.assert_called_once()
-        mock_edit_impl.assert_called_once()
-        mock_lint.assert_called_once() 
