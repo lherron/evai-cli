@@ -1,7 +1,18 @@
 name: "{command_name}"
 description: "Default description"
-arguments: []
-options: []
+arguments:
+  - name: "arg1"
+    type: "string"
+    description: "First argument (string)"
+  - name: "arg2"
+    type: "integer"
+    description: "Second argument (integer)"
+options:
+  - name: "option1"
+    type: "boolean"
+    description: "Optional flag (boolean)"
+    required: false
+    default: false
 hidden: false
 disabled: false
 mcp_integration:

@@ -380,6 +380,12 @@ def run_command(command_path: str, *args, **kwargs):
     kwargs_for_run = dict(zip(arg_names, converted_args))
     kwargs_for_run.update(converted_kwargs)
     
+    # Validate type consistency between function type hints and YAML metadata
+    try:
+        validate_command_types(command_path)
+    except ValueError as e:
+        logger.warning(f"Type validation warning for command {command_path}: {e}")
+    
     # Run the function
     try:
         return run_func(**kwargs_for_run)
@@ -425,3 +431,152 @@ def remove_entity(command_path: str) -> None:
 
 # For backward compatibility
 remove_command = remove_entity
+
+def get_function_type_hints(func: Callable) -> Dict[str, Any]:
+    """
+    Extract type hints from the command function's parameters.
+
+    Args:
+        func: The command function (e.g., command_subtract).
+
+    Returns:
+        A dictionary mapping parameter names to their type hints.
+    """
+    signature = inspect.signature(func)
+    type_hints = {}
+    for param_name, param in signature.parameters.items():
+        if param.annotation != inspect.Parameter.empty:
+            type_hints[param_name] = param.annotation
+    return type_hints
+
+def get_yaml_types(metadata: Dict[str, Any]) -> Dict[str, str]:
+    """
+    Extract type information from the YAML metadata for arguments and options.
+
+    Args:
+        metadata: The loaded YAML metadata for the command.
+
+    Returns:
+        A dictionary mapping parameter names to their YAML-defined types.
+    """
+    arg_types = {arg['name']: arg['type'] for arg in metadata.get('arguments', [])}
+    opt_types = {opt['name']: opt['type'] for opt in metadata.get('options', [])}
+    return {**arg_types, **opt_types}
+
+def map_type_to_yaml(type_hint: Any) -> str:
+    """
+    Map Python type hints to YAML type strings.
+
+    Args:
+        type_hint: The Python type hint (e.g., int, str).
+
+    Returns:
+        The corresponding YAML type string (e.g., 'integer', 'string').
+    """
+    if type_hint == str:
+        return 'string'
+    elif type_hint == int:
+        return 'integer'
+    elif type_hint == float:
+        return 'float'
+    elif type_hint == bool:
+        return 'boolean'
+    else:
+        return 'unknown'
+
+def validate_command_types(command_path: str) -> None:
+    """
+    Validate that the type hints in the command function match the YAML metadata.
+
+    Args:
+        command_path (str): The path to the command (e.g., 'subtract').
+
+    Raises:
+        ValueError: If there are discrepancies between the function type hints and YAML types.
+    """
+    # Parse the command path
+    path_components = parse_command_path(command_path)
+    
+    # Load metadata and command function
+    if len(path_components) == 1:
+        # Top-level command
+        command_name = path_components[0]
+        cmd_dir = get_command_dir([command_name])
+        metadata_path = cmd_dir / f"{command_name}.yaml"
+        
+        if not metadata_path.exists():
+            # Try legacy path
+            metadata_path = cmd_dir / "command.yaml"
+        
+        with open(metadata_path, "r") as f:
+            metadata = yaml.safe_load(f)
+        
+        impl_path = cmd_dir / f"{command_name}.py"
+        if not impl_path.exists():
+            # Try legacy path
+            impl_path = cmd_dir / "command.py"
+        
+        # Import module and get function
+        spec = importlib.util.spec_from_file_location(command_name, impl_path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        
+        func_name = f"command_{command_name}"
+        if hasattr(module, func_name):
+            command_func = getattr(module, func_name)
+        else:
+            raise AttributeError(f"Command '{command_name}' must define 'command_{command_name}' function")
+    
+    elif len(path_components) == 2:
+        # Subcommand
+        group_name = path_components[0]
+        subcommand_name = path_components[1]
+        group_dir = get_command_dir([group_name])
+        metadata_path = group_dir / f"{subcommand_name}.yaml"
+        
+        with open(metadata_path, "r") as f:
+            metadata = yaml.safe_load(f)
+        
+        impl_path = group_dir / f"{subcommand_name}.py"
+        
+        # Import module and get function
+        spec = importlib.util.spec_from_file_location(f"{group_name}_{subcommand_name}", impl_path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        
+        func_name = f"command_{group_name}_{subcommand_name}"
+        if hasattr(module, func_name):
+            command_func = getattr(module, func_name)
+        else:
+            raise AttributeError(f"Subcommand '{group_name} {subcommand_name}' must define 'command_{group_name}_{subcommand_name}' function")
+    
+    else:
+        raise ValueError(f"Invalid command path: {command_path}")
+
+    # Get type hints from the function
+    func_type_hints = get_function_type_hints(command_func)
+
+    # Get types from YAML metadata
+    yaml_types = get_yaml_types(metadata)
+
+    # Check for discrepancies
+    for param_name, type_hint in func_type_hints.items():
+        if param_name in yaml_types:
+            yaml_type = yaml_types[param_name]
+            mapped_type = map_type_to_yaml(type_hint)
+            if mapped_type != yaml_type and mapped_type != 'unknown':
+                raise ValueError(
+                    f"Type mismatch for parameter '{param_name}' in command '{command_path}': "
+                    f"function expects '{mapped_type}', YAML specifies '{yaml_type}'"
+                )
+        else:
+            raise ValueError(
+                f"Parameter '{param_name}' in command '{command_path}' is not defined in YAML metadata"
+            )
+
+    # Check for parameters in YAML but not in the function
+    for param_name in yaml_types:
+        if param_name not in func_type_hints:
+            logger.warning(
+                f"Parameter '{param_name}' is defined in YAML metadata but not type-hinted in the function for command '{command_path}'"
+            )

@@ -8,6 +8,7 @@ dependencies = [
     "click>=8.1.7",
     "mcp[cli]>=1.3.0",
     "pyyaml>=6.0.1",
+    "anthropic>=0.3.0",
 ]
 
 [project.optional-dependencies]
@@ -17,7 +18,7 @@ dev = [
 ]
 
 [project.scripts]
-evai = "evai.cli:main"
+evai = "evai.cli.cli:main"
 
 [build-system]
 requires = ["setuptools>=61.0"]

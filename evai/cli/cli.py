@@ -350,6 +350,9 @@ def import_commands():
                 elif module_name == "commands" or module_name == "cmdllmadd":
                     # Add command-related commands to the commands group
                     commands.add_command(attr)
+                elif module_name == "llm" and attr_name == "llm":
+                    # Add llm command directly to the main CLI group
+                    cli.add_command(attr)
                 else:
                     # Default to tools group for anything else
                     tools.add_command(attr)

@@ -4,7 +4,7 @@ import os
 import sys
 import logging
 import inspect
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Awaitable
 
 try:
     from mcp.server.fastmcp import FastMCP
@@ -39,6 +39,35 @@ def register_built_in_tools(mcp: FastMCP) -> None:
         mcp: The MCP server instance
     """
     logger.debug("Registering built-in tools")
+    
+    @mcp.tool(name="call_llm")
+    async def call_llm(prompt: str, ctx: Any) -> str:
+        """Call the LLM with the given prompt via MCP sampling.
+        
+        Args:
+            prompt: The text prompt to send to the LLM.
+            ctx: The MCP context for sending requests.
+        
+        Returns:
+            The text response from the LLM.
+        """
+        from mcp import types
+        
+        logger.debug("Calling LLM with prompt via MCP sampling")
+        message = types.CreateMessageRequestParams(
+            messages=[
+                types.PromptMessage(
+                    role="user",
+                    content=types.TextContent(type="text", text=prompt)
+                )
+            ],
+            modelPreferences={"hints": [{"name": "claude-3-sonnet"}]},
+            includeContext="none",
+            maxTokens=1000
+        )
+        # Send the sampling request to the client
+        response = await ctx.send_request("sampling/createMessage", message)
+        return response.content.text
     
     @mcp.tool(name="list_tools")
     def list_available_tools() -> Dict[str, Any]:
