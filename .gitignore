@@ -1,6 +1,8 @@
 *.xml
 *.mp3
 
+repomix-output.txt
+
 
 # Byte-compiled / optimized / DLL files
 Untitled.md
