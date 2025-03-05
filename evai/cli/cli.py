@@ -17,6 +17,7 @@ from evai.tool_storage import (
     run_tool,
     load_tool_metadata
 )
+from evai.command_storage import get_command_dir, save_command_metadata, list_commands, import_command_module
 from evai.llm_client import (
     generate_default_metadata_with_llm,
     generate_implementation_with_llm,
@@ -27,10 +28,18 @@ from rich.console import Console
 from rich.syntax import Syntax
 from rich.panel import Panel
 import yaml
+import logging
 
 # Initialize rich console
 console = Console()
 
+# Type mapping for Click parameter types
+TYPE_MAP = {
+    "string": click.STRING,
+    "integer": click.INT,
+    "float": click.FLOAT,
+    "boolean": click.BOOL,
+}
 
 # Create an AliasedGroup class to support command aliases
 class AliasedGroup(click.Group):
@@ -64,6 +73,62 @@ def tools():
 
 # Tool functions have been moved to evai/cli/commands/tool.py
 
+@cli.group(cls=AliasedGroup)
+def commands():
+    """Manage user-defined commands."""
+    pass
+
+@cli.group(cls=AliasedGroup)
+def user():
+    """User-defined commands."""
+    pass
+
+def create_user_command(command_metadata: dict):
+    """Create a Click command from command metadata."""
+    command_name = command_metadata["name"]
+    description = command_metadata.get("description", "")
+    arg_names = [arg["name"] for arg in command_metadata.get("arguments", [])]
+
+    def callback(*args, **kwargs):
+        module = import_command_module(command_name)
+        run_func = getattr(module, "run")
+        params = dict(zip(arg_names, args))
+        params.update(kwargs)
+        result = run_func(**params)
+        click.echo(json.dumps(result, indent=2))
+        return result
+
+    command = click.command(name=command_name, help=description)(callback)
+
+    # Add arguments
+    for arg in command_metadata.get("arguments", []):
+        command = click.argument(
+            arg["name"],
+            type=TYPE_MAP.get(arg.get("type", "string"), click.STRING)
+        )(command)
+
+    # Add options
+    for opt in command_metadata.get("options", []):
+        command = click.option(
+            f"--{opt['name']}",
+            type=TYPE_MAP.get(opt.get("type", "string"), click.STRING),
+            help=opt.get("description", ""),
+            required=opt.get("required", False),
+            default=opt.get("default", None)
+        )(command)
+
+    return command
+
+def load_user_commands():
+    """Load and register user-defined commands from ~/.evai/commands."""
+    commands_list = list_commands()
+    for cmd_meta in commands_list:
+        try:
+            command = create_user_command(cmd_meta)
+            user.add_command(command)
+        except Exception as e:
+            logger.warning(f"Failed to load command {cmd_meta['name']}: {e}")
+
 @cli.command()
 @click.option("--name", "-n", default="EVAI Tools", help="Name of the MCP server")
 def server(name):
@@ -88,11 +153,11 @@ def server(name):
 
 # Automatically add all commands from the commands submodule
 def import_commands():
-    """Import all commands from the commands submodule and add them to the tools group."""
-    from evai.cli import commands
+    """Import all commands from the commands submodule and add them to the appropriate groups."""
+    from evai.cli import commands as commands_module
     
     # Get the package path
-    package_path = os.path.dirname(commands.__file__)
+    package_path = os.path.dirname(commands_module.__file__)
     
     # Iterate through all modules in the commands package
     for _, module_name, _ in pkgutil.iter_modules([package_path]):
@@ -105,12 +170,23 @@ def import_commands():
             
             # Check if it's a Click command
             if isinstance(attr, click.Command):
-                # Add the command to the tools group
-                tools.add_command(attr)
+                # Determine which group to add the command to
+                if module_name == "tools" or module_name == "llmadd":
+                    # Add tool-related commands to the tools group
+                    tools.add_command(attr)
+                elif module_name == "commands" or module_name == "cmdllmadd":
+                    # Add command-related commands to the commands group
+                    commands.add_command(attr)
+                else:
+                    # Default to tools group for anything else
+                    tools.add_command(attr)
 
 
 # Import commands
 import_commands()
+
+# Load user-defined commands
+load_user_commands()
 
 
 def main():

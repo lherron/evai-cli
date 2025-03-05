@@ -17,6 +17,8 @@ Define functions to manage the ~/.evai/commands directory, load/save metadata, l
 Use pathlib.Path for cross-platform compatibility, similar to tool_storage.py.
 Code:
 python
+
+
 """Command storage utilities for EVAI CLI."""
 
 import os
