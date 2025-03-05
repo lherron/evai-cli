@@ -61,7 +61,8 @@ from evai.tool_storage import (
     save_tool_metadata,
     edit_tool_metadata,
     edit_tool_implementation,
-    run_lint_check
+    run_lint_check,
+    import_tool_module
 )
 
 # Set up logging
@@ -271,35 +272,34 @@ class EVAIServer:
         """
         print(f"[DEBUG] Entering EVAIServer._register_tool_tool with tool_name={tool_name}", file=sys.stderr)
         
-        # Get the tool directory
-        tool_dir = get_tool_dir(tool_name)
-        
-        # Define the tool function
-        @self.mcp.tool(name=tool_name)
-        def tool_function(**kwargs) -> Dict[str, Any]:
-            """
-            Run the tool with the given arguments.
+        try:
+            # Import the tool module using the existing function
+            module = import_tool_module(tool_name)
             
-            Args:
-                **kwargs: Arguments to pass to the tool
-                
-            Returns:
-                The result of the tool
-            """
-            print(f"[DEBUG] Entering tool_function for tool '{tool_name}' with kwargs={kwargs}", file=sys.stderr)
-            try:
-                # Run the tool
-                result = run_tool(tool_name, **kwargs)
-                print(f"[DEBUG] Exiting tool_function for tool '{tool_name}' with result={result}", file=sys.stderr)
-                return result
-            except Exception as e:
-                logger.error(f"Error running tool '{tool_name}': {e}")
-                print(f"[DEBUG] Exiting tool_function for tool '{tool_name}' with exception: {e}", file=sys.stderr)
-                return {"status": "error", "message": str(e)}
-        
-        # Store the tool function
-        self.tools[tool_name] = tool_function
-        
+            # Find any function that starts with 'tool_'
+            import inspect
+            tool_functions = [
+                name for name, obj in inspect.getmembers(module)
+                if inspect.isfunction(obj) and name.startswith('tool_')
+            ]
+            
+            if not tool_functions:
+                raise AttributeError(f"Tool module doesn't have any tool_* functions")
+            
+            # Use the first tool function found
+            tool_function_name = tool_functions[0]
+            print(f"[DEBUG] Found tool function: {tool_function_name}", file=sys.stderr)
+            
+            # Get the tool function and register it with MCP
+            tool_function = getattr(module, tool_function_name)
+            self.mcp.tool(name=tool_name)(tool_function)
+            
+            print(f"[DEBUG] Successfully registered tool '{tool_name}'", file=sys.stderr)
+        except Exception as e:
+            logger.error(f"Error registering tool '{tool_name}': {e}")
+            print(f"[DEBUG] Error registering tool '{tool_name}': {e}", file=sys.stderr)
+            raise
+
         print(f"[DEBUG] Exiting EVAIServer._register_tool_tool", file=sys.stderr)
     
     def _register_prompts(self) -> None:
@@ -378,3 +378,5 @@ def run_server(name: str = "EVAI Tools") -> None:
     server = create_server(name)
     server.run()
     print(f"[DEBUG] Exiting run_server", file=sys.stderr)
+
+server = EVAIServer(mcp)

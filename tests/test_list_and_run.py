@@ -9,7 +9,7 @@ from unittest import mock
 import pytest
 from click.testing import CliRunner
 
-from evai.cli import cli
+from evai.cli.cli import cli
 from evai.tool_storage import get_tool_dir, save_tool_metadata
 
 
@@ -18,7 +18,10 @@ def mock_tools_dir():
     """Create a temporary directory for tools."""
     with tempfile.TemporaryDirectory() as temp_dir:
         # Mock the expanduser function to return our temp directory
-        with mock.patch('os.path.expanduser', return_value=temp_dir):
+        with mock.patch('os.path.expanduser') as mock_expanduser:
+            # When expanduser is called with ~/.evai, return our temp .evai dir
+            mock_expanduser.side_effect = lambda path: path.replace('~', temp_dir)
+            
             # Create the tools directory
             tools_dir = os.path.join(temp_dir, '.evai', 'tools')
             os.makedirs(tools_dir, exist_ok=True)
@@ -68,8 +71,8 @@ def mock_tools_dir():
             with open(os.path.join(test_tool_dir, 'tool.py'), 'w') as f:
                 f.write('''"""Test tool implementation."""
 
-def run(message="Hello", count=1):
-    """Run the test tool."""
+def tool_echo(message="Hello", count=1):
+    """Echo the message count times."""
     result = []
     for _ in range(count):
         result.append(message)
@@ -120,7 +123,7 @@ def run():
 def test_list_tools(mock_tools_dir):
     """Test listing tools."""
     runner = CliRunner()
-    result = runner.invoke(cli, ['tool', 'list'])
+    result = runner.invoke(cli, ['tools', 'list'])
     
     assert result.exit_code == 0
     assert "Available tools:" in result.output
@@ -131,7 +134,7 @@ def test_list_tools(mock_tools_dir):
 def test_run_tool(mock_tools_dir):
     """Test running a tool."""
     runner = CliRunner()
-    result = runner.invoke(cli, ['tool', 'run', 'test-tool', '-p', 'message=Hello World', '-p', 'count=3'])
+    result = runner.invoke(cli, ['tools', 'run', 'test-tool', '-p', 'message=Hello World', '-p', 'count=3'])
     
     assert result.exit_code == 0
     
@@ -143,7 +146,7 @@ def test_run_tool(mock_tools_dir):
 def test_run_tool_with_default_params(mock_tools_dir):
     """Test running a tool with default parameters."""
     runner = CliRunner()
-    result = runner.invoke(cli, ['tool', 'run', 'test-tool', '-p', 'message=Hello World'])
+    result = runner.invoke(cli, ['tools', 'run', 'test-tool', '-p', 'message=Hello World'])
     
     assert result.exit_code == 0
     
@@ -155,7 +158,7 @@ def test_run_tool_with_default_params(mock_tools_dir):
 def test_run_tool_missing_required_param(mock_tools_dir):
     """Test running a tool with a missing required parameter."""
     runner = CliRunner()
-    result = runner.invoke(cli, ['tool', 'run', 'test-tool'])
+    result = runner.invoke(cli, ['tools', 'run', 'test-tool'])
     
     assert result.exit_code == 1
     assert "Missing required parameter: message" in result.output
@@ -164,7 +167,7 @@ def test_run_tool_missing_required_param(mock_tools_dir):
 def test_run_nonexistent_tool(mock_tools_dir):
     """Test running a nonexistent tool."""
     runner = CliRunner()
-    result = runner.invoke(cli, ['tool', 'run', 'nonexistent-tool'])
+    result = runner.invoke(cli, ['tools', 'run', 'nonexistent-tool'])
     
     assert result.exit_code == 1
     assert "Error running tool" in result.output 

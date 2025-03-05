@@ -7,7 +7,7 @@ import yaml
 from click.testing import CliRunner
 from unittest import mock
 
-from evai.cli import cli
+from evai.cli.cli import cli
 
 
 class TestAddCommand:
@@ -38,18 +38,18 @@ class TestAddCommand:
     def test_add_command(self):
         """Test adding a new command."""
         runner = CliRunner()
-        result = runner.invoke(cli, ['command', 'add', 'test-command'], catch_exceptions=False)
+        result = runner.invoke(cli, ['tools', 'add', 'test-command'])
         
         # Check that the command was successful
         assert result.exit_code == 0
-        assert "Command 'test-command' created successfully." in result.output
+        assert "Tool 'test-command' created successfully." in result.output
         
         # Check that the command directory was created
-        command_dir = os.path.join(self.temp_dir, '.evai', 'commands', 'test-command')
+        command_dir = os.path.join(self.temp_dir, '.evai', 'tools', 'test-command')
         assert os.path.exists(command_dir)
         
         # Check that the command.yaml file was created with the correct content
-        yaml_path = os.path.join(command_dir, 'command.yaml')
+        yaml_path = os.path.join(command_dir, 'tool.yaml')
         assert os.path.exists(yaml_path)
         
         with open(yaml_path, 'r') as f:
@@ -68,26 +68,25 @@ class TestAddCommand:
         assert metadata['llm_interaction']['max_llm_turns'] == 15
         
         # Check that the command.py file was created with the correct content
-        py_path = os.path.join(command_dir, 'command.py')
+        py_path = os.path.join(command_dir, 'tool.py')
         assert os.path.exists(py_path)
         
         with open(py_path, 'r') as f:
             content = f.read()
         
-        assert '"""Custom command implementation."""' in content
-        assert 'def run(**kwargs):' in content
-        assert 'print("Hello World")' in content
-        assert 'return {"status": "success"}' in content
+        assert '"""Custom tool implementation."""' in content
+        assert 'def tool_echo(' in content
+        assert 'return echo_string' in content
 
     def test_add_command_invalid_name(self):
         """Test adding a command with an invalid name."""
         runner = CliRunner()
-        result = runner.invoke(cli, ['command', 'add', 'test command'], catch_exceptions=False)  # Space in name
+        result = runner.invoke(cli, ['tools', 'add', 'test command'])  # Space in name
         
         # Check that the command failed
         assert result.exit_code == 1
-        assert "Error creating command" in result.output
+        assert "Error creating tool" in result.output
         
         # Check that the command directory was not created
-        command_dir = os.path.join(self.temp_dir, '.evai', 'commands', 'test command')
+        command_dir = os.path.join(self.temp_dir, '.evai', 'tools', 'test command')
         assert not os.path.exists(command_dir)

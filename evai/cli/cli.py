@@ -32,6 +32,24 @@ import yaml
 console = Console()
 
 
+# Create an AliasedGroup class to support command aliases
+class AliasedGroup(click.Group):
+    def get_command(self, ctx, cmd_name):
+        # Try to get command by name
+        rv = click.Group.get_command(self, ctx, cmd_name)
+        if rv is not None:
+            return rv
+        
+        # Try to match aliases
+        matches = [x for x in self.list_commands(ctx) if x.startswith(cmd_name)]
+        if not matches:
+            return None
+        elif len(matches) == 1:
+            return click.Group.get_command(self, ctx, matches[0])
+        
+        ctx.fail(f"Too many matches: {', '.join(sorted(matches))}")
+
+
 @click.group(help="EVAI CLI - Command-line interface for EVAI")
 @click.version_option(version=__version__, prog_name="evai")
 def cli():
@@ -39,8 +57,8 @@ def cli():
     pass
 
 
-@cli.group()
-def tool():
+@cli.group(cls=AliasedGroup)
+def tools():
     """Manage custom tools."""
     pass
 
@@ -70,7 +88,7 @@ def server(name):
 
 # Automatically add all commands from the commands submodule
 def import_commands():
-    """Import all commands from the commands submodule and add them to the tool group."""
+    """Import all commands from the commands submodule and add them to the tools group."""
     from evai.cli import commands
     
     # Get the package path
@@ -87,8 +105,8 @@ def import_commands():
             
             # Check if it's a Click command
             if isinstance(attr, click.Command):
-                # Add the command to the tool group
-                tool.add_command(attr)
+                # Add the command to the tools group
+                tools.add_command(attr)
 
 
 # Import commands

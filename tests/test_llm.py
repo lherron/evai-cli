@@ -121,20 +121,17 @@ llm_interaction:
 \"\"\"Custom command implementation.\"\"\"
 
 
-def run(**kwargs):
-    \"\"\"Run the command with the given arguments.\"\"\"
-    # Get the parameters
-    param1 = kwargs.get('param1', '')
-    
+def tool_echo(echo_string: str) -> str:
+    \"\"\"Echo the input string.\"\"\"
     # Validate parameters
-    if not param1:
-        return {"status": "error", "message": "param1 is required"}
+    if not echo_string:
+        raise ValueError("Missing required parameter: echo_string")
     
-    # Do something with the parameters
-    result = f"Hello, {param1}!"
-    print(result)
+    # Process the input
+    result = echo_string.upper()
     
-    return {"status": "success", "result": result}
+    # Return the result
+    return result
 ```"""
         mock_choice = mock.MagicMock()
         mock_choice.message = mock_message
@@ -184,9 +181,9 @@ def run(**kwargs):
         
         # Check the returned implementation
         assert '"""Custom command implementation."""' in implementation
-        assert 'def run(**kwargs):' in implementation
-        assert "param1 = kwargs.get('param1', '')" in implementation
-        assert 'return {"status": "success", "result": result}' in implementation
+        assert 'def tool_echo(echo_string: str) -> str:' in implementation
+        assert 'if not echo_string:' in implementation
+        assert 'return result' in implementation
 
     @mock.patch('evai.llm_client.get_openai_client')
     def test_check_additional_info_needed(self, mock_get_client):
@@ -305,7 +302,7 @@ def run(**kwargs):
                 "max_llm_turns": 15
             }
         }
-        mock_gen_impl.return_value = '"""Custom command implementation."""\n\ndef run(**kwargs):\n    """Run the command with the given arguments."""\n    return {"status": "success"}\n'
+        mock_gen_impl.return_value = '"""Custom command implementation."""\n\ndef tool_echo(echo_string: str) -> str:\n    """Echo the input string."""\n    return echo_string\n'
         
         # Mock the edit functions
         mock_edit_meta.return_value = (True, mock_gen_meta.return_value)

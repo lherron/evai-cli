@@ -11,6 +11,7 @@ from typing import Dict, Any, Optional, Tuple, List
 import inspect
 
 import yaml
+import json
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -466,36 +467,92 @@ def import_tool_module(tool_name: str) -> Any:
         raise ImportError(f"Error importing tool module: {e}")
 
 
-def run_tool(tool_name: str, **kwargs) -> Any:
+def run_tool(tool_name: str, *args, **kwargs) -> Any:
     """
     Run a tool with the given arguments.
     
     Args:
         tool_name: The name of the tool
-        **kwargs: Arguments to pass to the tool
+        *args: Positional arguments to pass to the tool function
+        **kwargs: Keyword arguments to pass to the tool
         
     Returns:
         The result of the tool
         
     Raises:
         ImportError: If the tool module cannot be imported
-        AttributeError: If the tool module doesn't have a run function
+        AttributeError: If the tool module doesn't have any tool_* functions
         Exception: If the tool execution fails
     """
-    # print(f"DEBUG: ENTER {inspect.currentframe().f_code.co_name} - tool_name={tool_name}, kwargs={kwargs}", file=sys.stderr)
+    # print(f"DEBUG: ENTER {inspect.currentframe().f_code.co_name} - tool_name={tool_name}, args={args}, kwargs={kwargs}", file=sys.stderr)
     
     try:
         # Import the tool module
         module = import_tool_module(tool_name)
         
-        # Check if the module has a run function
-        if not hasattr(module, "run"):
-            logger.error(f"Tool module doesn't have a run function: {tool_name}")
-            # print(f"DEBUG: EXIT {inspect.currentframe().f_code.co_name} - EXCEPTION: AttributeError", file=sys.stderr)
-            raise AttributeError(f"Tool module doesn't have a run function: {tool_name}")
+        # Find callable functions in the module that start with "tool_"
+        tool_functions = [
+            name for name, obj in inspect.getmembers(module)
+            if inspect.isfunction(obj) and name.startswith('tool_')
+        ]
         
-        # Run the tool
-        result = module.run(**kwargs)
+        if not tool_functions:
+            logger.error(f"Tool module doesn't have any tool_* functions: {tool_name}")
+            # print(f"DEBUG: EXIT {inspect.currentframe().f_code.co_name} - EXCEPTION: AttributeError", file=sys.stderr)
+            raise AttributeError(f"Tool module doesn't have any tool_* functions: {tool_name}")
+        
+        # For backward compatibility, try 'run' first if it exists
+        if "run" in tool_functions:
+            result = module.run(**kwargs)
+        else:
+            # Use the first tool function found
+            function_name = tool_functions[0]
+            function = getattr(module, function_name)
+            
+            # Get the function signature
+            sig = inspect.signature(function)
+            
+            # If we have positional arguments, use them
+            if args:
+                # Convert args to appropriate types based on function signature
+                converted_args = []
+                for i, (param_name, param) in enumerate(sig.parameters.items()):
+                    if i < len(args):
+                        # Get the parameter type annotation
+                        param_type = param.annotation
+                        if param_type is inspect.Parameter.empty:
+                            # No type annotation, use the arg as is
+                            converted_args.append(args[i])
+                        else:
+                            # Try to convert the arg to the annotated type
+                            try:
+                                # Handle special cases for common types
+                                if param_type is float or param_type is int:
+                                    converted_args.append(param_type(args[i]))
+                                elif param_type is bool:
+                                    # Convert string to bool
+                                    value = str(args[i]).lower()
+                                    converted_args.append(value in ('true', 't', 'yes', 'y', '1'))
+                                else:
+                                    # For other types, try direct conversion
+                                    converted_args.append(param_type(args[i]))
+                            except (ValueError, TypeError):
+                                # If conversion fails, use the original value
+                                logger.warning(f"Could not convert argument {args[i]} to {param_type.__name__}")
+                                converted_args.append(args[i])
+                
+                # Call the function with the converted positional arguments
+                result = function(*converted_args)
+            else:
+                # Filter kwargs to only include parameters that the function accepts
+                filtered_kwargs = {
+                    k: v for k, v in kwargs.items() 
+                    if k in sig.parameters
+                }
+                
+                # Call the function with the filtered kwargs
+                result = function(**filtered_kwargs)
+        
         # print(f"DEBUG: EXIT {inspect.currentframe().f_code.co_name} - return={result}", file=sys.stderr)
         return result
     except (ImportError, AttributeError) as e:
@@ -505,4 +562,45 @@ def run_tool(tool_name: str, **kwargs) -> Any:
     except Exception as e:
         logger.error(f"Tool execution failed: {e}")
         # print(f"DEBUG: EXIT {inspect.currentframe().f_code.co_name} - EXCEPTION: {e}", file=sys.stderr)
+        raise
+
+
+def remove_tool(tool_name: str) -> bool:
+    """
+    Remove a tool by deleting its directory.
+    
+    Args:
+        tool_name: The name of the tool to remove
+        
+    Returns:
+        True if the tool was successfully removed, False otherwise
+        
+    Raises:
+        ValueError: If the tool name is invalid
+        FileNotFoundError: If the tool directory doesn't exist
+    """
+    if not tool_name:
+        raise ValueError("Tool name cannot be empty")
+    
+    # Validate tool name (alphanumeric, hyphens, and underscores only)
+    if not all(c.isalnum() or c in "-_" for c in tool_name):
+        raise ValueError(
+            "Tool name must contain only alphanumeric characters, hyphens, and underscores"
+        )
+    
+    # Get the tool directory path
+    tool_dir = os.path.expanduser(f"~/.evai/tools/{tool_name}")
+    
+    # Check if the directory exists
+    if not os.path.exists(tool_dir):
+        raise FileNotFoundError(f"Tool '{tool_name}' not found")
+    
+    # Remove the directory and all its contents
+    try:
+        import shutil
+        shutil.rmtree(tool_dir)
+        logger.debug(f"Tool directory removed: {tool_dir}")
+        return True
+    except OSError as e:
+        logger.error(f"Failed to remove tool directory: {e}")
         raise 

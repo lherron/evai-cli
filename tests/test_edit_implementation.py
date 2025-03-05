@@ -24,7 +24,7 @@ class TestEditImplementation:
         # Create a test command.py file with valid Python code
         self.py_path = os.path.join(self.command_dir, 'command.py')
         with open(self.py_path, 'w') as f:
-            f.write('"""Custom command implementation."""\n\n\ndef run(**kwargs):\n    """Run the command with the given arguments."""\n    print("Hello World")\n    return {"status": "success"}\n')
+            f.write('"""Custom command implementation."""\n\n\ndef tool_echo(echo_string: str) -> str:\n    """Echo the input string."""\n    return echo_string\n')
 
     def teardown_method(self):
         """Clean up after the tests."""
@@ -107,7 +107,7 @@ class TestEditImplementation:
         """Test running lint check on a Python file with lint errors."""
         # Create a Python file with lint errors
         with open(self.py_path, 'w') as f:
-            f.write('"""Custom command implementation."""\n\nimport os\n\ndef run(**kwargs):\n    x = 1\n    y = 2  # unused variable\n    print("Hello World")\n    return {"status": "success"}\n')
+            f.write('"""Custom command implementation."""\n\nimport os\n\ndef tool_echo(echo_string: str) -> str:\n    x = 1\n    y = 2  # unused variable\n    return echo_string\n')
         
         # Mock the subprocess.run call to simulate flake8 failing
         mock_run.return_value = subprocess.CompletedProcess(

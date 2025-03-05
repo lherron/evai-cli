@@ -14,7 +14,8 @@ from evai.tool_storage import (
     run_tool,
     load_tool_metadata,
     load_sample_tool_py,
-    load_sample_tool_yaml
+    load_sample_tool_yaml,
+    remove_tool
 )
 from rich.console import Console
 
@@ -72,9 +73,9 @@ def add(tool_name):
             click.echo(f"Error loading sample tool.py template: {e}", err=True)
             click.echo("Falling back to default implementation.")
             
-            # Create default tool.py
+            # Create default tool.py with a simple function (not using run(**kwargs))
             with open(tool_py_path, "w") as f:
-                f.write('"""Custom tool implementation."""\n\n\ndef run(**kwargs):\n    """Run the tool with the given arguments."""\n    print("Hello World")\n    return {"status": "success"}\n')
+                f.write('"""Custom tool implementation."""\n\n\ndef tool_echo(echo_string: str) -> str:\n    """Echo the input string."""\n    return echo_string\n')
         
         click.echo(f"Tool '{tool_name}' created successfully.")
         click.echo(f"- Metadata: {os.path.join(tool_dir, 'tool.yaml')}")
@@ -84,6 +85,13 @@ def add(tool_name):
     except Exception as e:
         click.echo(f"Error creating tool: {e}", err=True)
         sys.exit(1)
+
+
+@click.command()
+@click.argument("tool_name")
+def new(tool_name):
+    """Alias for 'add' - Add a new custom tool."""
+    add.callback(tool_name)
 
 
 @click.command()
@@ -159,6 +167,15 @@ def edit(tool_name, metadata, implementation):
 
 
 @click.command()
+@click.argument("tool_name")
+@click.option("--metadata/--no-metadata", default=True, help="Edit tool metadata")
+@click.option("--implementation/--no-implementation", default=True, help="Edit tool implementation")
+def e(tool_name, metadata, implementation):
+    """Alias for 'edit' - Edit an existing tool."""
+    edit.callback(tool_name, metadata, implementation)
+
+
+@click.command()
 def list():
     """List all available tools."""
     try:
@@ -180,12 +197,27 @@ def list():
 
 
 @click.command()
+def ls():
+    """Alias for 'list' - List all available tools."""
+    list.callback()
+
+
+@click.command()
 @click.argument("tool_name")
-@click.option("--param", "-p", multiple=True, help="Tool parameters in the format key=value")
-def run(tool_name, param):
-    """Run a tool with the given arguments."""
+@click.argument("args", nargs=-1)
+@click.option("--param", "-p", multiple=True, help="Tool parameters in the format key=value (for backward compatibility)")
+def run(tool_name, args, param):
+    """Run a tool with the given arguments.
+    
+    Arguments can be provided as positional arguments after the tool name,
+    or as key=value pairs with the --param/-p option for backward compatibility.
+    
+    Example:
+        evai tools run subtract 8 5
+        evai tools run subtract --param minuend=8 --param subtrahend=5
+    """
     try:
-        # Parse parameters
+        # Parse parameters from --param options (backward compatibility)
         kwargs = {}
         for p in param:
             try:
@@ -204,8 +236,8 @@ def run(tool_name, param):
         tool_dir = get_tool_dir(tool_name)
         metadata = load_tool_metadata(tool_dir)
         
-        # Check required parameters
-        if "params" in metadata:
+        # If using --param options, check required parameters
+        if not args and "params" in metadata:
             for param_def in metadata.get("params", []):
                 param_name = param_def.get("name")
                 if param_name and param_def.get("required", True) and param_name not in kwargs:
@@ -216,8 +248,11 @@ def run(tool_name, param):
                         click.echo(f"Missing required parameter: {param_name}", err=True)
                         sys.exit(1)
         
-        # Run the tool
-        result = run_tool(tool_name, **kwargs)
+        # Run the tool with positional args if provided, otherwise use kwargs
+        if args:
+            result = run_tool(tool_name, *args)
+        else:
+            result = run_tool(tool_name, **kwargs)
         
         # Print the result
         if isinstance(result, dict):
@@ -227,4 +262,45 @@ def run(tool_name, param):
     
     except Exception as e:
         click.echo(f"Error running tool: {e}", err=True)
-        sys.exit(1) 
+        sys.exit(1)
+
+
+@click.command()
+@click.argument("tool_name")
+@click.argument("args", nargs=-1)
+@click.option("--param", "-p", multiple=True, help="Tool parameters in the format key=value (for backward compatibility)")
+def r(tool_name, args, param):
+    """Alias for 'run' - Run a tool with the given arguments."""
+    run.callback(tool_name, args, param)
+
+
+@click.command()
+@click.argument("tool_name")
+@click.option("--force", "-f", is_flag=True, help="Force removal without confirmation")
+def remove(tool_name, force):
+    """Remove a custom tool."""
+    try:
+        # Confirm removal unless force flag is set
+        if not force and not click.confirm(f"Are you sure you want to remove tool '{tool_name}'?"):
+            click.echo("Operation cancelled.")
+            return
+        
+        # Remove the tool
+        remove_tool(tool_name)
+        
+        click.echo(f"Tool '{tool_name}' removed successfully.")
+        
+    except FileNotFoundError:
+        click.echo(f"Tool '{tool_name}' not found.", err=True)
+        sys.exit(1)
+    except Exception as e:
+        click.echo(f"Error removing tool: {e}", err=True)
+        sys.exit(1)
+
+
+@click.command()
+@click.argument("tool_name")
+@click.option("--force", "-f", is_flag=True, help="Force removal without confirmation")
+def rm(tool_name, force):
+    """Alias for 'remove' - Remove a custom tool."""
+    remove.callback(tool_name, force) 
