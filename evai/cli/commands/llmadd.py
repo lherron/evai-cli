@@ -167,7 +167,7 @@ def llmadd(tool_name):
             # Create default implementation
             tool_py_path = os.path.join(tool_dir, "tool.py")
             with open(tool_py_path, "w") as f:
-                f.write(f'"""Custom tool implementation for {tool_name}."""\n\n\ndef run(**kwargs):\n    """Run the tool with the given arguments."""\n    print("Hello World")\n    return {{"status": "success"}}\n')
+                f.write(f'"""Custom tool implementation for {tool_name}."""\n\n\ndef tool_{tool_name}(*args, **kwargs):\n    """Execute the tool with the given arguments."""\n    print("Hello World")\n    return {{"status": "success"}}\n')
         
         click.echo(f"\nTool '{tool_name}' created successfully.")
         click.echo(f"- Metadata: {os.path.join(tool_dir, 'tool.yaml')}")

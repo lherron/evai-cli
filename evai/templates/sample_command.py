@@ -11,8 +11,3 @@ def command_sample(*args, **kwargs):
     # Example logic (replace with actual implementation)
     print("Hello World")
     return {"status": "success"}
-
-# Legacy support
-def run(**kwargs):
-    """Legacy run function for backward compatibility."""
-    return command_sample(**kwargs)

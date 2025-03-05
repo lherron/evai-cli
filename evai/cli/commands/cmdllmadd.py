@@ -235,7 +235,6 @@ The implementation should:
 2. Include type hints matching the metadata types (string, integer, float, boolean)
 3. Process the arguments and options as needed
 4. Return a dictionary with the command's results
-5. Include a legacy 'run' function that calls '{function_name}' for backward compatibility
 
 The file should include:
 - A module docstring explaining the subcommand
@@ -251,11 +250,6 @@ def {function_name}(file: str, count: int, verbose: bool = False):
     if verbose:
         print(f"Processing {{file}} {{count}} times")
     return {{"status": "success", "result": file * count}}
-    
-# Legacy support
-def run(**kwargs):
-    \"\"\"Legacy run function for backward compatibility.\"\"\"
-    return {function_name}(**kwargs)
 ```
 
 Return ONLY the Python code, nothing else."""
@@ -281,7 +275,7 @@ Return ONLY the Python code, nothing else."""
                 impl_path = parent_dir / f"{name}.py"
                 function_name = f"command_{parent}_{name}"
                 with open(impl_path, "w") as f:
-                    f.write(f'"""Implementation for the {name} subcommand in the {parent} group."""\n\n\ndef {function_name}(*args, **kwargs):\n    """Execute the {name} subcommand with the given arguments."""\n    print("Hello World")\n    return {{"status": "success"}}\n\n# Legacy support\ndef run(**kwargs):\n    """Legacy run function for backward compatibility."""\n    return {function_name}(**kwargs)\n')
+                    f.write(f'"""Implementation for the {name} subcommand in the {parent} group."""\n\n\ndef {function_name}(*args, **kwargs):\n    """Execute the {name} subcommand with the given arguments."""\n    print("Hello World")\n    return {{"status": "success"}}\n')
             
             click.echo(f"\nSubcommand '{name}' created successfully under group '{parent}'.")
             click.echo(f"- Metadata: {sub_yaml}")
@@ -411,7 +405,6 @@ The implementation should:
 2. Include type hints matching the metadata types (string, integer, float, boolean)
 3. Process the arguments and options as needed
 4. Return a dictionary with the command's results
-5. Include a legacy 'run' function that calls '{function_name}' for backward compatibility
 
 The file should include:
 - A module docstring explaining the command
@@ -427,11 +420,6 @@ def {function_name}(file: str, count: int, verbose: bool = False):
     if verbose:
         print(f"Processing {{file}} {{count}} times")
     return {{"status": "success", "result": file * count}}
-    
-# Legacy support
-def run(**kwargs):
-    \"\"\"Legacy run function for backward compatibility.\"\"\"
-    return {function_name}(**kwargs)
 ```
 
 Return ONLY the Python code, nothing else."""
@@ -457,7 +445,7 @@ Return ONLY the Python code, nothing else."""
                     impl_path = entity_dir / f"{name}.py"
                     function_name = f"command_{name}"
                     with open(impl_path, "w") as f:
-                        f.write(f'"""Implementation for the {name} command."""\n\n\ndef {function_name}(*args, **kwargs):\n    """Execute the {name} command with the given arguments."""\n    print("Hello World")\n    return {{"status": "success"}}\n\n# Legacy support\ndef run(**kwargs):\n    """Legacy run function for backward compatibility."""\n    return {function_name}(**kwargs)\n')
+                        f.write(f'"""Implementation for the {name} command."""\n\n\ndef {function_name}(*args, **kwargs):\n    """Execute the {name} command with the given arguments."""\n    print("Hello World")\n    return {{"status": "success"}}\n')
                 
                 click.echo(f"\nCommand '{name}' created successfully.")
                 click.echo(f"- Metadata: {entity_dir / f'{name}.yaml'}")

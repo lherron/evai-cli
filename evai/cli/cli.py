@@ -41,6 +41,100 @@ from rich.panel import Panel
 import yaml
 import logging
 
+def get_click_type(type_str: str):
+    """
+    Map metadata type strings to Click parameter types.
+    
+    Args:
+        type_str: The type string from metadata (e.g., "string", "integer").
+    
+    Returns:
+        The corresponding Click type object.
+    """
+    type_map = {
+        "string": click.STRING,
+        "integer": click.INT,
+        "float": click.FLOAT,
+        "boolean": click.BOOL,
+    }
+    return type_map.get(type_str.lower(), click.STRING)  # Default to STRING if unknown
+
+def convert_value(value: str, type_str: str):
+    """
+    Convert a string value to the specified type based on metadata.
+    
+    Args:
+        value: The string value to convert (e.g., "8").
+        type_str: The target type from metadata (e.g., "integer").
+    
+    Returns:
+        The converted value.
+    
+    Raises:
+        ValueError: If conversion fails.
+    """
+    type_str = type_str.lower()
+    try:
+        if type_str == "string":
+            return str(value)
+        elif type_str == "integer":
+            return int(value)
+        elif type_str == "float":
+            return float(value)
+        elif type_str == "boolean":
+            return value.lower() in ("true", "1", "yes", "on") if isinstance(value, str) else bool(value)
+        else:
+            return str(value)  # Default to string for unknown types
+    except (ValueError, TypeError) as e:
+        raise ValueError(f"Cannot convert '{value}' to {type_str}: {str(e)}")
+
+def create_command(command_name: str, metadata: dict, module):
+    """
+    Create a Click command with typed arguments and options from metadata.
+    
+    Args:
+        command_name: The name of the command.
+        metadata: The command's metadata dictionary.
+        module: The imported module containing the command's run function.
+    
+    Returns:
+        A configured click.Command object.
+    """
+    command = click.Command(name=command_name, help=metadata.get("description", ""))
+    
+    # Add positional arguments with types
+    for arg in metadata.get("arguments", []):
+        arg_type = get_click_type(arg["type"])
+        param = click.Argument([arg["name"]], type=arg_type)
+        command.params.append(param)
+    
+    # Add options with types
+    for opt in metadata.get("options", []):
+        opt_type = get_click_type(opt["type"])
+        param = click.Option(
+            [f"--{opt['name']}"],
+            type=opt_type,
+            help=opt.get("description", ""),
+            required=opt.get("required", False),
+            default=opt.get("default", None)
+        )
+        command.params.append(param)
+    
+    def command_callback(*args, **kwargs):
+        # Map positional args to their names from metadata
+        arg_names = [arg["name"] for arg in metadata.get("arguments", [])]
+        if len(args) > len(arg_names):
+            raise click.UsageError(f"Too many positional arguments: expected {len(arg_names)}, got {len(args)}")
+        kwargs.update(dict(zip(arg_names, args)))
+        # Execute the command function
+        command_name = command_name.replace('-', '_')
+        command_func = getattr(module, f"command_{command_name}")
+        result = command_func(**kwargs)
+        click.echo(json.dumps(result))
+    
+    command.callback = command_callback
+    return command
+
 # Initialize rich console
 console = Console()
 logger = logging.getLogger(__name__)
@@ -110,12 +204,16 @@ def create_user_command(metadata: dict, cmd_dir: Path, command_name: str):
             # This is a top-level command
             module = import_command_module(command_name)
         
-        # Check for command_<name> function first, fall back to run
-        func_name = f"command_{command_name}"
-        if hasattr(module, func_name):
-            run_func = getattr(module, func_name)
+        # Get command function 
+        if is_group(cmd_dir):
+            # This is a subcommand - use command_<group>_<command> naming
+            group_name = cmd_dir.name
+            func_name = f"command_{group_name}_{command_name}"
         else:
-            run_func = getattr(module, "run")
+            # This is a top-level command - use command_<command> naming
+            func_name = f"command_{command_name}"
+            
+        run_func = getattr(module, func_name)
             
         params = dict(zip(arg_names, args))
         params.update(kwargs)
@@ -145,55 +243,64 @@ def create_user_command(metadata: dict, cmd_dir: Path, command_name: str):
     return command
 
 def load_user_commands():
-    """Load and register user-defined commands from ~/.evai/commands."""
-    commands_dir = Path(os.path.expanduser("~/.evai/commands"))
+    """Load and register user-defined commands from ~/.evai/commands with type conversion."""
+    user_commands_dir = Path.home() / ".evai" / "commands"
     
-    if not commands_dir.exists():
+    if not user_commands_dir.exists():
         return
-    
-    for item in commands_dir.iterdir():
-        if item.is_dir():
-            group_yaml = item / "group.yaml"
+        
+    for entity_dir in user_commands_dir.iterdir():
+        if entity_dir.is_dir():
+            group_yaml = entity_dir / "group.yaml"
             if group_yaml.exists():
-                # This is a group
+                # Load group
                 with open(group_yaml, "r") as f:
-                    metadata = yaml.safe_load(f)
+                    group_metadata = yaml.safe_load(f)
+                group_name = group_metadata["name"]
+                group = click.Group(name=group_name, help=group_metadata.get("description", ""))
                 
-                group_name = metadata["name"]
-                group = click.Group(name=group_name, help=metadata.get("description", ""))
+                # Add subcommands to the group
+                for subcmd_yaml in entity_dir.glob("*.yaml"):
+                    if subcmd_yaml.name != "group.yaml":
+                        subcmd_name = subcmd_yaml.stem
+                        with open(subcmd_yaml, "r") as f:
+                            subcmd_metadata = yaml.safe_load(f)
+                        impl_path = entity_dir / f"{subcmd_name}.py"
+                        if impl_path.exists():
+                            try:
+                                spec = importlib.util.spec_from_file_location(subcmd_name, impl_path)
+                                module = importlib.util.module_from_spec(spec)
+                                spec.loader.exec_module(module)
+                                subcmd = create_command(subcmd_name, subcmd_metadata, module)
+                                group.add_command(subcmd)
+                            except Exception as e:
+                                logger.warning(f"Failed to load subcommand {group_name} {subcmd_name}: {e}")
                 user.add_command(group)
-                
-                # Load subcommands
-                for sub_file in item.iterdir():
-                    if sub_file.suffix == ".yaml" and sub_file.name != "group.yaml":
-                        sub_name = sub_file.stem
-                        with open(sub_file, "r") as f:
-                            sub_metadata = yaml.safe_load(f)
-                        
-                        try:
-                            command = create_user_command(sub_metadata, item, sub_name)
-                            group.add_command(command)
-                        except Exception as e:
-                            logger.warning(f"Failed to load subcommand {group_name} {sub_name}: {e}")
             else:
-                # This is a top-level command
-                # Try both naming conventions
-                command_name = item.name
-                command_yaml = item / f"{command_name}.yaml"
-                
-                if not command_yaml.exists():
+                # Load top-level command
+                metadata_path = entity_dir / f"{entity_dir.name}.yaml"
+                if not metadata_path.exists():
                     # Try legacy path
-                    command_yaml = item / "command.yaml"
+                    metadata_path = entity_dir / "command.yaml"
                     
-                if command_yaml.exists():
-                    with open(command_yaml, "r") as f:
+                if metadata_path.exists():
+                    with open(metadata_path, "r") as f:
                         metadata = yaml.safe_load(f)
-                    
-                    try:
-                        command = create_user_command(metadata, item, metadata["name"])
-                        user.add_command(command)
-                    except Exception as e:
-                        logger.warning(f"Failed to load command {metadata['name']}: {e}")
+                    command_name = metadata["name"]
+                    impl_path = entity_dir / f"{entity_dir.name}.py"
+                    if not impl_path.exists():
+                        # Try legacy path
+                        impl_path = entity_dir / "command.py"
+                        
+                    if impl_path.exists():
+                        try:
+                            spec = importlib.util.spec_from_file_location(command_name, impl_path)
+                            module = importlib.util.module_from_spec(spec)
+                            spec.loader.exec_module(module)
+                            command = create_command(command_name, metadata, module)
+                            user.add_command(command)
+                        except Exception as e:
+                            logger.warning(f"Failed to load command {command_name}: {e}")
 
 @cli.command()
 @click.option("--name", "-n", default="EVAI Tools", help="Name of the MCP server")
@@ -268,4 +375,4 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main()) 
+    sys.exit(main())

@@ -36,8 +36,8 @@ DEFAULT_METADATA = {
 DEFAULT_IMPLEMENTATION = '''"""Custom command implementation."""
 
 
-def run(**kwargs):
-    """Run the command with the given arguments."""
+def command_name(*args, **kwargs):
+    """Execute the command with the given arguments."""
     print("Hello World")
     return {"status": "success"}
 '''

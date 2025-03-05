@@ -99,8 +99,8 @@ def mock_commands_dir():
             with open(os.path.join(test_cmd_dir, 'command.py'), 'w') as f:
                 f.write('''"""Test command implementation."""
 
-def run(message="Hello", count=1):
-    """Run the test command."""
+def command_test_command(message: str = "Hello", count: int = 1):
+    """Execute the test command."""
     result = []
     for _ in range(count):
         result.append(message)
@@ -140,8 +140,8 @@ def run(message="Hello", count=1):
             with open(os.path.join(disabled_mcp_dir, 'command.py'), 'w') as f:
                 f.write('''"""Disabled MCP command implementation."""
 
-def run():
-    """Run the disabled MCP command."""
+def command_disabled_mcp():
+    """Execute the disabled MCP command."""
     return {"status": "disabled"}
 ''')
             

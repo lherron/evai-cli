@@ -7,8 +7,38 @@ from pathlib import Path
 import importlib.util
 import inspect
 import logging
+from typing import Dict, Any, Callable
 
 logger = logging.getLogger(__name__)
+
+def convert_value(value: str, type_str: str):
+    """
+    Convert a string value to the specified type based on metadata.
+    
+    Args:
+        value: The string value to convert (e.g., "8").
+        type_str: The target type from metadata (e.g., "integer").
+    
+    Returns:
+        The converted value.
+    
+    Raises:
+        ValueError: If conversion fails.
+    """
+    type_str = type_str.lower()
+    try:
+        if type_str == "string":
+            return str(value)
+        elif type_str == "integer":
+            return int(value)
+        elif type_str == "float":
+            return float(value)
+        elif type_str == "boolean":
+            return value.lower() in ("true", "1", "yes", "on") if isinstance(value, str) else bool(value)
+        else:
+            return str(value)  # Default to string for unknown types
+    except (ValueError, TypeError) as e:
+        raise ValueError(f"Cannot convert '{value}' to {type_str}: {str(e)}")
 
 COMMANDS_DIR = Path.home() / ".evai" / "commands"
 
@@ -238,177 +268,123 @@ def import_subcommand_module(group_name: str, subcommand_name: str):
 
 def run_command(command_path: str, *args, **kwargs):
     """
-    Run a command with the given arguments.
+    Run a command with the given arguments, converting them to metadata-specified types.
     
     Args:
-        command_path: Path to the command (e.g., "projects add")
-        *args: Positional arguments
-        **kwargs: Keyword arguments
-        
-    Returns:
-        The result of the command
-    """
-    try:
-        path_components = parse_command_path(command_path)
-        
-        if len(path_components) == 1:
-            # This is a top-level command
-            command_name = path_components[0]
-            module = import_command_module(command_name)
-            
-            # Check if module has the command_* function first
-            function_name = f"command_{command_name}"
-            if hasattr(module, function_name):
-                command_func = getattr(module, function_name)
-                
-                # Convert positional args to kwargs based on metadata if needed
-                if args and len(args) > 0:
-                    cmd_dir = get_command_dir([command_name])
-                    metadata = load_command_metadata(cmd_dir)
-                    arg_names = [arg["name"] for arg in metadata.get("arguments", [])]
-                    
-                    # Map positional args to named args
-                    if len(args) > len(arg_names):
-                        raise ValueError(f"Too many arguments provided. Expected: {len(arg_names)}, Got: {len(args)}")
-                        
-                    # Create kwargs from positional args with type conversion
-                    arguments_metadata = metadata.get("arguments", [])
-                    for i, arg in enumerate(args):
-                        if i < len(arg_names):
-                            arg_name = arg_names[i]
-                            arg_type = next((a.get("type") for a in arguments_metadata if a["name"] == arg_name), None)
-                            
-                            # Convert argument to the correct type
-                            if arg_type == "int":
-                                kwargs[arg_name] = int(arg)
-                            elif arg_type == "float":
-                                kwargs[arg_name] = float(arg)
-                            elif arg_type == "bool" and arg.lower() in ("true", "false"):
-                                kwargs[arg_name] = arg.lower() == "true"
-                            else:
-                                kwargs[arg_name] = arg
-                
-                # Run the command_* function with kwargs only
-                return command_func(**kwargs)
-            
-            # Fallback to legacy run function if command_* not found
-            elif hasattr(module, "run"):
-                run_func = getattr(module, "run")
-                
-                # Convert positional args to kwargs based on metadata
-                if args and len(args) > 0:
-                    cmd_dir = get_command_dir([command_name])
-                    metadata = load_command_metadata(cmd_dir)
-                    arg_names = [arg["name"] for arg in metadata.get("arguments", [])]
-                    
-                    # Map positional args to named args
-                    if len(args) > len(arg_names):
-                        raise ValueError(f"Too many arguments provided. Expected: {len(arg_names)}, Got: {len(args)}")
-                        
-                    # Create kwargs from positional args with type conversion
-                    arguments_metadata = metadata.get("arguments", [])
-                    for i, arg in enumerate(args):
-                        if i < len(arg_names):
-                            arg_name = arg_names[i]
-                            arg_type = next((a.get("type") for a in arguments_metadata if a["name"] == arg_name), None)
-                            
-                            # Convert argument to the correct type
-                            if arg_type == "int":
-                                kwargs[arg_name] = int(arg)
-                            elif arg_type == "float":
-                                kwargs[arg_name] = float(arg)
-                            elif arg_type == "bool" and arg.lower() in ("true", "false"):
-                                kwargs[arg_name] = arg.lower() == "true"
-                            else:
-                                kwargs[arg_name] = arg
-                
-                # Run with kwargs
-                return run_func(**kwargs)
-            else:
-                raise AttributeError(f"Command '{command_name}' must define either 'command_{command_name}' or 'run' function")
-                
-        elif len(path_components) == 2:
-            # This is a subcommand
-            group_name = path_components[0]
-            subcommand_name = path_components[1]
-            
-            module = import_subcommand_module(group_name, subcommand_name)
-            
-            # Check if module has the command_*_* function first
-            function_name = f"command_{group_name}_{subcommand_name}"
-            if hasattr(module, function_name):
-                command_func = getattr(module, function_name)
-                
-                # Convert positional args to kwargs based on metadata if needed
-                if args and len(args) > 0:
-                    group_dir = get_command_dir([group_name])
-                    metadata = load_subcommand_metadata(group_dir, subcommand_name)
-                    arg_names = [arg["name"] for arg in metadata.get("arguments", [])]
-                    
-                    # Map positional args to named args
-                    if len(args) > len(arg_names):
-                        raise ValueError(f"Too many arguments provided. Expected: {len(arg_names)}, Got: {len(args)}")
-                        
-                    # Create kwargs from positional args with type conversion
-                    arguments_metadata = metadata.get("arguments", [])
-                    for i, arg in enumerate(args):
-                        if i < len(arg_names):
-                            arg_name = arg_names[i]
-                            arg_type = next((a.get("type") for a in arguments_metadata if a["name"] == arg_name), None)
-                            
-                            # Convert argument to the correct type
-                            if arg_type == "int":
-                                kwargs[arg_name] = int(arg)
-                            elif arg_type == "float":
-                                kwargs[arg_name] = float(arg)
-                            elif arg_type == "bool" and arg.lower() in ("true", "false"):
-                                kwargs[arg_name] = arg.lower() == "true"
-                            else:
-                                kwargs[arg_name] = arg
-                
-                # Run the command_*_* function with kwargs only
-                return command_func(**kwargs)
-            
-            # Fallback to legacy run function if command_*_* not found
-            elif hasattr(module, "run"):
-                run_func = getattr(module, "run")
-                
-                # Convert positional args to kwargs based on metadata
-                if args and len(args) > 0:
-                    group_dir = get_command_dir([group_name])
-                    metadata = load_subcommand_metadata(group_dir, subcommand_name)
-                    arg_names = [arg["name"] for arg in metadata.get("arguments", [])]
-                    
-                    # Map positional args to named args
-                    if len(args) > len(arg_names):
-                        raise ValueError(f"Too many arguments provided. Expected: {len(arg_names)}, Got: {len(args)}")
-                        
-                    # Create kwargs from positional args with type conversion
-                    arguments_metadata = metadata.get("arguments", [])
-                    for i, arg in enumerate(args):
-                        if i < len(arg_names):
-                            arg_name = arg_names[i]
-                            arg_type = next((a.get("type") for a in arguments_metadata if a["name"] == arg_name), None)
-                            
-                            # Convert argument to the correct type
-                            if arg_type == "int":
-                                kwargs[arg_name] = int(arg)
-                            elif arg_type == "float":
-                                kwargs[arg_name] = float(arg)
-                            elif arg_type == "bool" and arg.lower() in ("true", "false"):
-                                kwargs[arg_name] = arg.lower() == "true"
-                            else:
-                                kwargs[arg_name] = arg
-                
-                # Run with kwargs
-                return run_func(**kwargs)
-            else:
-                raise AttributeError(f"Subcommand '{group_name} {subcommand_name}' must define either 'command_{group_name}_{subcommand_name}' or 'run' function")
-        else:
-            raise ValueError(f"Invalid command path: {command_path}")
+        command_path: The path to the command (e.g., "subtract" or "math subtract").
+        *args: Positional arguments.
+        **kwargs: Named arguments (options).
     
+    Returns:
+        The result from the command's run function.
+    
+    Raises:
+        ValueError: If argument count or conversion fails.
+        FileNotFoundError: If implementation file is missing.
+    """
+    path_components = parse_command_path(command_path)
+    
+    # Determine command type and get metadata
+    if len(path_components) == 1:
+        # This is a top-level command
+        command_name = path_components[0]
+        cmd_dir = get_command_dir([command_name])
+        metadata_path = cmd_dir / f"{command_name}.yaml"
+        
+        if not metadata_path.exists():
+            # Try legacy path
+            metadata_path = cmd_dir / "command.yaml"
+        
+        impl_path = cmd_dir / f"{command_name}.py"
+        if not impl_path.exists():
+            # Try legacy path
+            impl_path = cmd_dir / "command.py"
+            if not impl_path.exists():
+                raise FileNotFoundError(f"Implementation file not found for command: {command_name}")
+    
+    elif len(path_components) == 2:
+        # This is a subcommand
+        group_name = path_components[0]
+        command_name = path_components[1]
+        group_dir = get_command_dir([group_name])
+        metadata_path = group_dir / f"{command_name}.yaml"
+        impl_path = group_dir / f"{command_name}.py"
+        
+        if not metadata_path.exists() or not impl_path.exists():
+            raise FileNotFoundError(f"Files not found for subcommand: {group_name} {command_name}")
+    
+    else:
+        raise ValueError(f"Invalid command path: {command_path}")
+    
+    # Check if this is a group (group cannot be executed)
+    if len(path_components) == 1 and is_group(cmd_dir):
+        raise ValueError(f"Cannot run a group: {command_path}")
+    
+    # Load metadata
+    with open(metadata_path, "r") as f:
+        metadata = yaml.safe_load(f)
+    
+    # Convert positional arguments based on metadata
+    arg_types = [arg["type"] for arg in metadata.get("arguments", [])]
+    arg_names = [arg["name"] for arg in metadata.get("arguments", [])]
+    
+    if len(args) > len(arg_types):
+        raise ValueError(f"Too many positional arguments: expected {len(arg_types)}, got {len(args)}")
+    if len(args) < len(arg_types):
+        raise ValueError(f"Not enough positional arguments: expected {len(arg_types)}, got {len(args)}")
+    
+    # Convert arguments to their specified types
+    try:
+        converted_args = [convert_value(arg, arg_type) for arg, arg_type in zip(args, arg_types)]
+    except ValueError as e:
+        raise ValueError(f"Argument conversion error: {e}")
+    
+    # Convert keyword options based on metadata
+    option_types = {opt["name"]: opt["type"] for opt in metadata.get("options", [])}
+    converted_kwargs = {}
+    
+    try:
+        for key, value in kwargs.items():
+            if key in option_types:
+                opt_type = option_types[key]
+                converted_kwargs[key] = convert_value(value, opt_type)
+            else:
+                # Pass through unknown options as strings
+                converted_kwargs[key] = str(value)
+    except ValueError as e:
+        raise ValueError(f"Option conversion error for '{key}': {e}")
+    
+    # Load the implementation module
+    spec = importlib.util.spec_from_file_location(command_name, impl_path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    
+    # Determine which function to call
+    if len(path_components) == 1:
+        # Top-level command
+        func_name = f"command_{command_name}"
+        if hasattr(module, func_name):
+            run_func = getattr(module, func_name)
+        else:
+            raise AttributeError(f"Command '{command_name}' must define 'command_{command_name}' function")
+    else:
+        # Subcommand
+        group_name = path_components[0]
+        func_name = f"command_{group_name}_{command_name}"
+        if hasattr(module, func_name):
+            run_func = getattr(module, func_name)
+        else:
+            raise AttributeError(f"Subcommand '{group_name} {command_name}' must define 'command_{group_name}_{command_name}' function")
+    
+    # Combine converted args and kwargs
+    kwargs_for_run = dict(zip(arg_names, converted_args))
+    kwargs_for_run.update(converted_kwargs)
+    
+    # Run the function
+    try:
+        return run_func(**kwargs_for_run)
     except Exception as e:
-        logger.error(f"Error running command: {e}")
+        logger.error(f"Error running command {command_path}: {e}")
         raise
 
 def remove_entity(command_path: str) -> None:

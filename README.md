@@ -168,8 +168,8 @@ The implementation file (`command.py` or `<subcommand>.py`) contains the actual 
 ```python
 """Custom command implementation."""
 
-def run(**kwargs):
-    """Run the command with the given arguments."""
+def command_<name>(arg1: type1, arg2: type2 = default):
+    """Execute the command with the given arguments."""
     # Your command logic here
     return {"status": "success", "data": {...}}
 ```
