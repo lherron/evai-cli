@@ -109,8 +109,14 @@ def create_user_command(metadata: dict, cmd_dir: Path, command_name: str):
         else:
             # This is a top-level command
             module = import_command_module(command_name)
+        
+        # Check for command_<name> function first, fall back to run
+        func_name = f"command_{command_name}"
+        if hasattr(module, func_name):
+            run_func = getattr(module, func_name)
+        else:
+            run_func = getattr(module, "run")
             
-        run_func = getattr(module, "run")
         params = dict(zip(arg_names, args))
         params.update(kwargs)
         result = run_func(**params)
@@ -245,8 +251,12 @@ def import_commands():
 # Import commands
 import_commands()
 
-# Load user-defined commands
+# Load user-defined commands to the user group
 load_user_commands()
+
+# Also load user-defined commands to the main CLI group
+from evai.cli.user_commands import load_user_commands_to_main_group
+load_user_commands_to_main_group(cli)
 
 
 def main():
