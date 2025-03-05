@@ -7,7 +7,7 @@ import yaml
 from unittest import mock
 import subprocess
 
-from evai.command_storage import edit_command_metadata, get_editor
+from evai.tool_storage import edit_command_metadata, get_editor
 
 
 class TestEditMetadata:

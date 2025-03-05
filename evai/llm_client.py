@@ -163,6 +163,22 @@ def generate_metadata_with_llm(command_name: str, description: str) -> Dict[str,
         logger.error(f"Error generating metadata with LLM: {e}")
         raise LLMClientError(f"Error generating metadata with LLM: {e}")
 
+implementation_guidelines = """
+            The implementation should be a Python file with a `tool_<command_name>()` function that:
+            1. Accepts the parameters defined in the metadata
+            2. Implements the functionality described in the metadata description
+            3. Returns a result as defined in the metadata
+            
+            Follow these guidelines:
+            - The entry point of the tool is the tool_<command_name>() function.  Other functions are allowed.
+            - The input args should be simple python types
+            - The output should be a simple python type
+            - Include proper docstrings
+            - This is not a Flask app, do not include any Flask-specific code
+            - Handle parameter validation
+            - Include error handling
+            - Follow PEP 8 style guidelines
+"""
 
 def generate_implementation_with_llm(command_name: str, metadata: Dict[str, Any]) -> str:
     """
@@ -189,18 +205,7 @@ def generate_implementation_with_llm(command_name: str, metadata: Dict[str, Any]
         {yaml.dump(metadata, default_flow_style=False)}
         ```
         
-        The implementation should be a Python file with a `run(**kwargs)` function that:
-        1. Accepts the parameters defined in the metadata
-        2. Implements the functionality described in the metadata description
-        3. Returns a dictionary with at least a "status" key
-        
-        Follow these guidelines:
-        - Include proper docstrings
-        - This is not a Flask app, it's a command line tool, do not include any Flask-specific code
-        - Handle parameter validation
-        - Include error handling
-        - Follow PEP 8 style guidelines
-        
+        {implementation_guidelines}
         Return only the Python code, nothing else.
         """
         
@@ -251,9 +256,10 @@ def check_additional_info_needed(command_name: str, description: str) -> Optiona
         # Create a prompt for the LLM
         prompt = f"""
         I'm creating a command named '{command_name}' with the following description:
-        
+        ```
         {description}
-        
+        {implementation_guidelines}
+        ```
         Based on this information, do you need any additional details to create a good command implementation?
         If yes, provide specific questions that would help clarify the command's purpose and functionality.
         If no, just respond with "No additional information needed."

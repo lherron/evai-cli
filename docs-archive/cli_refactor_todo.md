@@ -1,41 +1,37 @@
 # CLI Refactoring Task
 
 ## Task Description
-Move the click decorators for llmadd into llmadd.py and have click add all commands in the "commands" submodule automatically.
+Move all commands for the cli.group called "command" into a new command.py submodule in the commands directory.
 
 ## Steps Taken
+[X] Create a new file `evai/cli/commands/command.py`
+[X] Move all command functions from `cli.py` to `command.py`
+[X] Update `cli.py` to remove the command functions
+[X] Test the refactored code to ensure it works correctly
 
-[X] Move the click decorator from cli.py to llmadd.py
-- Added `@click.command()` and `@click.argument("command_name")` decorators to the llmadd function in llmadd.py
+## Implementation Details
 
-[X] Update cli.py to automatically add all commands from the commands submodule
-- Removed the explicit llmadd command definition from cli.py
-- Added an `import_commands()` function that:
-  - Gets the package path for the commands module
-  - Iterates through all modules in the commands package
-  - Imports each module
-  - Finds all Click commands in each module
-  - Adds each command to the command group
-- Called `import_commands()` to register all commands
+1. Created a new file `evai/cli/commands/command.py` with all the command functions:
+   - `add`: Add a new custom command
+   - `edit`: Edit an existing command
+   - `list`: List available commands
+   - `run`: Run a command with the given arguments
 
-[X] Update the __init__.py file in the commands directory
-- Removed the explicit import of llmadd
-- Removed the __all__ list
-- Added a comment explaining that commands will be automatically imported by the CLI
+2. Removed these functions from `cli.py` and added a comment indicating where they were moved to.
 
-[X] Tested the changes
-- Verified that the CLI still works correctly
-- Confirmed that the llmadd command is properly registered under the command group
+3. The existing import mechanism in `cli.py` already handles importing commands from the `commands` directory, so no additional changes were needed for the import logic.
 
-## Benefits of the Changes
+4. Tested the refactored code to ensure all commands are still accessible and working correctly.
 
-1. **Modularity**: Each command is now self-contained in its own module, with its own click decorators.
-2. **Extensibility**: New commands can be added simply by creating a new module in the commands directory with click-decorated functions.
-3. **Maintainability**: The CLI code is now more organized and easier to maintain.
-4. **Discoverability**: All commands are automatically discovered and registered, reducing the chance of errors.
+## Result
+The refactoring was successful. All commands are now properly organized in the `commands` directory, making the codebase more modular and easier to maintain.
 
-## Future Improvements
+The command group structure is preserved:
+```
+evai command add <command_name>
+evai command edit <command_name>
+evai command list
+evai command run <command_name>
+```
 
-- Consider adding a way to specify the order of commands in the help output
-- Add support for command aliases
-- Consider adding a way to group commands into subgroups 
+All functionality remains the same, but the code is now better organized. 

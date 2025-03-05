@@ -1,22 +1,19 @@
-"""LLM-assisted command creation for EVAI CLI."""
+"""LLM-assisted tool creation for EVAI CLI."""
 
-import os
 import sys
-import click
+import os
 import yaml
+import click
 from rich.console import Console
-from rich.syntax import Syntax
 from rich.panel import Panel
-
-from evai.command_storage import (
-    get_command_dir,
-    save_command_metadata,
-    edit_command_metadata,
-    edit_command_implementation,
-    run_lint_check
+from rich.syntax import Syntax
+from evai.tool_storage import (
+    get_tool_dir, 
+    save_tool_metadata,
+    load_sample_tool_yaml
 )
 from evai.llm_client import (
-    generate_default_metadata_with_llm,
+    generate_metadata_with_llm,
     generate_implementation_with_llm,
     check_additional_info_needed,
     LLMClientError
@@ -26,20 +23,64 @@ from evai.llm_client import (
 console = Console()
 
 
-@click.command()
-@click.argument("command_name")
-def llmadd(command_name):
-    """Add a new custom command using LLM assistance."""
-    try:
-        # Get the command directory
-        command_dir = get_command_dir(command_name)
+def generate_default_metadata_with_llm(tool_name: str, description: str) -> dict:
+    """
+    Generate default metadata for a tool using LLM.
+    
+    Args:
+        tool_name: The name of the tool
+        description: A description of the tool
         
-        # Get command description from user
-        description = click.prompt("Enter a description for the command", type=str)
+    Returns:
+        A dictionary containing the tool metadata
+    """
+    # Generate metadata with LLM
+    metadata = generate_metadata_with_llm(tool_name, description)
+    
+    # Ensure required fields are present
+    if "name" not in metadata:
+        metadata["name"] = tool_name
+    if "description" not in metadata:
+        metadata["description"] = description
+    if "params" not in metadata:
+        metadata["params"] = []
+    if "hidden" not in metadata:
+        metadata["hidden"] = False
+    if "disabled" not in metadata:
+        metadata["disabled"] = False
+    if "mcp_integration" not in metadata:
+        metadata["mcp_integration"] = {
+            "enabled": True,
+            "metadata": {
+                "endpoint": "",
+                "method": "POST",
+                "authentication_required": False
+            }
+        }
+    if "llm_interaction" not in metadata:
+        metadata["llm_interaction"] = {
+            "enabled": False,
+            "auto_apply": True,
+            "max_llm_turns": 15
+        }
+    
+    return metadata
+
+
+@click.command()
+@click.argument("tool_name")
+def llmadd(tool_name):
+    """Add a new custom tool using LLM assistance."""
+    try:
+        # Get the tool directory
+        tool_dir = get_tool_dir(tool_name)
+        
+        # Get a description from the user
+        description = click.prompt("Enter a description for the tool", type=str)
         
         # Check if additional information is needed
         try:
-            additional_info = check_additional_info_needed(command_name, description)
+            additional_info = check_additional_info_needed(tool_name, description)
             if additional_info:
                 click.echo("\nThe LLM suggests gathering more information:")
                 click.echo(additional_info)
@@ -58,9 +99,10 @@ def llmadd(command_name):
             click.echo("Continuing with the provided description.")
         
         # Generate metadata with LLM
-        click.echo("\nGenerating command metadata with LLM...")
+        click.echo("Generating metadata with LLM...")
+        
         try:
-            metadata = generate_default_metadata_with_llm(command_name, description)
+            metadata = generate_default_metadata_with_llm(tool_name, description)
             click.echo("Metadata generated successfully.")
             
             # Display the generated YAML with rich formatting
@@ -71,99 +113,67 @@ def llmadd(command_name):
             click.echo(f"Error generating metadata with LLM: {e}", err=True)
             click.echo("Falling back to default metadata.")
             
-            # Create default metadata
-            metadata = {
-                "name": command_name,
-                "description": description,
-                "params": [],
-                "hidden": False,
-                "disabled": False,
-                "mcp_integration": {
-                    "enabled": True,
-                    "metadata": {
-                        "endpoint": "",
-                        "method": "POST",
-                        "authentication_required": False
+            # Try to load the sample template
+            try:
+                metadata = load_sample_tool_yaml(tool_name)
+                metadata["description"] = description
+            except Exception as template_error:
+                click.echo(f"Error loading sample template: {template_error}", err=True)
+                
+                # Create default metadata
+                metadata = {
+                    "name": tool_name,
+                    "description": description,
+                    "params": [],
+                    "hidden": False,
+                    "disabled": False,
+                    "mcp_integration": {
+                        "enabled": True,
+                        "metadata": {
+                            "endpoint": "",
+                            "method": "POST",
+                            "authentication_required": False
+                        }
+                    },
+                    "llm_interaction": {
+                        "enabled": False,
+                        "auto_apply": True,
+                        "max_llm_turns": 15
                     }
-                },
-                "llm_interaction": {
-                    "enabled": False,
-                    "auto_apply": True,
-                    "max_llm_turns": 15
                 }
-            }
         
         # Save the metadata
-        save_command_metadata(command_dir, metadata)
+        save_tool_metadata(tool_dir, metadata)
         
         # Generate implementation with LLM
-        click.echo("\nGenerating command implementation with LLM...")
+        click.echo("\nGenerating tool implementation with LLM...")
+        
         try:
-            implementation = generate_implementation_with_llm(command_name, metadata)
+            implementation = generate_implementation_with_llm(tool_name, metadata)
             click.echo("Implementation generated successfully.")
             
-            # Display the generated Python with rich formatting
-            console.print("\n[bold green]Generated Python Implementation:[/bold green]")
+            # Display the generated Python code with rich formatting
+            console.print("\n[bold blue]Generated Python Implementation:[/bold blue]")
             console.print(Panel(Syntax(implementation, "python", theme="monokai", line_numbers=True)))
+            
+            # Save the implementation
+            tool_py_path = os.path.join(tool_dir, "tool.py")
+            with open(tool_py_path, "w") as f:
+                f.write(implementation)
         except Exception as e:
             click.echo(f"Error generating implementation with LLM: {e}", err=True)
             click.echo("Falling back to default implementation.")
             
             # Create default implementation
-            implementation = '"""Custom command implementation."""\n\n\ndef run(**kwargs):\n    """Run the command with the given arguments."""\n    print("Hello World")\n    return {"status": "success"}\n'
+            tool_py_path = os.path.join(tool_dir, "tool.py")
+            with open(tool_py_path, "w") as f:
+                f.write(f'"""Custom tool implementation for {tool_name}."""\n\n\ndef run(**kwargs):\n    """Run the tool with the given arguments."""\n    print("Hello World")\n    return {{"status": "success"}}\n')
         
-        # Save the implementation
-        command_py_path = os.path.join(command_dir, "command.py")
-        with open(command_py_path, "w") as f:
-            f.write(implementation)
-        
-        # Allow user to edit the generated files
-        if click.confirm("\nWould you like to edit the generated metadata?", default=True):
-            # Loop until the user provides valid YAML or chooses to abort
-            while True:
-                success, metadata_content = edit_command_metadata(command_dir)
-                
-                if success:
-                    click.echo("Command metadata saved successfully.")
-                    break
-                else:
-                    if not click.confirm("Invalid YAML. Would you like to try again?"):
-                        click.echo("Keeping the generated metadata.")
-                        break
-                    click.echo("Opening command.yaml for editing again...")
-        
-        if click.confirm("\nWould you like to edit the generated implementation?", default=True):
-            click.echo("Opening command.py for editing...")
-            edit_command_implementation(command_dir)
-            
-            # Run lint check on the implementation file
-            click.echo("Running lint check on command.py...")
-            lint_success, lint_output = run_lint_check(command_dir)
-            
-            # Loop until the lint check passes or the user chooses to abort
-            while not lint_success:
-                click.echo("Lint check failed. Please fix the following issues:")
-                click.echo(lint_output)
-                
-                if not click.confirm("Would you like to edit the file again?"):
-                    click.echo("Aborting. The command implementation may contain lint errors.")
-                    break
-                    
-                click.echo("Opening command.py for editing again...")
-                edit_command_implementation(command_dir)
-                
-                click.echo("Running lint check on command.py...")
-                lint_success, lint_output = run_lint_check(command_dir)
-            
-            if lint_success:
-                click.echo("Lint check passed. Command implementation saved successfully.")
-        
-        click.echo(f"\nCommand '{command_name}' created successfully.")
-        click.echo(f"- Metadata: {os.path.join(command_dir, 'command.yaml')}")
-        click.echo(f"- Implementation: {command_py_path}")
-        click.echo(f"\nTo edit this command, run: evai command edit {command_name}")
-        click.echo(f"To run this command, run: evai command run {command_name}")
+        click.echo(f"\nTool '{tool_name}' created successfully.")
+        click.echo(f"- Metadata: {os.path.join(tool_dir, 'tool.yaml')}")
+        click.echo(f"- Implementation: {tool_py_path}")
+        click.echo(f"\nTo edit this tool, run: evai tool edit {tool_name}")
         
     except Exception as e:
-        click.echo(f"Error creating command: {e}", err=True)
+        click.echo(f"Error creating tool: {e}", err=True)
         sys.exit(1) 

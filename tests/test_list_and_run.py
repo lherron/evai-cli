@@ -1,4 +1,4 @@
-"""Tests for command listing and execution."""
+"""Tests for tool listing and execution."""
 
 import os
 import sys
@@ -10,27 +10,27 @@ import pytest
 from click.testing import CliRunner
 
 from evai.cli import cli
-from evai.command_storage import get_command_dir, save_command_metadata
+from evai.tool_storage import get_tool_dir, save_tool_metadata
 
 
 @pytest.fixture
-def mock_commands_dir():
-    """Create a temporary directory for commands."""
+def mock_tools_dir():
+    """Create a temporary directory for tools."""
     with tempfile.TemporaryDirectory() as temp_dir:
         # Mock the expanduser function to return our temp directory
         with mock.patch('os.path.expanduser', return_value=temp_dir):
-            # Create the commands directory
-            commands_dir = os.path.join(temp_dir, '.evai', 'commands')
-            os.makedirs(commands_dir, exist_ok=True)
+            # Create the tools directory
+            tools_dir = os.path.join(temp_dir, '.evai', 'tools')
+            os.makedirs(tools_dir, exist_ok=True)
             
-            # Create a test command
-            test_cmd_dir = os.path.join(commands_dir, 'test-command')
-            os.makedirs(test_cmd_dir, exist_ok=True)
+            # Create a test tool
+            test_tool_dir = os.path.join(tools_dir, 'test-tool')
+            os.makedirs(test_tool_dir, exist_ok=True)
             
-            # Create command.yaml
+            # Create tool.yaml
             metadata = {
-                "name": "test-command",
-                "description": "A test command",
+                "name": "test-tool",
+                "description": "A test tool",
                 "params": [
                     {
                         "name": "message",
@@ -61,29 +61,29 @@ def mock_commands_dir():
                 }
             }
             
-            with open(os.path.join(test_cmd_dir, 'command.yaml'), 'w') as f:
+            with open(os.path.join(test_tool_dir, 'tool.yaml'), 'w') as f:
                 json.dump(metadata, f)
             
-            # Create command.py
-            with open(os.path.join(test_cmd_dir, 'command.py'), 'w') as f:
-                f.write('''"""Test command implementation."""
+            # Create tool.py
+            with open(os.path.join(test_tool_dir, 'tool.py'), 'w') as f:
+                f.write('''"""Test tool implementation."""
 
 def run(message="Hello", count=1):
-    """Run the test command."""
+    """Run the test tool."""
     result = []
     for _ in range(count):
         result.append(message)
     return {"messages": result}
 ''')
             
-            # Create a disabled command
-            disabled_cmd_dir = os.path.join(commands_dir, 'disabled-command')
-            os.makedirs(disabled_cmd_dir, exist_ok=True)
+            # Create a disabled tool
+            disabled_tool_dir = os.path.join(tools_dir, 'disabled-tool')
+            os.makedirs(disabled_tool_dir, exist_ok=True)
             
-            # Create command.yaml for disabled command
+            # Create tool.yaml for disabled tool
             disabled_metadata = {
-                "name": "disabled-command",
-                "description": "A disabled command",
+                "name": "disabled-tool",
+                "description": "A disabled tool",
                 "params": [],
                 "hidden": False,
                 "disabled": True,
@@ -102,36 +102,36 @@ def run(message="Hello", count=1):
                 }
             }
             
-            with open(os.path.join(disabled_cmd_dir, 'command.yaml'), 'w') as f:
+            with open(os.path.join(disabled_tool_dir, 'tool.yaml'), 'w') as f:
                 json.dump(disabled_metadata, f)
             
-            # Create command.py for disabled command
-            with open(os.path.join(disabled_cmd_dir, 'command.py'), 'w') as f:
-                f.write('''"""Disabled command implementation."""
+            # Create tool.py for disabled tool
+            with open(os.path.join(disabled_tool_dir, 'tool.py'), 'w') as f:
+                f.write('''"""Disabled tool implementation."""
 
 def run():
-    """Run the disabled command."""
+    """Run the disabled tool."""
     return {"status": "disabled"}
 ''')
             
             yield temp_dir
 
 
-def test_list_commands(mock_commands_dir):
-    """Test listing commands."""
+def test_list_tools(mock_tools_dir):
+    """Test listing tools."""
     runner = CliRunner()
-    result = runner.invoke(cli, ['command', 'list'])
+    result = runner.invoke(cli, ['tool', 'list'])
     
     assert result.exit_code == 0
-    assert "Available commands:" in result.output
-    assert "test-command: A test command" in result.output
-    assert "disabled-command" not in result.output
+    assert "Available tools:" in result.output
+    assert "test-tool: A test tool" in result.output
+    assert "disabled-tool" not in result.output
 
 
-def test_run_command(mock_commands_dir):
-    """Test running a command."""
+def test_run_tool(mock_tools_dir):
+    """Test running a tool."""
     runner = CliRunner()
-    result = runner.invoke(cli, ['command', 'run', 'test-command', '-p', 'message=Hello World', '-p', 'count=3'])
+    result = runner.invoke(cli, ['tool', 'run', 'test-tool', '-p', 'message=Hello World', '-p', 'count=3'])
     
     assert result.exit_code == 0
     
@@ -140,10 +140,10 @@ def test_run_command(mock_commands_dir):
     assert output == {"messages": ["Hello World", "Hello World", "Hello World"]}
 
 
-def test_run_command_with_default_params(mock_commands_dir):
-    """Test running a command with default parameters."""
+def test_run_tool_with_default_params(mock_tools_dir):
+    """Test running a tool with default parameters."""
     runner = CliRunner()
-    result = runner.invoke(cli, ['command', 'run', 'test-command', '-p', 'message=Hello World'])
+    result = runner.invoke(cli, ['tool', 'run', 'test-tool', '-p', 'message=Hello World'])
     
     assert result.exit_code == 0
     
@@ -152,19 +152,19 @@ def test_run_command_with_default_params(mock_commands_dir):
     assert output == {"messages": ["Hello World"]}
 
 
-def test_run_command_missing_required_param(mock_commands_dir):
-    """Test running a command with a missing required parameter."""
+def test_run_tool_missing_required_param(mock_tools_dir):
+    """Test running a tool with a missing required parameter."""
     runner = CliRunner()
-    result = runner.invoke(cli, ['command', 'run', 'test-command'])
+    result = runner.invoke(cli, ['tool', 'run', 'test-tool'])
     
     assert result.exit_code == 1
     assert "Missing required parameter: message" in result.output
 
 
-def test_run_nonexistent_command(mock_commands_dir):
-    """Test running a nonexistent command."""
+def test_run_nonexistent_tool(mock_tools_dir):
+    """Test running a nonexistent tool."""
     runner = CliRunner()
-    result = runner.invoke(cli, ['command', 'run', 'nonexistent-command'])
+    result = runner.invoke(cli, ['tool', 'run', 'nonexistent-tool'])
     
     assert result.exit_code == 1
-    assert "Error running command" in result.output 
+    assert "Error running tool" in result.output 

@@ -40,8 +40,8 @@ sys.modules['mcp.server'] = mcp_mock.server
 sys.modules['mcp.server.fastmcp'] = mcp_mock.server.fastmcp
 
 # Import after mocking
-from evai.mcp_server import EVAIServer, create_server
-from evai.command_storage import get_command_dir, save_command_metadata, list_commands
+from evai.mcp.mcp_server import EVAIServer, create_server
+from evai.tool_storage import get_command_dir, save_command_metadata, list_commands
 
 
 @pytest.fixture

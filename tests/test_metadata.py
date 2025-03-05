@@ -9,7 +9,7 @@ from unittest import mock
 import pytest
 import yaml
 
-from evai.command_storage import (
+from evai.tool_storage import (
     get_command_dir,
     load_command_metadata,
     save_command_metadata,
