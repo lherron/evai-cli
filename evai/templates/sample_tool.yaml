@@ -1,0 +1,15 @@
+name: {tool_name}
+description: Default description
+params: []
+hidden: false
+disabled: false
+mcp_integration:
+  enabled: true
+  metadata:
+    endpoint: ""
+    method: POST
+    authentication_required: false
+llm_interaction:
+  enabled: false
+  auto_apply: true
+  max_llm_turns: 15 
