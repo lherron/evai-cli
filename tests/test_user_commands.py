@@ -55,17 +55,22 @@ def mock_commands_dir():
                 "disabled": False
             }
             
-            with open(os.path.join(test_command_dir, 'command.yaml'), 'w') as f:
+            with open(os.path.join(test_command_dir, 'hello.yaml'), 'w') as f:
                 json.dump(metadata, f)
             
-            # Create command.py
-            with open(os.path.join(test_command_dir, 'command.py'), 'w') as f:
+            # Create hello.py
+            with open(os.path.join(test_command_dir, 'hello.py'), 'w') as f:
                 f.write('''"""Test command implementation."""
 
-def run(name, greeting="Hello"):
+def command_hello(name: str, greeting: str = "Hello"):
     """Greet the user."""
     message = f"{greeting}, {name}!"
     return {"message": message}
+
+# Legacy support
+def run(**kwargs):
+    """Legacy run function for backward compatibility."""
+    return command_hello(**kwargs)
 ''')
             
             yield temp_dir

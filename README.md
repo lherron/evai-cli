@@ -45,20 +45,38 @@ evai --help
 # Show version
 evai --version
 
-# List all available commands
-evai command list
+# List all available commands and groups
+evai commands list
 
 # Add a new command
-evai command add <command_name>
+evai commands add --type command --name <command_name>
 
-# Add a new command with LLM assistance
-evai command llmadd <command_name>
+# Add a new group
+evai commands add --type group --name <group_name>
 
-# Edit an existing command
-evai command edit <command_name>
+# Add a subcommand to a group
+evai commands add --type command --parent <group_name> --name <subcommand_name>
+
+# Add a new command/group with LLM assistance
+evai commands llmadd <name>
+
+# Edit a command
+evai commands edit <command_name>
+
+# Edit a subcommand
+evai commands edit <group_name> <subcommand_name>
 
 # Run a command
-evai command run <command_name> --param key=value
+evai commands run <command_name> --param key=value
+
+# Run a subcommand
+evai commands run "<group_name> <subcommand_name>" --param key=value
+
+# Use a command from the user group
+evai user <command_name> [arguments]
+
+# Use a subcommand from the user group
+evai user <group_name> <subcommand_name> [arguments]
 ```
 
 ### MCP Server
@@ -71,33 +89,55 @@ evai server --name "My EVAI Commands"
 
 ## Command Structure
 
-Each command consists of:
+EVAI CLI supports both individual commands and command groups.
 
-1. **Metadata** - A YAML file describing the command, its parameters, and integration options
-2. **Implementation** - A Python file containing the actual command logic
+### Command Types
 
-Commands are stored in `~/.evai/commands/<command_name>/` with the following structure:
+1. **Top-level Commands** - Individual commands at the root level
+2. **Command Groups** - Collections of related subcommands
+
+### Command & Group Structure
+
+Commands and groups are stored in the `~/.evai/commands/` directory with the following structures:
+
+#### Top-level Commands
 
 ```
 ~/.evai/commands/<command_name>/
-├── metadata.yaml    # Command metadata
-└── implementation.py # Command implementation
+├── <command_name>.yaml    # Command metadata
+└── <command_name>.py      # Command implementation
 ```
+
+#### Command Groups
+
+```
+~/.evai/commands/<group_name>/
+├── group.yaml      # Group metadata
+├── <subcommand1>.yaml  # Subcommand metadata
+├── <subcommand1>.py    # Subcommand implementation
+├── <subcommand2>.yaml  # Another subcommand metadata
+└── <subcommand2>.py    # Another subcommand implementation
+```
+
+This organization keeps all subcommands for a group together in a single directory, making it easier to manage related commands.
 
 ### Command Metadata
 
-The metadata file (`metadata.yaml`) contains information about the command:
+The command metadata file (`command.yaml` or `<subcommand>.yaml`) contains information about the command:
 
 ```yaml
 name: command_name
 description: Description of what the command does
-params:
-  - name: param1
-    description: Description of parameter 1
-    required: true
-  - name: param2
-    description: Description of parameter 2
+arguments:         # Positional arguments
+  - name: arg1
+    description: Description of argument 1
+    type: string   # string, integer, float, boolean
+options:           # Named options (flags)
+  - name: option1
+    description: Description of option 1
+    type: string   # string, integer, float, boolean
     required: false
+    default: null
 hidden: false
 disabled: false
 mcp_integration:
@@ -112,9 +152,18 @@ llm_interaction:
   max_llm_turns: 15
 ```
 
+### Group Metadata
+
+The group metadata file (`group.yaml`) is simpler and just defines the group itself:
+
+```yaml
+name: group_name
+description: Description of the command group
+```
+
 ### Command Implementation
 
-The implementation file (`implementation.py`) contains the actual command logic:
+The implementation file (`command.py` or `<subcommand>.py`) contains the actual command logic:
 
 ```python
 """Custom command implementation."""
