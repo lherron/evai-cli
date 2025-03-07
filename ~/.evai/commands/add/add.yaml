@@ -1,0 +1,12 @@
+name: add
+description: Add two numbers
+arguments:
+  - name: a
+    description: First number
+    type: integer
+  - name: b
+    description: Second number
+    type: integer
+options: []
+hidden: false
+disabled: false
