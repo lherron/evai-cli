@@ -1,0 +1,15 @@
+name: subtract
+description: Subtract one number from another
+version: 1.0.0
+author: EVAI
+license: MIT
+
+params:
+  - name: minuend
+    type: float
+    description: The number from which another number will be subtracted
+    required: true
+  - name: subtrahend
+    type: float
+    description: The number that will be subtracted from the minuend
+    required: true 

@@ -4,7 +4,7 @@ import os
 import sys
 import logging
 import inspect
-from typing import Dict, Any, List, Optional, Awaitable
+from typing import Dict, Any, List, Optional, Awaitable, Tuple, Union
 
 try:
     from mcp.server.fastmcp import FastMCP
@@ -184,6 +184,8 @@ def register_built_in_tools(mcp: FastMCP) -> None:
             metadata["name"] = name
             
             # Update the metadata
+            # Import is done here to avoid circular imports
+            from evai.tool_storage import edit_tool
             edit_tool(path, metadata=metadata)
             
             result = {
@@ -261,71 +263,108 @@ def register_tool(mcp: FastMCP, tool_path: str, mcp_tool_name: str, metadata: Di
     logger.debug(f"Registering tool: {tool_path} as {mcp_tool_name}")
     
     try:
-        # Get the expected function parameters from the metadata
-        params = []
+        # Import the tool module to get the actual function signature
+        from evai.tool_storage import import_tool_module, run_tool
         
-        # First check for CLI arguments
-        for arg in metadata.get("arguments", []):
-            params.append({
-                "name": arg["name"],
-                "type": arg.get("type", "string"),
-                "description": arg.get("description", ""),
-                "required": True,
-                "default": None
-            })
+        # Get the tool name from the path
+        path_components = tool_path.replace('/', os.sep).split(os.sep)
+        name = path_components[-1]
         
-        # Then check for CLI options
-        for opt in metadata.get("options", []):
-            params.append({
-                "name": opt["name"],
-                "type": opt.get("type", "string"),
-                "description": opt.get("description", ""),
-                "required": opt.get("required", False),
-                "default": opt.get("default", None)
-            })
+        # Import the module
+        module = import_tool_module(tool_path)
         
-        # Then check for MCP parameters
-        for param in metadata.get("params", []):
-            # Skip if this parameter is already defined as an argument or option
-            if any(p["name"] == param["name"] for p in params):
-                continue
-                
-            params.append({
-                "name": param["name"],
-                "type": param.get("type", "string"),
-                "description": param.get("description", ""),
-                "required": param.get("required", True),
-                "default": param.get("default", None)
-            })
+        # Find the appropriate function (tool_<name>)
+        func_name = f"tool_{name}"
+        if not hasattr(module, func_name):
+            # Try to find any tool_* function
+            tool_functions = [
+                name for name, obj in inspect.getmembers(module)
+                if inspect.isfunction(obj) and name.startswith('tool_')
+            ]
+            if not tool_functions:
+                raise AttributeError(f"Tool module doesn't have any tool_* functions: {tool_path}")
+            func_name = tool_functions[0]
         
-        # Define the tool wrapper function that will call our run_tool
-        def tool_wrapper(**kwargs):
-            logger.debug(f"Running tool {tool_path} with kwargs: {kwargs}")
-            try:
-                result = run_tool(tool_path, kwargs=kwargs)
-                return result
-            except Exception as e:
-                logger.error(f"Error running tool {tool_path}: {e}")
-                return {"status": "error", "message": str(e)}
+        # Get the actual tool function
+        tool_func = getattr(module, func_name)
         
-        # Add metadata to the wrapper
-        tool_wrapper.__name__ = mcp_tool_name
-        tool_wrapper.__doc__ = metadata.get("description", f"Run the {tool_path} tool")
+        # Get the function signature
+        sig = inspect.signature(tool_func)
+        
+        # Build parameter string with type annotations and default values
+        param_str = []
+        for param_name, param in sig.parameters.items():
+            param_def = param_name
+            if param.annotation is not inspect.Parameter.empty:
+                # Handle different types of annotations
+                if hasattr(param.annotation, "__name__"):
+                    param_def += f": {param.annotation.__name__}"
+                else:
+                    # For complex types like Union, List, etc.
+                    param_def += f": '{param.annotation}'"
+            if param.default is not inspect.Parameter.empty:
+                param_def += f" = {repr(param.default)}"
+            param_str.append(param_def)
+        
+        # Build the return type annotation
+        return_annotation = ""
+        if sig.return_annotation is not inspect.Parameter.empty and sig.return_annotation is not None:
+            if hasattr(sig.return_annotation, "__name__"):
+                return_annotation = f" -> {sig.return_annotation.__name__}"
+            else:
+                # Handle more complex return annotations
+                return_annotation = f" -> '{sig.return_annotation}'"
+        
+        # Check if the tool function has a 'ctx' parameter for MCP context
+        has_ctx_param = 'ctx' in sig.parameters
+        
+        # Create the wrapper function code
+        wrapper_code = f"""
+def {mcp_tool_name}({', '.join(param_str)}){return_annotation}:
+    \"\"\"
+    {metadata.get('description', f'Run the {tool_path} tool')}
+    \"\"\"
+    logger.debug(f"Running tool {tool_path}")
+    try:
+        # Convert all arguments to a kwargs dict
+        kwargs = locals().copy()
+        # Remove the function reference from kwargs
+        kwargs.pop('{mcp_tool_name}', None)
+        
+        # If the original function expects a ctx parameter but it's not provided,
+        # we'll pass the MCP context from the wrapper's context
+        {'# Pass ctx if needed' if has_ctx_param else '# No ctx parameter needed'}
+        
+        result = run_tool('{tool_path}', kwargs=kwargs)
+        return result
+    except Exception as e:
+        logger.error(f"Error running tool {tool_path}: {{e}}")
+        return {{"status": "error", "message": str(e)}}
+"""
+        
+        # Create a local namespace for the exec
+        local_namespace = {
+            'logger': logger,
+            'run_tool': run_tool
+        }
+        
+        # Execute the wrapper code to create the function
+        exec(wrapper_code, globals(), local_namespace)
+        
+        # Get the created wrapper function
+        wrapper_func = local_namespace[mcp_tool_name]
+        
+        # Copy the docstring from the original function if available
+        if tool_func.__doc__:
+            wrapper_func.__doc__ = tool_func.__doc__
+        else:
+            wrapper_func.__doc__ = metadata.get("description", f"Run the {tool_path} tool")
         
         # Register the tool with MCP
         mcp.tool(
             name=mcp_tool_name,
-            description=metadata.get("description", ""),
-            params=[
-                {
-                    "name": param["name"],
-                    "type": param["type"],
-                    "description": param.get("description", ""),
-                    "required": param.get("required", True)
-                }
-                for param in params
-            ]
-        )(tool_wrapper)
+            description=metadata.get("description", "")
+        )(wrapper_func)
         
         logger.debug(f"Successfully registered tool: {tool_path} as {mcp_tool_name}")
     except Exception as e:
