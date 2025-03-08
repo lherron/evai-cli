@@ -18,17 +18,6 @@ from evai.tool_storage import (
     run_tool,
     load_tool_metadata
 )
-from evai.command_storage import (
-    get_command_dir,
-    save_command_metadata,
-    list_entities,
-    import_command_module,
-    import_subcommand_module,
-    is_group,
-    load_command_metadata,
-    load_group_metadata,
-    load_subcommand_metadata
-)
 from evai.llm_client import (
     generate_default_metadata_with_llm,
     generate_implementation_with_llm,
@@ -221,128 +210,10 @@ def tools():
 
 # Tool functions have been moved to evai/cli/commands/tool.py
 
-@cli.group(cls=AliasedGroup, section="Core Commands")
-def commands():
-    """Manage user-defined commands."""
-    pass
-
 @cli.group(cls=AliasedGroup, section="User Commands")
 def user():
     """User-defined commands."""
     pass
-
-def create_user_command(metadata: dict, cmd_dir: Path, command_name: str):
-    """Create a Click command from command metadata."""
-    description = metadata.get("description", "")
-    arg_names = [arg["name"] for arg in metadata.get("arguments", [])]
-
-    def callback(*args, **kwargs):
-        # Check if this is a subcommand (has a parent directory with group.yaml)
-        if is_group(cmd_dir):
-            # This is a subcommand
-            group_name = cmd_dir.name
-            module = import_subcommand_module(group_name, command_name)
-        else:
-            # This is a top-level command
-            module = import_command_module(command_name)
-        
-        # Get command function 
-        if is_group(cmd_dir):
-            # This is a subcommand - use command_<group>_<command> naming
-            group_name = cmd_dir.name
-            func_name = f"command_{group_name}_{command_name}"
-        else:
-            # This is a top-level command - use command_<command> naming
-            func_name = f"command_{command_name}"
-            
-        run_func = getattr(module, func_name)
-            
-        params = dict(zip(arg_names, args))
-        params.update(kwargs)
-        result = run_func(**params)
-        click.echo(json.dumps(result, indent=2))
-        return result
-
-    command = click.command(name=command_name, help=description)(callback)
-
-    # Add arguments
-    for arg in metadata.get("arguments", []):
-        command = click.argument(
-            arg["name"],
-            type=TYPE_MAP.get(arg.get("type", "string"), click.STRING)
-        )(command)
-
-    # Add options
-    for opt in metadata.get("options", []):
-        command = click.option(
-            f"--{opt['name']}",
-            type=TYPE_MAP.get(opt.get("type", "string"), click.STRING),
-            help=opt.get("description", ""),
-            required=opt.get("required", False),
-            default=opt.get("default", None)
-        )(command)
-
-    return command
-
-def load_user_commands():
-    """Load and register user-defined commands from ~/.evai/commands with type conversion."""
-    user_commands_dir = Path.home() / ".evai" / "commands"
-    
-    if not user_commands_dir.exists():
-        return
-        
-    for entity_dir in user_commands_dir.iterdir():
-        if entity_dir.is_dir():
-            group_yaml = entity_dir / "group.yaml"
-            if group_yaml.exists():
-                # Load group
-                with open(group_yaml, "r") as f:
-                    group_metadata = yaml.safe_load(f)
-                group_name = group_metadata["name"]
-                group = click.Group(name=group_name, help=group_metadata.get("description", ""))
-                
-                # Add subcommands to the group
-                for subcmd_yaml in entity_dir.glob("*.yaml"):
-                    if subcmd_yaml.name != "group.yaml":
-                        subcmd_name = subcmd_yaml.stem
-                        with open(subcmd_yaml, "r") as f:
-                            subcmd_metadata = yaml.safe_load(f)
-                        impl_path = entity_dir / f"{subcmd_name}.py"
-                        if impl_path.exists():
-                            try:
-                                spec = importlib.util.spec_from_file_location(subcmd_name, impl_path)
-                                module = importlib.util.module_from_spec(spec)
-                                spec.loader.exec_module(module)
-                                subcmd = create_command(subcmd_name, subcmd_metadata, module)
-                                group.add_command(subcmd)
-                            except Exception as e:
-                                logger.warning(f"Failed to load subcommand {group_name} {subcmd_name}: {e}")
-                user.add_command(group)
-            else:
-                # Load top-level command
-                metadata_path = entity_dir / f"{entity_dir.name}.yaml"
-                if not metadata_path.exists():
-                    # Try legacy path
-                    metadata_path = entity_dir / "command.yaml"
-                    
-                if metadata_path.exists():
-                    with open(metadata_path, "r") as f:
-                        metadata = yaml.safe_load(f)
-                    command_name = metadata["name"]
-                    impl_path = entity_dir / f"{entity_dir.name}.py"
-                    if not impl_path.exists():
-                        # Try legacy path
-                        impl_path = entity_dir / "command.py"
-                        
-                    if impl_path.exists():
-                        try:
-                            spec = importlib.util.spec_from_file_location(command_name, impl_path)
-                            module = importlib.util.module_from_spec(spec)
-                            spec.loader.exec_module(module)
-                            command = create_command(command_name, metadata, module)
-                            user.add_command(command)
-                        except Exception as e:
-                            logger.warning(f"Failed to load command {command_name}: {e}")
 
 # Create command with section
 def create_command_with_section(section="Core Commands"):
@@ -375,42 +246,6 @@ def server(name):
         sys.exit(1)
 
 
-@cli.command()
-@click.option("--force", "-f", is_flag=True, help="Force migration without confirmation")
-@create_command_with_section(section="Core Commands")
-def migrate_commands(force):
-    """Migrate all commands to tools."""
-    try:
-        from evai.migrate_commands_to_tools import migrate_all_commands
-        
-        if not force:
-            click.echo("This will migrate all commands to tools, preserving the original commands.")
-            click.echo("The tools will be created under ~/.evai/tools/ with groups and hierarchy preserved.")
-            click.echo("The original commands under ~/.evai/commands/ will remain untouched.")
-            
-            if not click.confirm("Do you want to continue?"):
-                click.echo("Migration cancelled.")
-                return
-        
-        click.echo("Starting migration of commands to tools...")
-        
-        # Run the migration
-        stats = migrate_all_commands()
-        
-        # Print stats
-        click.echo("Migration completed:")
-        click.echo(f"  Total entities: {stats['total']}")
-        click.echo(f"  Groups: {stats['groups']}")
-        click.echo(f"  Successfully migrated: {stats['migrated']}")
-        click.echo(f"  Failed: {stats['failed']}")
-        click.echo(f"  Skipped: {stats['skipped']}")
-        
-        click.echo("\nYou can now use the migrated tools with 'evai tools' commands.")
-        click.echo("The original commands are still available with 'evai commands'.")
-        
-    except Exception as e:
-        click.echo(f"Error during migration: {e}", err=True)
-        sys.exit(1)
 
 
 # Automatically add all commands from the commands submodule
@@ -419,9 +254,8 @@ def import_commands():
     from evai.cli import commands as commands_module
     
     # Define categories for commands
-    CORE_COMMANDS = ["llm", "server", "migrate-commands", "deploy_artifact"]
+    CORE_COMMANDS = ["llm", "server", "deploy_artifact"]
     TOOL_MANAGEMENT = ["tools", "llmadd"]
-    COMMAND_MANAGEMENT = ["commands", "cmdllmadd"]
     SAMPLE_COMMANDS = ["sample-add", "sample-mismatch", "sample-missing", "subtract"]
     USER_COMMANDS = ["user"]
     
@@ -433,6 +267,10 @@ def import_commands():
     
     # Iterate through all modules in the commands package
     for _, module_name, _ in pkgutil.iter_modules([package_path]):
+        # Skip command and cmdllmadd modules
+        if module_name in ["commands", "cmdllmadd"]:
+            continue
+            
         # Import the module
         module = importlib.import_module(f"evai.cli.commands.{module_name}")
         
@@ -456,9 +294,6 @@ def import_commands():
                 elif module_name in TOOL_MANAGEMENT or attr.name.startswith("tool"):
                     # Tool management
                     attr.section = "Tool Management"
-                elif module_name in COMMAND_MANAGEMENT or attr.name.startswith("command"):
-                    # Command management 
-                    attr.section = "Command Management"
                 else:
                     # Default for uncategorized commands
                     attr.section = "Other Commands"
@@ -473,9 +308,6 @@ def import_commands():
                 if module_name == "tools" or module_name == "llmadd":
                     # Add tool-related commands to the tools group
                     tools.add_command(attr)
-                elif module_name == "commands" or module_name == "cmdllmadd":
-                    # Add command-related commands to the commands group
-                    commands.add_command(attr)
                 elif module_name == "llm" and attr_name == "llm":
                     # Add llm command directly to the main CLI group
                     cli.add_command(attr)
@@ -489,23 +321,15 @@ def import_commands():
 # Import commands
 import_commands()
 
-# Load user-defined commands to the user group
-load_user_commands()
-
-# Load user-defined commands to the main CLI group with section
-from evai.cli.user_commands import load_user_commands_to_main_group, load_tools_to_main_group
-
-# Modify user_commands.py functions to handle sections
-load_user_commands_to_main_group(cli, section="User-Defined Commands")
-
 # Load tools to the main CLI group with section
+from evai.cli.user_commands import load_tools_to_main_group
 load_tools_to_main_group(cli, section="Tool Commands")
 
 # Organize command sections after all commands are loaded
 for cmd_name in cli.commands:
     cmd = cli.commands[cmd_name]
     # Core and management commands
-    if cmd_name in ["deploy_artifact", "server", "migrate-commands", "llm", "commands", "tools"]:
+    if cmd_name in ["deploy_artifact", "server", "llm", "tools"]:
         cmd.section = "Core Commands"
     # All other commands are considered "User Commands" (including samples in dev)
     else:
