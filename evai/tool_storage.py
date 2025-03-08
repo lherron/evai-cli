@@ -6,6 +6,7 @@ import subprocess
 import tempfile
 import importlib.util
 import sys
+import shutil
 from pathlib import Path
 from typing import Dict, Any, Optional, Tuple, List
 import inspect
@@ -19,30 +20,37 @@ logger = logging.getLogger(__name__)
 # Get the path to the templates directory
 TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "templates")
 
+# Tool directory constants
+TOOLS_BASE_DIR = os.path.expanduser("~/.evai/tools")
 
-def get_tool_dir(tool_name: str) -> str:
+
+def get_tool_dir(path: str) -> str:
     """
-    Get the directory path for a tool and create it if it doesn't exist.
+    Get the directory path for a tool or tool group and create it if it doesn't exist.
     
     Args:
-        tool_name: The name of the tool
+        path: Tool path, which can include groups (e.g., "group/subtool")
         
     Returns:
-        The absolute path to the tool directory
+        The absolute path to the tool or group directory
     """
-    # print(f"DEBUG: ENTER {inspect.currentframe().f_code.co_name} - tool_name={tool_name}", file=sys.stderr)
+    # print(f"DEBUG: ENTER {inspect.currentframe().f_code.co_name} - path={path}", file=sys.stderr)
     
-    if not tool_name:
-        raise ValueError("Tool name cannot be empty")
+    if not path:
+        raise ValueError("Tool path cannot be empty")
     
-    # Validate tool name (alphanumeric, hyphens, and underscores only)
-    if not all(c.isalnum() or c in "-_" for c in tool_name):
-        raise ValueError(
-            "Tool name must contain only alphanumeric characters, hyphens, and underscores"
-        )
+    # Replace / with os.sep to handle the path correctly
+    path_components = path.replace('/', os.sep).split(os.sep)
     
-    # Get the tool directory path
-    tool_dir = os.path.expanduser(f"~/.evai/tools/{tool_name}")
+    # Validate each component of the path
+    for component in path_components:
+        if not all(c.isalnum() or c in "-_" for c in component):
+            raise ValueError(
+                "Tool path components must contain only alphanumeric characters, hyphens, and underscores"
+            )
+    
+    # Get the full directory path
+    tool_dir = os.path.join(TOOLS_BASE_DIR, *path_components)
     
     # Create the directory if it doesn't exist
     try:
@@ -59,51 +67,67 @@ def get_tool_dir(tool_name: str) -> str:
 
 def load_tool_metadata(path: str) -> Dict[str, Any]:
     """
-    Load tool metadata from a YAML file.
+    Load tool or group metadata from a YAML file.
     
     Args:
-        path: Path to the directory containing the tool.yaml file
+        path: Path to the tool or group, which can include nested paths (e.g., "group/subtool")
         
     Returns:
-        Dictionary containing the tool metadata
+        Dictionary containing the metadata
         
     Raises:
-        FileNotFoundError: If the tool.yaml file doesn't exist
+        FileNotFoundError: If the metadata YAML file doesn't exist
         yaml.YAMLError: If the YAML file is invalid
     """
     # print(f"DEBUG: ENTER {inspect.currentframe().f_code.co_name} - path={path}", file=sys.stderr)
     
-    yaml_path = os.path.join(path, "tool.yaml")
+    # Get the directory for this path
+    dir_path = get_tool_dir(path)
     
-    try:
-        with open(yaml_path, "r") as f:
-            metadata = yaml.safe_load(f)
-            logger.debug(f"Loaded tool metadata from {yaml_path}")
-            # print(f"DEBUG: EXIT {inspect.currentframe().f_code.co_name} - return={metadata}", file=sys.stderr)
-            return metadata if metadata else {}
-    except FileNotFoundError:
-        logger.error(f"Tool metadata file not found: {yaml_path}")
-        # print(f"DEBUG: EXIT {inspect.currentframe().f_code.co_name} - EXCEPTION: FileNotFoundError", file=sys.stderr)
-        raise
-    except yaml.YAMLError as e:
-        logger.error(f"Invalid YAML in tool metadata file: {e}")
-        # print(f"DEBUG: EXIT {inspect.currentframe().f_code.co_name} - EXCEPTION: {e}", file=sys.stderr)
-        raise
-    except Exception as e:
-        logger.error(f"Error loading tool metadata: {e}")
-        # print(f"DEBUG: EXIT {inspect.currentframe().f_code.co_name} - EXCEPTION: {e}", file=sys.stderr)
-        raise
+    # Get the last component of the path (tool or group name)
+    path_components = path.replace('/', os.sep).split(os.sep)
+    name = path_components[-1]
+    
+    # Check for different yaml file formats in order of priority
+    yaml_paths = [
+        os.path.join(dir_path, f"{name}.yaml"),  # <name>.yaml (preferred for tools)
+        os.path.join(dir_path, "tool.yaml"),     # tool.yaml (legacy for tools)
+        os.path.join(dir_path, "group.yaml")     # group.yaml (for groups)
+    ]
+    
+    for yaml_path in yaml_paths:
+        if os.path.exists(yaml_path):
+            try:
+                with open(yaml_path, "r") as f:
+                    metadata = yaml.safe_load(f)
+                    logger.debug(f"Loaded metadata from {yaml_path}")
+                    # print(f"DEBUG: EXIT {inspect.currentframe().f_code.co_name} - return={metadata}", file=sys.stderr)
+                    return metadata if metadata else {}
+            except yaml.YAMLError as e:
+                logger.error(f"Invalid YAML in metadata file: {e}")
+                # print(f"DEBUG: EXIT {inspect.currentframe().f_code.co_name} - EXCEPTION: {e}", file=sys.stderr)
+                raise
+            except Exception as e:
+                logger.error(f"Error loading metadata: {e}")
+                # print(f"DEBUG: EXIT {inspect.currentframe().f_code.co_name} - EXCEPTION: {e}", file=sys.stderr)
+                raise
+    
+    # If we get here, no metadata file was found
+    logger.error(f"Metadata file not found for: {path}")
+    # print(f"DEBUG: EXIT {inspect.currentframe().f_code.co_name} - EXCEPTION: FileNotFoundError", file=sys.stderr)
+    raise FileNotFoundError(f"Metadata file not found for: {path}")
 
 
 def save_tool_metadata(path: str, data: Dict[str, Any]) -> None:
     """
-    Save tool metadata to a YAML file.
+    Save tool or group metadata to a YAML file.
     
     Args:
-        path: Path to the directory where tool.yaml will be saved
-        data: Dictionary containing the tool metadata
+        path: Path to the tool or group, which can include nested paths (e.g., "group/subtool")
+        data: Dictionary containing the metadata
         
     Raises:
+        ValueError: If the metadata is empty
         OSError: If the file cannot be written
         yaml.YAMLError: If the data cannot be serialized to YAML
     """
@@ -111,9 +135,25 @@ def save_tool_metadata(path: str, data: Dict[str, Any]) -> None:
     
     if not data:
         # print(f"DEBUG: EXIT {inspect.currentframe().f_code.co_name} - EXCEPTION: ValueError", file=sys.stderr)
-        raise ValueError("Tool metadata cannot be empty")
+        raise ValueError("Metadata cannot be empty")
     
-    yaml_path = os.path.join(path, "tool.yaml")
+    # Get the directory for this path
+    dir_path = get_tool_dir(path)
+    
+    # Get the last component of the path (tool or group name)
+    path_components = path.replace('/', os.sep).split(os.sep)
+    name = path_components[-1]
+    
+    # Determine what type of entity this is and choose the appropriate file name
+    if "arguments" in data or "options" in data or "params" in data:
+        # This is a tool, save as <name>.yaml
+        yaml_path = os.path.join(dir_path, f"{name}.yaml")
+    elif len(path_components) > 1 or data.get("type") == "group":
+        # This is a group, save as group.yaml
+        yaml_path = os.path.join(dir_path, "group.yaml")
+    else:
+        # Default case, save as <name>.yaml
+        yaml_path = os.path.join(dir_path, f"{name}.yaml")
     
     # Create the directory if it doesn't exist
     os.makedirs(os.path.dirname(yaml_path), exist_ok=True)
@@ -121,17 +161,17 @@ def save_tool_metadata(path: str, data: Dict[str, Any]) -> None:
     try:
         with open(yaml_path, "w") as f:
             yaml.dump(data, f, default_flow_style=False, sort_keys=False)
-            logger.debug(f"Saved tool metadata to {yaml_path}")
+            logger.debug(f"Saved metadata to {yaml_path}")
     except yaml.YAMLError as e:
-        logger.error(f"Failed to serialize tool metadata to YAML: {e}")
+        logger.error(f"Failed to serialize metadata to YAML: {e}")
         # print(f"DEBUG: EXIT {inspect.currentframe().f_code.co_name} - EXCEPTION: {e}", file=sys.stderr)
         raise
     except OSError as e:
-        logger.error(f"Failed to write tool metadata file: {e}")
+        logger.error(f"Failed to write metadata file: {e}")
         # print(f"DEBUG: EXIT {inspect.currentframe().f_code.co_name} - EXCEPTION: {e}", file=sys.stderr)
         raise
     except Exception as e:
-        logger.error(f"Error saving tool metadata: {e}")
+        logger.error(f"Error saving metadata: {e}")
         # print(f"DEBUG: EXIT {inspect.currentframe().f_code.co_name} - EXCEPTION: {e}", file=sys.stderr)
         raise
     
@@ -373,78 +413,137 @@ def run_lint_check(tool_dir: str) -> Tuple[bool, Optional[str]]:
 
 def list_tools() -> List[Dict[str, Any]]:
     """
-    List all available tools.
+    List all available tools and groups, supporting hierarchical organization.
     
     Returns:
-        A list of dictionaries containing tool metadata
+        A list of dictionaries containing tool and group metadata:
+        - name: Tool or group name
+        - path: Relative path (e.g., group/subtool)
+        - type: "tool" or "group"
+        - description: Description from metadata
     """
     # print(f"DEBUG: ENTER {inspect.currentframe().f_code.co_name}", file=sys.stderr)
     
-    tools_dir = os.path.expanduser("~/.evai/tools")
+    # Create the base directory if it doesn't exist
+    os.makedirs(TOOLS_BASE_DIR, exist_ok=True)
     
-    # Create the directory if it doesn't exist
-    os.makedirs(tools_dir, exist_ok=True)
+    entities = []
     
-    tools = []
-    
-    # Scan the tools directory
-    for tool_name in os.listdir(tools_dir):
-        tool_dir = os.path.join(tools_dir, tool_name)
-        
-        # Skip if not a directory
-        if not os.path.isdir(tool_dir):
-            continue
-        
-        try:
-            # Load the tool metadata
-            metadata = load_tool_metadata(tool_dir)
+    def scan_directory(dir_path, rel_path=''):
+        """Recursively scan a directory for tools and groups."""
+        for item_name in os.listdir(dir_path):
+            item_path = os.path.join(dir_path, item_name)
             
-            # Skip disabled tools
-            if metadata.get("disabled", False):
+            # Skip if not a directory
+            if not os.path.isdir(item_path):
                 continue
+            
+            # Determine the relative path for this item
+            if rel_path:
+                item_rel_path = f"{rel_path}/{item_name}"
+            else:
+                item_rel_path = item_name
+            
+            # Check for group.yaml to identify groups
+            group_yaml = os.path.join(item_path, "group.yaml")
+            
+            if os.path.exists(group_yaml):
+                # This is a group
+                try:
+                    with open(group_yaml, "r") as f:
+                        metadata = yaml.safe_load(f) or {}
+                    
+                    # Skip disabled groups
+                    if metadata.get("disabled", False):
+                        continue
+                    
+                    # Add the group to the list
+                    entities.append({
+                        "name": metadata.get("name", item_name),
+                        "path": item_rel_path,
+                        "type": "group",
+                        "description": metadata.get("description", "No description")
+                    })
+                    
+                    # Recursively scan the group's contents
+                    scan_directory(item_path, item_rel_path)
+                    
+                except Exception as e:
+                    logger.warning(f"Error loading group '{item_rel_path}': {e}")
+            else:
+                # Check for tool yaml files
+                tool_yaml = os.path.join(item_path, "tool.yaml")
+                tool_name_yaml = os.path.join(item_path, f"{item_name}.yaml")
+                yaml_path = tool_yaml if os.path.exists(tool_yaml) else tool_name_yaml
+                py_path = os.path.join(item_path, "tool.py")
+                alt_py_path = os.path.join(item_path, f"{item_name}.py")
                 
-            # Add the tool to the list
-            tools.append({
-                "name": metadata.get("name", tool_name),
-                "description": metadata.get("description", "No description"),
-                "path": tool_dir
-            })
-        except Exception as e:
-            logger.warning(f"Error loading tool '{tool_name}': {e}")
+                if os.path.exists(yaml_path) and (os.path.exists(py_path) or os.path.exists(alt_py_path)):
+                    # This is a tool
+                    try:
+                        with open(yaml_path, "r") as f:
+                            metadata = yaml.safe_load(f) or {}
+                        
+                        # Skip disabled tools
+                        if metadata.get("disabled", False):
+                            continue
+                        
+                        # Add the tool to the list
+                        entities.append({
+                            "name": metadata.get("name", item_name),
+                            "path": item_rel_path,
+                            "type": "tool",
+                            "description": metadata.get("description", "No description")
+                        })
+                    except Exception as e:
+                        logger.warning(f"Error loading tool '{item_rel_path}': {e}")
+                else:
+                    # This might be a directory for nested tools, scan it
+                    scan_directory(item_path, item_rel_path)
     
-    # print(f"DEBUG: EXIT {inspect.currentframe().f_code.co_name} - return={tools}", file=sys.stderr)
-    return tools
+    # Start the recursive scan
+    scan_directory(TOOLS_BASE_DIR)
+    
+    # print(f"DEBUG: EXIT {inspect.currentframe().f_code.co_name} - return={entities}", file=sys.stderr)
+    return entities
 
 
-def import_tool_module(tool_name: str) -> Any:
+def import_tool_module(path: str) -> Any:
     """
     Dynamically import a tool module.
     
     Args:
-        tool_name: The name of the tool
+        path: Path to the tool, which can include nested paths (e.g., "group/subtool")
         
     Returns:
         The imported module
         
     Raises:
         ImportError: If the module cannot be imported
-        FileNotFoundError: If the tool.py file doesn't exist
+        FileNotFoundError: If the implementation file doesn't exist
     """
-    # print(f"DEBUG: ENTER {inspect.currentframe().f_code.co_name} - tool_name={tool_name}", file=sys.stderr)
+    # print(f"DEBUG: ENTER {inspect.currentframe().f_code.co_name} - path={path}", file=sys.stderr)
     
-    tool_dir = get_tool_dir(tool_name)
-    tool_py_path = os.path.join(tool_dir, "tool.py")
+    # Get the directory and name for this path
+    dir_path = get_tool_dir(path)
+    path_components = path.replace('/', os.sep).split(os.sep)
+    name = path_components[-1]
     
+    # Check for the implementation file first with the name, then legacy path
+    tool_py_path = os.path.join(dir_path, f"{name}.py")
     if not os.path.exists(tool_py_path):
-        logger.error(f"Tool implementation file not found: {tool_py_path}")
-        # print(f"DEBUG: EXIT {inspect.currentframe().f_code.co_name} - EXCEPTION: FileNotFoundError", file=sys.stderr)
-        raise FileNotFoundError(f"Tool implementation file not found: {tool_py_path}")
+        tool_py_path = os.path.join(dir_path, "tool.py")
+        if not os.path.exists(tool_py_path):
+            logger.error(f"Tool implementation file not found for: {path}")
+            # print(f"DEBUG: EXIT {inspect.currentframe().f_code.co_name} - EXCEPTION: FileNotFoundError", file=sys.stderr)
+            raise FileNotFoundError(f"Tool implementation file not found for: {path}")
     
     try:
+        # Create a unique module name based on the path
+        module_name = f"evai.tools.{path.replace('/', '_')}"
+        
         # Create a module spec
-        spec = importlib.util.spec_from_file_location(
-            f"evai.tools.{tool_name}", tool_py_path
-        )
+        spec = importlib.util.spec_from_file_location(module_name, tool_py_path)
         
         if spec is None or spec.loader is None:
             # print(f"DEBUG: EXIT {inspect.currentframe().f_code.co_name} - EXCEPTION: ImportError", file=sys.stderr)
@@ -467,91 +566,129 @@ def import_tool_module(tool_name: str) -> Any:
         raise ImportError(f"Error importing tool module: {e}")
 
 
-def run_tool(tool_name: str, *args, **kwargs) -> Any:
+def run_tool(path: str, args=None, kwargs=None) -> Any:
     """
     Run a tool with the given arguments.
     
     Args:
-        tool_name: The name of the tool
-        *args: Positional arguments to pass to the tool function
-        **kwargs: Keyword arguments to pass to the tool
+        path: Path to the tool, which can include nested paths (e.g., "group/subtool")
+        args: List of positional arguments (optional)
+        kwargs: Dictionary of keyword arguments (optional)
         
     Returns:
-        The result of the tool
+        The result of the tool function
         
     Raises:
         ImportError: If the tool module cannot be imported
-        AttributeError: If the tool module doesn't have any tool_* functions
+        AttributeError: If the tool function cannot be found
+        ValueError: If the tool doesn't exist
         Exception: If the tool execution fails
     """
-    # print(f"DEBUG: ENTER {inspect.currentframe().f_code.co_name} - tool_name={tool_name}, args={args}, kwargs={kwargs}", file=sys.stderr)
+    # print(f"DEBUG: ENTER {inspect.currentframe().f_code.co_name} - path={path}, args={args}, kwargs={kwargs}", file=sys.stderr)
+    
+    if args is None:
+        args = []
+    if kwargs is None:
+        kwargs = {}
     
     try:
-        # Import the tool module
-        module = import_tool_module(tool_name)
+        # Get the tool directory
+        dir_path = get_tool_dir(path)
         
-        # Find callable functions in the module that start with "tool_"
-        tool_functions = [
-            name for name, obj in inspect.getmembers(module)
-            if inspect.isfunction(obj) and name.startswith('tool_')
-        ]
+        # Load the metadata to verify this is a tool (not a group)
+        metadata = load_tool_metadata(path)
         
-        if not tool_functions:
-            logger.error(f"Tool module doesn't have any tool_* functions: {tool_name}")
-            # print(f"DEBUG: EXIT {inspect.currentframe().f_code.co_name} - EXCEPTION: AttributeError", file=sys.stderr)
-            raise AttributeError(f"Tool module doesn't have any tool_* functions: {tool_name}")
+        # Get the tool name from the path
+        path_components = path.replace('/', os.sep).split(os.sep)
+        name = path_components[-1]
         
-        # Use the first tool function found
-        function_name = tool_functions[0]
-        function = getattr(module, function_name)
+        # Check if this is a group
+        group_yaml = os.path.join(dir_path, "group.yaml")
+        if os.path.exists(group_yaml):
+            logger.error(f"Cannot run a group: {path}")
+            raise ValueError(f"Cannot run a group: {path}")
+        
+        # Get the implementation file path
+        py_path = os.path.join(dir_path, f"{name}.py")
+        if not os.path.exists(py_path):
+            # Try legacy path
+            py_path = os.path.join(dir_path, "tool.py")
+            if not os.path.exists(py_path):
+                raise FileNotFoundError(f"Tool implementation not found for: {path}")
+        
+        # Import the module
+        module_name = f"tool_{path.replace('/', '_')}"
+        spec = importlib.util.spec_from_file_location(module_name, py_path)
+        if spec is None or spec.loader is None:
+            raise ImportError(f"Failed to create module spec for {py_path}")
+        
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        
+        # Find the appropriate function (tool_<name>)
+        func_name = f"tool_{name}"
+        if not hasattr(module, func_name):
+            # Try to find any tool_* function
+            tool_functions = [
+                name for name, obj in inspect.getmembers(module)
+                if inspect.isfunction(obj) and name.startswith('tool_')
+            ]
+            if not tool_functions:
+                raise AttributeError(f"Tool module doesn't have any tool_* functions: {path}")
+            func_name = tool_functions[0]
+        
+        func = getattr(module, func_name)
         
         # Get the function signature
-        sig = inspect.signature(function)
+        sig = inspect.signature(func)
         
-        # If we have positional arguments, use them
+        # Match arguments based on function signature
+        # First by positional parameters
+        bound_args = []
         if args:
             # Convert args to appropriate types based on function signature
-            converted_args = []
             for i, (param_name, param) in enumerate(sig.parameters.items()):
                 if i < len(args):
                     # Get the parameter type annotation
                     param_type = param.annotation
                     if param_type is inspect.Parameter.empty:
                         # No type annotation, use the arg as is
-                        converted_args.append(args[i])
+                        bound_args.append(args[i])
                     else:
                         # Try to convert the arg to the annotated type
                         try:
                             # Handle special cases for common types
                             if param_type is float or param_type is int:
-                                converted_args.append(param_type(args[i]))
+                                bound_args.append(param_type(args[i]))
                             elif param_type is bool:
                                 # Convert string to bool
                                 value = str(args[i]).lower()
-                                converted_args.append(value in ('true', 't', 'yes', 'y', '1'))
+                                bound_args.append(value in ('true', 't', 'yes', 'y', '1'))
                             else:
                                 # For other types, try direct conversion
-                                converted_args.append(param_type(args[i]))
+                                bound_args.append(param_type(args[i]))
                         except (ValueError, TypeError):
                             # If conversion fails, use the original value
                             logger.warning(f"Could not convert argument {args[i]} to {param_type.__name__}")
-                            converted_args.append(args[i])
-            
-            # Call the function with the converted positional arguments
-            result = function(*converted_args)
-        else:
-            # Filter kwargs to only include parameters that the function accepts
+                            bound_args.append(args[i])
+        
+        # Then by keyword parameters (if they match the function signature)
+        filtered_kwargs = {}
+        if kwargs:
             filtered_kwargs = {
                 k: v for k, v in kwargs.items() 
                 if k in sig.parameters
             }
-            
-            # Call the function with the filtered kwargs
-            result = function(**filtered_kwargs)
+        
+        # Call the function
+        if bound_args:
+            result = func(*bound_args, **filtered_kwargs)
+        else:
+            result = func(**filtered_kwargs)
         
         # print(f"DEBUG: EXIT {inspect.currentframe().f_code.co_name} - return={result}", file=sys.stderr)
         return result
-    except (ImportError, AttributeError) as e:
+    except (ImportError, AttributeError, FileNotFoundError, ValueError) as e:
         logger.error(f"Error running tool: {e}")
         # print(f"DEBUG: EXIT {inspect.currentframe().f_code.co_name} - EXCEPTION: {e}", file=sys.stderr)
         raise
@@ -561,42 +698,181 @@ def run_tool(tool_name: str, *args, **kwargs) -> Any:
         raise
 
 
-def remove_tool(tool_name: str) -> bool:
+def add_tool(path: str, metadata: Dict[str, Any], implementation: str) -> None:
     """
-    Remove a tool by deleting its directory.
+    Add a new tool or group.
     
     Args:
-        tool_name: The name of the tool to remove
+        path: Path to the tool or group, which can include nested paths (e.g., "group/subtool")
+        metadata: Dictionary containing the metadata for the tool
+        implementation: String containing the tool implementation code
+    
+    Raises:
+        ValueError: If the metadata is invalid
+        ValueError: If implementation is provided for a group
+        OSError: If files cannot be written
+    """
+    # Get the directory for this path
+    dir_path = get_tool_dir(path)
+    
+    # Get the path components
+    path_components = path.replace('/', os.sep).split(os.sep)
+    name = path_components[-1]
+    
+    # Validate metadata
+    if not metadata:
+        raise ValueError("Metadata cannot be empty")
+    
+    if metadata.get("name") != name:
+        raise ValueError(f"Metadata name '{metadata.get('name')}' must match tool name '{name}'")
+    
+    # If this is a subtool, ensure parent directory has a group.yaml
+    if len(path_components) > 1:
+        parent_path = os.path.join(TOOLS_BASE_DIR, *path_components[:-1])
+        parent_group_yaml = os.path.join(parent_path, "group.yaml")
+        
+        if not os.path.exists(parent_group_yaml):
+            # Create minimal group metadata
+            group_name = path_components[-2]
+            group_metadata = {
+                "name": group_name,
+                "description": f"Group for {group_name} tools",
+                "type": "group"
+            }
+            
+            with open(parent_group_yaml, "w") as f:
+                yaml.dump(group_metadata, f, default_flow_style=False, sort_keys=False)
+            logger.debug(f"Created parent group metadata at {parent_group_yaml}")
+    
+    # Save the metadata
+    save_tool_metadata(path, metadata)
+    
+    # If this is not a group, save the implementation
+    if "arguments" in metadata or "options" in metadata or "params" in metadata:
+        # This is a tool, save the implementation
+        py_path = os.path.join(dir_path, f"{name}.py")
+        with open(py_path, "w") as f:
+            f.write(implementation)
+        logger.debug(f"Saved tool implementation to {py_path}")
+    elif implementation:
+        # This is a group, shouldn't have implementation
+        logger.warning(f"Implementation provided for group '{path}' will be ignored")
+
+
+def edit_tool(path: str, metadata: Dict[str, Any] = None, implementation: str = None) -> None:
+    """
+    Edit an existing tool or group.
+    
+    Args:
+        path: Path to the tool or group, which can include nested paths (e.g., "group/subtool")
+        metadata: Dictionary containing the updated metadata (optional)
+        implementation: String containing the updated implementation code (optional)
+    
+    Raises:
+        FileNotFoundError: If the tool or group doesn't exist
+        ValueError: If both metadata and implementation are None
+        OSError: If files cannot be written
+    """
+    if metadata is None and implementation is None:
+        raise ValueError("Either metadata or implementation must be provided")
+    
+    # Get the directory for this path
+    dir_path = get_tool_dir(path)
+    
+    # Get the path components
+    path_components = path.replace('/', os.sep).split(os.sep)
+    name = path_components[-1]
+    
+    # Check if the tool or group exists
+    try:
+        existing_metadata = load_tool_metadata(path)
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Tool or group '{path}' not found")
+    
+    # Update metadata if provided
+    if metadata:
+        # Merge with existing metadata, preserving fields not in the update
+        updated_metadata = {**existing_metadata, **metadata}
+        save_tool_metadata(path, updated_metadata)
+        logger.debug(f"Updated metadata for '{path}'")
+    
+    # Update implementation if provided
+    if implementation:
+        is_group = False
+        # Check if this is a group
+        group_yaml = os.path.join(dir_path, "group.yaml")
+        if os.path.exists(group_yaml):
+            is_group = True
+        
+        if is_group:
+            logger.warning(f"Implementation provided for group '{path}' will be ignored")
+        else:
+            py_path = os.path.join(dir_path, f"{name}.py")
+            with open(py_path, "w") as f:
+                f.write(implementation)
+            logger.debug(f"Updated implementation for '{path}'")
+
+
+def remove_tool(path: str) -> bool:
+    """
+    Remove a tool or group.
+    
+    Args:
+        path: Path to the tool or group, which can include nested paths (e.g., "group/subtool")
         
     Returns:
-        True if the tool was successfully removed, False otherwise
+        True if the tool or group was successfully removed
         
     Raises:
-        ValueError: If the tool name is invalid
-        FileNotFoundError: If the tool directory doesn't exist
+        ValueError: If the path is invalid
+        FileNotFoundError: If the tool or group doesn't exist
     """
-    if not tool_name:
-        raise ValueError("Tool name cannot be empty")
+    if not path:
+        raise ValueError("Path cannot be empty")
     
-    # Validate tool name (alphanumeric, hyphens, and underscores only)
-    if not all(c.isalnum() or c in "-_" for c in tool_name):
-        raise ValueError(
-            "Tool name must contain only alphanumeric characters, hyphens, and underscores"
-        )
-    
-    # Get the tool directory path
-    tool_dir = os.path.expanduser(f"~/.evai/tools/{tool_name}")
+    # Get the directory for this path
+    dir_path = get_tool_dir(path)
     
     # Check if the directory exists
-    if not os.path.exists(tool_dir):
-        raise FileNotFoundError(f"Tool '{tool_name}' not found")
+    if not os.path.exists(dir_path):
+        raise FileNotFoundError(f"Tool or group '{path}' not found")
     
-    # Remove the directory and all its contents
+    # Check if this is a group or a tool
+    group_yaml = os.path.join(dir_path, "group.yaml")
+    
     try:
-        import shutil
-        shutil.rmtree(tool_dir)
-        logger.debug(f"Tool directory removed: {tool_dir}")
+        if os.path.exists(group_yaml):
+            # This is a group, remove the entire directory
+            shutil.rmtree(dir_path)
+            logger.debug(f"Group directory removed: {dir_path}")
+        else:
+            # This is a tool, get the name
+            path_components = path.replace('/', os.sep).split(os.sep)
+            name = path_components[-1]
+            
+            # Remove the tool files
+            yaml_path = os.path.join(dir_path, f"{name}.yaml")
+            if not os.path.exists(yaml_path):
+                # Try legacy path
+                yaml_path = os.path.join(dir_path, "tool.yaml")
+            py_path = os.path.join(dir_path, f"{name}.py")
+            if not os.path.exists(py_path):
+                # Try legacy path
+                py_path = os.path.join(dir_path, "tool.py")
+            
+            if os.path.exists(yaml_path):
+                os.remove(yaml_path)
+                logger.debug(f"Tool metadata removed: {yaml_path}")
+            if os.path.exists(py_path):
+                os.remove(py_path)
+                logger.debug(f"Tool implementation removed: {py_path}")
+                
+            # Check if the directory is now empty
+            if not os.listdir(dir_path):
+                os.rmdir(dir_path)
+                logger.debug(f"Empty tool directory removed: {dir_path}")
+        
         return True
     except OSError as e:
-        logger.error(f"Failed to remove tool directory: {e}")
+        logger.error(f"Failed to remove tool or group: {e}")
         raise

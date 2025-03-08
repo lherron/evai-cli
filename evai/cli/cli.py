@@ -149,6 +149,10 @@ TYPE_MAP = {
 
 # Create an AliasedGroup class to support command aliases
 class AliasedGroup(click.Group):
+    def __init__(self, *args, **kwargs):
+        self.section = kwargs.pop('section', None)
+        super().__init__(*args, **kwargs)
+    
     def get_command(self, ctx, cmd_name):
         # Try to get command by name
         rv = click.Group.get_command(self, ctx, cmd_name)
@@ -163,28 +167,66 @@ class AliasedGroup(click.Group):
             return click.Group.get_command(self, ctx, matches[0])
         
         ctx.fail(f"Too many matches: {', '.join(sorted(matches))}")
+    
+    def format_commands(self, ctx, formatter):
+        """Custom command formatter that displays section headers."""
+        commands = []
+        for subcommand in self.list_commands(ctx):
+            cmd = self.get_command(ctx, subcommand)
+            # What is this, the tool lied about a command.  Ignore it
+            if cmd is None:
+                continue
+            if cmd.hidden:
+                continue
+            commands.append((subcommand, cmd))
+
+        if not commands:
+            return
+
+        # Group commands by section
+        sections = {}
+        for subcommand, cmd in commands:
+            # Get section from command or use default section
+            section = getattr(cmd, 'section', self.section or 'Commands')
+            if section not in sections:
+                sections[section] = []
+            sections[section].append((subcommand, cmd))
+        
+        # Calculate limit for short help text
+        limit = formatter.width - 6 - max(len(cmd[0]) for cmd in commands)
+        
+        # Display each section with its commands
+        for section, section_commands in sorted(sections.items()):
+            rows = []
+            for subcommand, cmd in sorted(section_commands, key=lambda x: x[0]):
+                help_text = cmd.get_short_help_str(limit)
+                rows.append((subcommand, help_text))
+            
+            if rows:
+                with formatter.section(section):
+                    formatter.write_dl(rows)
 
 
-@click.group(help="EVAI CLI - Command-line interface for EVAI")
+@click.group(cls=AliasedGroup, help="EVAI CLI - Command-line interface for EVAI")
 @click.version_option(version=__version__, prog_name="evai")
 def cli():
     """EVAI CLI - Command-line interface for EVAI."""
     pass
 
 
-@cli.group(cls=AliasedGroup)
+@cli.group(cls=AliasedGroup, section="Core Commands")
 def tools():
     """Manage custom tools."""
     pass
 
 # Tool functions have been moved to evai/cli/commands/tool.py
 
-@cli.group(cls=AliasedGroup)
+@cli.group(cls=AliasedGroup, section="Core Commands")
 def commands():
     """Manage user-defined commands."""
     pass
 
-@cli.group(cls=AliasedGroup)
+@cli.group(cls=AliasedGroup, section="User Commands")
 def user():
     """User-defined commands."""
     pass
@@ -302,8 +344,17 @@ def load_user_commands():
                         except Exception as e:
                             logger.warning(f"Failed to load command {command_name}: {e}")
 
+# Create command with section
+def create_command_with_section(section="Core Commands"):
+    """Decorator to set section on a command."""
+    def decorator(command):
+        command.section = section
+        return command
+    return decorator
+
 @cli.command()
 @click.option("--name", "-n", default="EVAI Tools", help="Name of the MCP server")
+@create_command_with_section(section="Core Commands")
 def server(name):
     """Start an MCP server exposing all tools."""
     try:
@@ -324,13 +375,61 @@ def server(name):
         sys.exit(1)
 
 
+@cli.command()
+@click.option("--force", "-f", is_flag=True, help="Force migration without confirmation")
+@create_command_with_section(section="Core Commands")
+def migrate_commands(force):
+    """Migrate all commands to tools."""
+    try:
+        from evai.migrate_commands_to_tools import migrate_all_commands
+        
+        if not force:
+            click.echo("This will migrate all commands to tools, preserving the original commands.")
+            click.echo("The tools will be created under ~/.evai/tools/ with groups and hierarchy preserved.")
+            click.echo("The original commands under ~/.evai/commands/ will remain untouched.")
+            
+            if not click.confirm("Do you want to continue?"):
+                click.echo("Migration cancelled.")
+                return
+        
+        click.echo("Starting migration of commands to tools...")
+        
+        # Run the migration
+        stats = migrate_all_commands()
+        
+        # Print stats
+        click.echo("Migration completed:")
+        click.echo(f"  Total entities: {stats['total']}")
+        click.echo(f"  Groups: {stats['groups']}")
+        click.echo(f"  Successfully migrated: {stats['migrated']}")
+        click.echo(f"  Failed: {stats['failed']}")
+        click.echo(f"  Skipped: {stats['skipped']}")
+        
+        click.echo("\nYou can now use the migrated tools with 'evai tools' commands.")
+        click.echo("The original commands are still available with 'evai commands'.")
+        
+    except Exception as e:
+        click.echo(f"Error during migration: {e}", err=True)
+        sys.exit(1)
+
+
 # Automatically add all commands from the commands submodule
 def import_commands():
     """Import all commands from the commands submodule and add them to the appropriate groups."""
     from evai.cli import commands as commands_module
     
+    # Define categories for commands
+    CORE_COMMANDS = ["llm", "server", "migrate-commands", "deploy_artifact"]
+    TOOL_MANAGEMENT = ["tools", "llmadd"]
+    COMMAND_MANAGEMENT = ["commands", "cmdllmadd"]
+    SAMPLE_COMMANDS = ["sample-add", "sample-mismatch", "sample-missing", "subtract"]
+    USER_COMMANDS = ["user"]
+    
     # Get the package path
     package_path = os.path.dirname(commands_module.__file__)
+    
+    # Set of commands already added to avoid duplicates
+    added_commands = set()
     
     # Iterate through all modules in the commands package
     for _, module_name, _ in pkgutil.iter_modules([package_path]):
@@ -343,6 +442,33 @@ def import_commands():
             
             # Check if it's a Click command
             if isinstance(attr, click.Command):
+                # Skip if already added
+                if attr.name in added_commands:
+                    continue
+                    
+                # Categorize commands into sections
+                if attr.name in CORE_COMMANDS:
+                    # Core EVAI functionality
+                    attr.section = "Core Commands"
+                elif attr.name in SAMPLE_COMMANDS or attr.name.startswith("sample-"):
+                    # Sample commands for testing
+                    attr.section = "Sample Commands"
+                elif module_name in TOOL_MANAGEMENT or attr.name.startswith("tool"):
+                    # Tool management
+                    attr.section = "Tool Management"
+                elif module_name in COMMAND_MANAGEMENT or attr.name.startswith("command"):
+                    # Command management 
+                    attr.section = "Command Management"
+                else:
+                    # Default for uncategorized commands
+                    attr.section = "Other Commands"
+                
+                # Manually set certain command sections
+                if attr.name == "deploy_artifact":
+                    attr.section = "Core Commands"
+                elif attr.name in ["sample-add", "sample-mismatch", "sample-missing", "subtract"]:
+                    attr.section = "Sample Commands"
+
                 # Determine which group to add the command to
                 if module_name == "tools" or module_name == "llmadd":
                     # Add tool-related commands to the tools group
@@ -353,9 +479,11 @@ def import_commands():
                 elif module_name == "llm" and attr_name == "llm":
                     # Add llm command directly to the main CLI group
                     cli.add_command(attr)
+                    added_commands.add(attr.name)
                 else:
-                    # Default to tools group for anything else
-                    tools.add_command(attr)
+                    # Standalone commands go to main CLI
+                    cli.add_command(attr)
+                    added_commands.add(attr.name)
 
 
 # Import commands
@@ -364,9 +492,24 @@ import_commands()
 # Load user-defined commands to the user group
 load_user_commands()
 
-# Also load user-defined commands to the main CLI group
-from evai.cli.user_commands import load_user_commands_to_main_group
-load_user_commands_to_main_group(cli)
+# Load user-defined commands to the main CLI group with section
+from evai.cli.user_commands import load_user_commands_to_main_group, load_tools_to_main_group
+
+# Modify user_commands.py functions to handle sections
+load_user_commands_to_main_group(cli, section="User-Defined Commands")
+
+# Load tools to the main CLI group with section
+load_tools_to_main_group(cli, section="Tool Commands")
+
+# Organize command sections after all commands are loaded
+for cmd_name in cli.commands:
+    cmd = cli.commands[cmd_name]
+    # Core and management commands
+    if cmd_name in ["deploy_artifact", "server", "migrate-commands", "llm", "commands", "tools"]:
+        cmd.section = "Core Commands"
+    # All other commands are considered "User Commands" (including samples in dev)
+    else:
+        cmd.section = "User Commands"
 
 
 def main():

@@ -90,55 +90,66 @@ def register_built_in_tools(mcp: FastMCP) -> None:
             return {"status": "error", "message": str(e)}
     
     @mcp.tool(name="edit_tool_implementation")
-    def edit_tool_implementation_tool(tool_name: str, implementation: str) -> Dict[str, Any]:
+    def edit_tool_implementation_tool(path: str, implementation: str) -> Dict[str, Any]:
         """
         Edit the implementation of an existing tool.
         
         Args:
-            tool_name: The name of the tool to edit
+            path: The path to the tool to edit (e.g., "group/subtool")
             implementation: The new implementation code
             
         Returns:
             A dictionary with the status of the edit
         """
-        logger.debug(f"Editing implementation for tool: {tool_name}")
+        logger.debug(f"Editing implementation for tool: {path}")
         try:
-            # Get the tool directory
-            tool_dir = get_tool_dir(tool_name)
+            # Get the name component from the path
+            name = path.split('/')[-1]
             
-            # Check if tool exists
-            tool_py_path = os.path.join(tool_dir, "tool.py")
-            if not os.path.exists(tool_py_path):
-                logger.error(f"Tool '{tool_name}' does not exist")
-                return {"status": "error", "message": f"Tool '{tool_name}' does not exist"}
+            # Get the tool directory
+            dir_path = get_tool_dir(path)
+            
+            # Check if tool exists by trying to load metadata
+            try:
+                metadata = load_tool_metadata(path)
+            except FileNotFoundError:
+                logger.error(f"Tool '{path}' does not exist")
+                return {"status": "error", "message": f"Tool '{path}' does not exist"}
+            
+            # Determine the correct python file path
+            py_path = os.path.join(dir_path, f"{name}.py")
+            if not os.path.exists(py_path):
+                py_path = os.path.join(dir_path, "tool.py")
+                if not os.path.exists(py_path):
+                    # Create a new implementation file
+                    py_path = os.path.join(dir_path, f"{name}.py")
             
             # Write the new implementation
-            with open(tool_py_path, "w") as f:
+            with open(py_path, "w") as f:
                 f.write(implementation)
             
-            # Check if the tool is already registered
+            # Try to reload the module if it's already loaded
             try:
-                # Re-import the module to update the implementation
                 from importlib import reload
                 import sys
                 
                 # Get the module name
-                module_name = f"evai.tools.{tool_name}"
+                module_name = f"evai.tools.{path.replace('/', '_')}"
                 
                 # If the module is already loaded, reload it
                 if module_name in sys.modules:
                     reload(sys.modules[module_name])
                     
-                logger.info(f"Reloaded implementation for tool '{tool_name}'")
+                logger.info(f"Reloaded implementation for tool '{path}'")
             except Exception as e:
-                logger.warning(f"Failed to reload implementation for tool '{tool_name}': {e}")
+                logger.warning(f"Failed to reload implementation for tool '{path}': {e}")
             
             result = {
                 "status": "success",
-                "message": f"Implementation for tool '{tool_name}' updated successfully",
-                "implementation_path": tool_py_path
+                "message": f"Implementation for tool '{path}' updated successfully",
+                "implementation_path": py_path
             }
-            logger.debug(f"Successfully edited implementation for tool: {tool_name}")
+            logger.debug(f"Successfully edited implementation for tool: {path}")
             return result
             
         except Exception as e:
@@ -146,44 +157,44 @@ def register_built_in_tools(mcp: FastMCP) -> None:
             return {"status": "error", "message": str(e)}
             
     @mcp.tool(name="edit_tool_metadata")
-    def edit_tool_metadata_tool(tool_name: str, metadata: Dict[str, Any]) -> Dict[str, Any]:
+    def edit_tool_metadata_tool(path: str, metadata: Dict[str, Any]) -> Dict[str, Any]:
         """
         Edit the metadata of an existing tool.
         
         Args:
-            tool_name: The name of the tool to edit
+            path: The path to the tool or group to edit (e.g., "group/subtool")
             metadata: The new metadata
             
         Returns:
             A dictionary with the status of the edit
         """
-        logger.debug(f"Editing metadata for tool: {tool_name}")
+        logger.debug(f"Editing metadata for: {path}")
         try:
-            # Get the tool directory
-            tool_dir = get_tool_dir(tool_name)
+            # Get the name component from the path
+            name = path.split('/')[-1]
             
-            # Check if tool exists
-            tool_yaml_path = os.path.join(tool_dir, "tool.yaml")
-            if not os.path.exists(tool_yaml_path):
-                logger.error(f"Tool '{tool_name}' does not exist")
-                return {"status": "error", "message": f"Tool '{tool_name}' does not exist"}
+            # Check if the tool or group exists
+            try:
+                existing_metadata = load_tool_metadata(path)
+            except FileNotFoundError:
+                logger.error(f"Tool or group '{path}' does not exist")
+                return {"status": "error", "message": f"Tool or group '{path}' does not exist"}
             
-            # Ensure the name field matches the tool_name
-            metadata["name"] = tool_name
+            # Ensure the name field matches the tool name
+            metadata["name"] = name
             
-            # Save the metadata
-            save_tool_metadata(tool_dir, metadata)
+            # Update the metadata
+            edit_tool(path, metadata=metadata)
             
             result = {
                 "status": "success",
-                "message": f"Metadata for tool '{tool_name}' updated successfully",
-                "metadata_path": tool_yaml_path
+                "message": f"Metadata for '{path}' updated successfully"
             }
-            logger.debug(f"Successfully edited metadata for tool: {tool_name}")
+            logger.debug(f"Successfully edited metadata for: {path}")
             return result
             
         except Exception as e:
-            logger.error(f"Error editing tool metadata: {e}")
+            logger.error(f"Error editing metadata: {e}")
             return {"status": "error", "message": str(e)}
     
     logger.debug("Built-in tools registered successfully")
@@ -199,23 +210,37 @@ def register_tools(mcp: FastMCP) -> None:
     logger.debug("Registering custom tools")
     
     try:
-        # Get all available tools
-        tools = list_tools()
+        # Get all available tools and groups
+        entities = list_tools()
+        
+        # Filter for tools only (not groups)
+        tools = [entity for entity in entities if entity["type"] == "tool"]
         
         # Register each tool
         for tool in tools:
-            tool_name = tool["name"]
-            tool_dir = tool["path"]
+            tool_path = tool["path"]
             
             try:
                 # Load the tool metadata
-                metadata = load_tool_metadata(tool_dir)
+                metadata = load_tool_metadata(tool_path)
                 
-                # Register the tool
-                register_tool(mcp, tool_name, metadata)
+                # Skip disabled tools
+                if metadata.get("disabled", False):
+                    logger.debug(f"Skipping disabled tool: {tool_path}")
+                    continue
+                
+                # Skip tools that have MCP integration disabled
+                if not metadata.get("mcp_integration", {}).get("enabled", True):
+                    logger.debug(f"Skipping tool with MCP integration disabled: {tool_path}")
+                    continue
+                
+                # Register the tool with a unique name based on its path
+                # Replace / with _ for MCP naming
+                mcp_tool_name = tool_path.replace("/", "_")
+                register_tool(mcp, tool_path, mcp_tool_name, metadata)
                 
             except Exception as e:
-                logger.error(f"Error registering tool '{tool_name}': {e}")
+                logger.error(f"Error registering tool '{tool_path}': {e}")
         
         logger.debug(f"Registered {len(tools)} custom tools")
         
@@ -223,39 +248,86 @@ def register_tools(mcp: FastMCP) -> None:
         logger.error(f"Error registering tools: {e}")
     
 
-def register_tool(mcp: FastMCP, tool_name: str, metadata: Dict[str, Any]) -> None:
+def register_tool(mcp: FastMCP, tool_path: str, mcp_tool_name: str, metadata: Dict[str, Any]) -> None:
     """
     Register a tool as an MCP tool.
     
     Args:
         mcp: The MCP server instance
-        tool_name: The name of the tool
+        tool_path: The path to the tool
+        mcp_tool_name: The name to use for the MCP tool
         metadata: The tool metadata
     """
-    logger.debug(f"Registering tool: {tool_name}")
+    logger.debug(f"Registering tool: {tool_path} as {mcp_tool_name}")
     
     try:
-        # Import the tool module using the existing function
-        module = import_tool_module(tool_name)
+        # Get the expected function parameters from the metadata
+        params = []
         
-        # Find any function that starts with 'tool_'
-        tool_functions = [
-            name for name, obj in inspect.getmembers(module)
-            if inspect.isfunction(obj) and name.startswith('tool_')
-        ]
+        # First check for CLI arguments
+        for arg in metadata.get("arguments", []):
+            params.append({
+                "name": arg["name"],
+                "type": arg.get("type", "string"),
+                "description": arg.get("description", ""),
+                "required": True,
+                "default": None
+            })
         
-        if not tool_functions:
-            raise AttributeError(f"Tool module doesn't have any tool_* functions")
+        # Then check for CLI options
+        for opt in metadata.get("options", []):
+            params.append({
+                "name": opt["name"],
+                "type": opt.get("type", "string"),
+                "description": opt.get("description", ""),
+                "required": opt.get("required", False),
+                "default": opt.get("default", None)
+            })
         
-        # Use the first tool function found
-        tool_function_name = tool_functions[0]
-        logger.debug(f"Found tool function: {tool_function_name}")
+        # Then check for MCP parameters
+        for param in metadata.get("params", []):
+            # Skip if this parameter is already defined as an argument or option
+            if any(p["name"] == param["name"] for p in params):
+                continue
+                
+            params.append({
+                "name": param["name"],
+                "type": param.get("type", "string"),
+                "description": param.get("description", ""),
+                "required": param.get("required", True),
+                "default": param.get("default", None)
+            })
         
-        # Get the tool function and register it with MCP
-        tool_function = getattr(module, tool_function_name)
-        mcp.tool(name=tool_name)(tool_function)
+        # Define the tool wrapper function that will call our run_tool
+        def tool_wrapper(**kwargs):
+            logger.debug(f"Running tool {tool_path} with kwargs: {kwargs}")
+            try:
+                result = run_tool(tool_path, kwargs=kwargs)
+                return result
+            except Exception as e:
+                logger.error(f"Error running tool {tool_path}: {e}")
+                return {"status": "error", "message": str(e)}
         
-        logger.debug(f"Successfully registered tool: {tool_name}")
+        # Add metadata to the wrapper
+        tool_wrapper.__name__ = mcp_tool_name
+        tool_wrapper.__doc__ = metadata.get("description", f"Run the {tool_path} tool")
+        
+        # Register the tool with MCP
+        mcp.tool(
+            name=mcp_tool_name,
+            description=metadata.get("description", ""),
+            params=[
+                {
+                    "name": param["name"],
+                    "type": param["type"],
+                    "description": param.get("description", ""),
+                    "required": param.get("required", True)
+                }
+                for param in params
+            ]
+        )(tool_wrapper)
+        
+        logger.debug(f"Successfully registered tool: {tool_path} as {mcp_tool_name}")
     except Exception as e:
-        logger.error(f"Error registering tool '{tool_name}': {e}")
-        raise 
+        logger.error(f"Error registering tool '{tool_path}': {e}")
+        raise
