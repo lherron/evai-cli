@@ -116,12 +116,13 @@ def extract_tool_result_value(result_str):
         # If any error occurs, return the original string
         return result_str
 
-async def call_claude_directly(prompt: str, max_tokens: int = 1000) -> str:
+async def call_claude_directly(prompt: str, max_tokens: int = 1000, show_stop_reason: bool = False) -> str:
     """Call Claude Sonnet 3.7 directly without using MCP.
     
     Args:
         prompt: The text prompt to send to Claude.
         max_tokens: Maximum number of tokens to generate.
+        show_stop_reason: Whether to show the stop reason in the output.
         
     Returns:
         The text response from Claude.
@@ -144,15 +145,54 @@ async def call_claude_directly(prompt: str, max_tokens: int = 1000) -> str:
         max_tokens=max_tokens
     )
     
-    # Return the text response
-    return response.content[0].text
+    # Get the text response
+    result = response.content[0].text
+    
+    # Add stop reason if requested
+    if show_stop_reason:
+        stop_reason = response.stop_reason
+        stop_reason_message = ""
+        
+        if stop_reason == "end_turn":
+            stop_reason_message = "Claude reached a natural stopping point."
+        elif stop_reason == "max_tokens":
+            stop_reason_message = "Response was truncated due to token limit."
+            # Add a note to the response
+            result += "\n\n[Note: This response was truncated due to reaching the maximum token limit.]"
+        elif stop_reason == "stop_sequence":
+            stop_reason_message = "Response ended due to a custom stop sequence."
+            if hasattr(response, "stop_sequence") and response.stop_sequence:
+                stop_reason_message += f" Stop sequence: {response.stop_sequence}"
+        else:
+            stop_reason_message = f"Unknown stop reason: {stop_reason}"
+        
+        # Add stop reason to the result
+        result += f"\n\n---\nStop reason: {stop_reason} - {stop_reason_message}"
+    
+    return result
 
-def run_llm_command_with_mcp(prompt: str, show_tools: bool = False) -> str:
+def call_claude_sync(prompt: str, max_tokens: int = 1000, show_stop_reason: bool = False) -> str:
+    """Call Claude Sonnet 3.7 directly using synchronous API.
+    
+    Args:
+        prompt: The text prompt to send to Claude.
+        max_tokens: Maximum number of tokens to generate.
+        show_stop_reason: Whether to show the stop reason in the output.
+        
+    Returns:
+        The text response from Claude.
+    """
+    # Use asyncio to run the async function
+    return asyncio.run(call_claude_directly(prompt, max_tokens, show_stop_reason))
+
+def run_llm_command_with_mcp(prompt: str, show_tools: bool = False, debug: bool = False, show_stop_reason: bool = False) -> str:
     """Call Claude through an MCP server integration.
     
     Args:
         prompt: The text prompt to send to Claude via MCP.
         show_tools: Whether to display detailed tool information.
+        debug: Whether to show debug information.
+        show_stop_reason: Whether to show the stop reason in the output.
         
     Returns:
         The text response from Claude.
@@ -174,317 +214,431 @@ def run_llm_command_with_mcp(prompt: str, show_tools: bool = False) -> str:
     )
     
     # Run the async function and return the result
-    return asyncio.run(async_run_mcp_command(prompt, show_tools, server_params))
+    return asyncio.run(async_run_mcp_command(prompt, show_tools, server_params, debug, show_stop_reason))
 
-async def async_run_mcp_command(prompt: str, show_tools: bool, server_params: StdioServerParameters) -> str:
-    """Async implementation of the MCP command execution with context re-injection.
+async def get_anthropic_client():
+    """Create and return an Anthropic client.
     
-    Args:
-        prompt: The text prompt to send.
-        show_tools: Whether to display detailed tool information.
-        server_params: MCP server parameters.
-        
     Returns:
-        The text response from the MCP server.
-    """
-    try:
-        # Connect to the MCP server
-        async with stdio_client(server_params) as (read, write):
-            async with ClientSession(read, write) as session:
-                # Initialize the connection
-                await session.initialize()
-                
-                # Check for API key
-                api_key = os.environ.get("ANTHROPIC_API_KEY")
-                if not api_key:
-                    raise ValueError("ANTHROPIC_API_KEY environment variable is not set")
-                
-                # Initialize Anthropic client
-                client = anthropic.Anthropic(api_key=api_key)
-                
-                # Function to get available tools from MCP server
-                async def get_available_tools():
-                    tools_result = await session.list_tools()
-                    claude_tools = []
-                    if tools_result and hasattr(tools_result, 'tools'):
-                        for tool in tools_result.tools:
-                            claude_tools.append({
-                                "name": tool.name,
-                                "description": tool.description,
-                                "input_schema": tool.inputSchema
-                            })
-                    
-                    # Only display detailed tool information if requested
-                    if show_tools:
-                        # Create a table to display available tools
-                        tools_table = Table(title="Available Tools", box=ROUNDED, border_style="yellow")
-                        tools_table.add_column("Tool Name", style="yellow bold")
-                        tools_table.add_column("Description", style="cyan")
-                        
-                        for tool in claude_tools:
-                            tools_table.add_row(tool['name'], tool['description'] if 'description' in tool else "")
-                        
-                        error_console.print(tools_table)
-                    else:
-                        # Just print a simple list of available tools
-                        error_console.print(f"Available tools: {', '.join(tool['name'] for tool in claude_tools)}")
-                    
-                    # Debug: Print detailed tool information
-                    # print(f"[DEBUG] Available tools details:", file=sys.stderr)
-                    # for i, tool in enumerate(claude_tools):
-                    #     print(f"  [{i}] Name: {tool['name']}", file=sys.stderr)
-                    #     print(f"      Description: {tool['description']}", file=sys.stderr)
-                    #     print(f"      Schema: {tool['input_schema']}", file=sys.stderr)
-                    
-                    return claude_tools
-                
-                # Get initial available tools
-                claude_tools = await get_available_tools()
-                
-                # Initialize conversation with the user's prompt
-                messages = [
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ]
-                
-                # Main conversation loop
-                final_response_parts = []
-                conversation_active = True
-                
-                while conversation_active:
-                    error_console.print(f"[purple]Calling Claude with {len(claude_tools)} available tools and {len(messages)} messages in history...[/purple]")
-                    
-                    # Debug: Print message structure before sending to Claude
-                    print(f"\n[DEBUG] Sending message structure to Claude:", file=sys.stderr)
-                    for i, msg in enumerate(messages):
-                        print(f"  Message {i} - Role: {msg['role']}", file=sys.stderr)
-                        if isinstance(msg['content'], list):
-                            print(f"    Content is a list with {len(msg['content'])} items", file=sys.stderr)
-                            for j, content_item in enumerate(msg['content']):
-                                if isinstance(content_item, dict):
-                                    if content_item.get('type') == 'tool_use':
-                                        print(f"      Item {j}: tool_use - Name: {content_item.get('name')}, ID: {content_item.get('id', 'MISSING')}", file=sys.stderr)
-                                    elif content_item.get('type') == 'tool_result':
-                                        print(f"      Item {j}: tool_result - Tool Use ID: {content_item.get('tool_use_id', 'MISSING')}", file=sys.stderr)
-                                        content_preview = str(content_item.get('content', ''))[:50] + "..." if len(str(content_item.get('content', ''))) > 50 else str(content_item.get('content', ''))
-                                        print(f"        Content: {content_preview}", file=sys.stderr)
-                                    else:
-                                        print(f"      Item {j}: {content_item.get('type', 'unknown type')}", file=sys.stderr)
-                                else:
-                                    print(f"      Item {j}: {type(content_item)}", file=sys.stderr)
-                        else:
-                            content_preview = str(msg['content'])[:50] + "..." if len(str(msg['content'])) > 50 else str(msg['content'])
-                            print(f"    Content: {content_preview}", file=sys.stderr)
-                    
-                    try:
-                        # Call Claude with the current message history
-                        response = client.messages.create(
-                            model="claude-3-7-sonnet-20250219",
-                            messages=messages,
-                            tools=claude_tools if claude_tools else None,
-                            max_tokens=1000
-                        )
-                    except Exception as e:
-                        print(f"[ERROR] Claude API error: {str(e)}", file=sys.stderr)
-                        # If we have a message format error, try to recover by simplifying the message history
-                        if "messages" in str(e) and len(messages) > 1:
-                            # print("[DEBUG] Attempting to recover by simplifying message history...", file=sys.stderr)
-                            # Keep only the initial user message
-                            simplified_messages = [messages[0]]
-                            # print(f"[DEBUG] Simplified to {len(simplified_messages)} messages", file=sys.stderr)
-                            response = client.messages.create(
-                                model="claude-3-7-sonnet-20250219",
-                                messages=simplified_messages,
-                                tools=claude_tools if claude_tools else None,
-                                max_tokens=1000
-                            )
-                        else:
-                            raise
-                    
-                    # Debug: Print Claude's response structure
-                    # print(f"\n[DEBUG] Claude Response:", file=sys.stderr)
-                    # print(f"  - Response ID: {response.id}", file=sys.stderr)
-                    # print(f"  - Model: {response.model}", file=sys.stderr)
-                    # print(f"  - Stop Reason: {response.stop_reason}", file=sys.stderr)
-                    # print(f"  - Content Types: {[content.type for content in response.content]}", file=sys.stderr)
-                    
-                    # Check if Claude is requesting to use a tool
-                    has_tool_use = response.stop_reason == "tool_use"
-                    
-                    # Process Claude's response
-                    assistant_message_content = []
-                    
-                    for content in response.content:
-                        if content.type == "text":
-                            # print(f"\n[DEBUG] Text Content: {content.text[:100]}...", file=sys.stderr)
-                            final_response_parts.append(content.text)
-                            assistant_message_content.append({"type": "text", "text": content.text})
-                        elif content.type == "tool_use":
-                            # Extract tool call details
-                            tool_name = content.name
-                            tool_args = content.input
-                            tool_id = content.id
-                            
-                            # Debug: Print detailed tool call information
-                            # print(f"\n[DEBUG] Tool Call:", file=sys.stderr)
-                            # print(f"  - Tool Name: {tool_name}", file=sys.stderr)
-                            # print(f"  - Tool ID: {tool_id}", file=sys.stderr)
-                            # print(f"  - Tool Arguments: {tool_args}", file=sys.stderr)
-                            
-                            # Add tool use to assistant message
-                            assistant_message_content.append({
-                                "type": "tool_use",
-                                "name": tool_name,
-                                "id": tool_id,
-                                "input": tool_args
-                            })
-                    
-                    # Add assistant's response to message history
-                    if assistant_message_content:
-                        assistant_message = {
-                            "role": "assistant",
-                            "content": assistant_message_content
-                        }
-                        messages.append(assistant_message)
-                        error_console.print(f"[purple]Added assistant response to message history. History now has {len(messages)} messages.[/purple]")
-                    
-                    # If Claude requested to use tools, execute them and send results back
-                    if has_tool_use:
-                        error_console.print("[yellow bold]Claude requested tool calls, executing...[/yellow bold]")
-                        
-                        # Create a new user message with tool results
-                        tool_results_content = []
-                        
-                        # Process each tool use request
-                        for content in response.content:
-                            if content.type == "tool_use":
-                                tool_name = content.name
-                                tool_args = content.input
-                                tool_id = content.id
-                                
-                                # Create a panel for tool execution
-                                tool_panel = Panel(
-                                    f"[cyan]Arguments:[/cyan] {tool_args}",
-                                    title=f"[yellow bold]Executing Tool: {tool_name}[/yellow bold]",
-                                    border_style="yellow"
-                                )
-                                error_console.print(tool_panel)
-                                
-                                try:
-                                    # Execute the tool call through MCP
-                                    # print(f"[DEBUG] Calling MCP tool: {tool_name}", file=sys.stderr)
-                                    tool_result = await session.call_tool(tool_name, arguments=tool_args)
-                                    # print(f"[DEBUG] Tool Result: {str(tool_result)[:200]}...", file=sys.stderr)
-                                    
-                                    # Format tool result for display
-                                    result_panel = Panel(
-                                        str(tool_result),
-                                        title=f"[cyan]Tool Result: {tool_name}[/cyan]",
-                                        border_style="cyan"
-                                    )
-                                    error_console.print(result_panel)
-                                    
-                                    # Extract the actual result value
-                                    extracted_result = extract_tool_result_value(str(tool_result))
-                                    
-                                    # Add plain text result to final response (without Rich formatting)
-                                    tool_response = f"\nTool: {tool_name}\nResult: {extracted_result}\n"
-                                    final_response_parts.append(tool_response)
-                                    
-                                    # Add tool result to the content for the next user message
-                                    tool_results_content.append({
-                                        "type": "tool_result",
-                                        "tool_use_id": tool_id,
-                                        "content": str(tool_result)
-                                    })
-                                except Exception as tool_error:
-                                    # print(f"[DEBUG] Tool Error: {str(tool_error)}", file=sys.stderr)
-                                    
-                                    # Format error for display
-                                    error_panel = Panel(
-                                        str(tool_error),
-                                        title=f"[red bold]Tool Error: {tool_name}[/red bold]",
-                                        border_style="red"
-                                    )
-                                    error_console.print(error_panel)
-                                    
-                                    # Add plain text error to final response (without Rich formatting)
-                                    error_msg = f"\nTool: {tool_name}\nError: {str(tool_error)}\n"
-                                    final_response_parts.append(error_msg)
-                                    
-                                    # Add error to the content for the next user message
-                                    tool_results_content.append({
-                                        "type": "tool_result",
-                                        "tool_use_id": tool_id,
-                                        "content": str(tool_error)
-                                    })
-                        
-                        # Add the tool results as a new user message
-                        if tool_results_content:
-                            tool_results_message = {
-                                "role": "user",
-                                "content": tool_results_content
-                            }
-                            messages.append(tool_results_message)
-                            error_console.print(f"[purple]Added tool results to message history. History now has {len(messages)} messages.[/purple]")
-                        
-                        # Continue the conversation to get Claude's final response
-                        continue
-                    else:
-                        # No more tool calls, end the conversation
-                        error_console.print("[purple]No more tool calls, ending conversation.[/purple]")
-                        conversation_active = False
-                
-                # Combine all response parts
-                final_response = "\n".join(final_response_parts)
-                # print(f"[DEBUG] Final response length: {len(final_response)} characters", file=sys.stderr)
-                # print(f"[DEBUG] Final response preview: {final_response[:200]}...", file=sys.stderr)
-                return final_response
-
-    except Exception as e:
-        # Print the exception to stderr for debugging
-        error_console.print(Panel(f"MCP Error: {str(e)}", title="[red bold]Error[/red bold]", border_style="red"))
-        print(traceback.format_exc(), file=sys.stderr)
-        return f"MCP Error: {str(e)}"
-
-def call_claude_sync(prompt: str, max_tokens: int = 1000) -> str:
-    """Call Claude Sonnet 3.7 directly using synchronous API.
-    
-    Args:
-        prompt: The text prompt to send to Claude.
-        max_tokens: Maximum number of tokens to generate.
+        An initialized Anthropic client.
         
-    Returns:
-        The text response from Claude.
+    Raises:
+        ValueError: If the ANTHROPIC_API_KEY environment variable is not set.
     """
     # Check for API key
     api_key = os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
         raise ValueError("ANTHROPIC_API_KEY environment variable is not set")
     
-    # Initialize Anthropic client
-    client = anthropic.Anthropic(api_key=api_key)
+    # Initialize and return Anthropic client
+    return anthropic.Anthropic(api_key=api_key)
+
+async def async_setup_mcp_session(server_params: StdioServerParameters):
+    """Set up an MCP session.
     
-    # Call Claude Sonnet 3.7
-    response = client.messages.create(
-        model="claude-3-7-sonnet-20250219",
-        messages=[{
-            "role": "user",
-            "content": prompt
-        }],
-        max_tokens=max_tokens
-    )
+    Args:
+        server_params: MCP server parameters.
+        
+    Returns:
+        tuple: A tuple containing (session, client_context) for the MCP connection.
+        
+    Raises:
+        Exception: If connection to the MCP server fails.
+    """
+    # Connect to the MCP server using context managers
+    client_context = stdio_client(server_params)
+    read, write = await client_context.__aenter__()
+    session = ClientSession(read, write)
+    await session.__aenter__()
     
-    # Return the text response
-    return response.content[0].text
+    # Initialize the connection
+    await session.initialize()
+    
+    return session, client_context
+
+async def async_fetch_available_tools(session, show_tools: bool = False):
+    """Fetch available tools from the MCP server.
+    
+    Args:
+        session: The MCP client session.
+        show_tools: Whether to display detailed tool information.
+        
+    Returns:
+        list: A list of available tools in Claude format.
+    """
+    tools_result = await session.list_tools()
+    claude_tools = []
+    if tools_result and hasattr(tools_result, 'tools'):
+        for tool in tools_result.tools:
+            claude_tools.append({
+                "name": tool.name,
+                "description": tool.description,
+                "input_schema": tool.inputSchema
+            })
+    
+    # Only display detailed tool information if requested
+    if show_tools:
+        # Create a table to display available tools
+        tools_table = Table(title="Available Tools", box=ROUNDED, border_style="yellow")
+        tools_table.add_column("Tool Name", style="yellow bold")
+        tools_table.add_column("Description", style="cyan")
+        
+        for tool in claude_tools:
+            tools_table.add_row(tool['name'], tool['description'] if 'description' in tool else "")
+        
+        error_console.print(tools_table)
+    else:
+        # Just print a simple list of available tools
+        error_console.print(f"Available tools: {', '.join(tool['name'] for tool in claude_tools)}")
+    
+    return claude_tools
+
+async def async_call_claude_with_tools(client, messages, claude_tools):
+    """Call Claude API with the current message history and tools.
+    
+    Args:
+        client: The Anthropic client.
+        messages: The conversation message history.
+        claude_tools: Available tools in Claude format.
+        
+    Returns:
+        The response from Claude.
+        
+    Raises:
+        Exception: If the API call fails.
+    """
+    try:
+        # Call Claude with the current message history
+        response = client.messages.create(
+            model="claude-3-7-sonnet-20250219",
+            messages=messages,
+            tools=claude_tools if claude_tools else None,
+            max_tokens=10000
+        )
+        return response
+    except Exception as e:
+        print(f"[ERROR] Claude API error: {str(e)}", file=sys.stderr)
+        # If we have a message format error, try to recover by simplifying the message history
+        if "messages" in str(e) and len(messages) > 1:
+            # Keep only the initial user message
+            simplified_messages = [messages[0]]
+            response = client.messages.create(
+                model="claude-3-7-sonnet-20250219",
+                messages=simplified_messages,
+                tools=claude_tools if claude_tools else None,
+                max_tokens=1000
+            )
+            return response
+        else:
+            raise
+
+def async_process_claude_response(response, final_response_parts):
+    """Process Claude's response and prepare message content.
+    
+    Args:
+        response: The response from Claude.
+        final_response_parts: List to collect response parts.
+        
+    Returns:
+        tuple: A tuple containing (assistant_message_content, has_tool_use, stop_reason_info).
+    """
+    # Debug log response
+    print(f"[DEBUG] Claude response: {response}")
+    
+    # Check the stop reason
+    stop_reason = response.stop_reason
+    has_tool_use = stop_reason == "tool_use"
+    
+    # Create a dictionary to hold information about the stop reason
+    stop_reason_info = {
+        "reason": stop_reason,
+        "message": "",
+        "should_notify_user": False
+    }
+    
+    # Process different stop reasons
+    if stop_reason == "end_turn":
+        stop_reason_info["message"] = "Claude reached a natural stopping point."
+    elif stop_reason == "max_tokens":
+        stop_reason_info["message"] = "Response was truncated due to token limit."
+        stop_reason_info["should_notify_user"] = True
+        # Add a note to the final response
+        truncation_note = "\n\n[Note: This response was truncated due to reaching the maximum token limit.]"
+        final_response_parts.append(truncation_note)
+    elif stop_reason == "stop_sequence":
+        stop_reason_info["message"] = f"Response ended due to a custom stop sequence."
+        if hasattr(response, "stop_sequence") and response.stop_sequence:
+            stop_reason_info["message"] += f" Stop sequence: {response.stop_sequence}"
+    elif stop_reason == "tool_use":
+        stop_reason_info["message"] = "Claude is requesting to use a tool."
+    else:
+        stop_reason_info["message"] = f"Response ended with unknown stop reason: {stop_reason}"
+        stop_reason_info["should_notify_user"] = True
+    
+    # Log the stop reason
+    error_console.print(f"[purple]Stop reason: {stop_reason_info['message']}[/purple]")
+    
+    # Process Claude's response
+    assistant_message_content = []
+    
+    for content in response.content:
+        if content.type == "text":
+            final_response_parts.append(content.text)
+            assistant_message_content.append({"type": "text", "text": content.text})
+        elif content.type == "tool_use":
+            # Extract tool call details
+            tool_name = content.name
+            tool_args = content.input
+            tool_id = content.id
+            
+            # Add tool use to assistant message
+            assistant_message_content.append({
+                "type": "tool_use",
+                "name": tool_name,
+                "id": tool_id,
+                "input": tool_args
+            })
+    
+    return assistant_message_content, has_tool_use, stop_reason_info
+
+async def async_execute_tool_calls(session, response, final_response_parts):
+    """Execute tool calls requested by Claude.
+    
+    Args:
+        session: The MCP client session.
+        response: The response from Claude containing tool calls.
+        final_response_parts: List to collect response parts.
+        
+    Returns:
+        list: A list of tool results content for the next user message.
+    """
+    # Create a new user message with tool results
+    tool_results_content = []
+    
+    # Process each tool use request
+    for content in response.content:
+        if content.type == "tool_use":
+            tool_name = content.name
+            tool_args = content.input
+            tool_id = content.id
+            
+            # Create a panel for tool execution
+            tool_panel = Panel(
+                f"[cyan]Arguments:[/cyan] {tool_args}",
+                title=f"[yellow bold]Executing Tool: {tool_name}[/yellow bold]",
+                border_style="yellow"
+            )
+            error_console.print(tool_panel)
+            
+            try:
+                # Execute the tool call through MCP
+                tool_result = await session.call_tool(tool_name, arguments=tool_args)
+                
+                # Format tool result for display
+                result_panel = Panel(
+                    str(tool_result),
+                    title=f"[cyan]Tool Result: {tool_name}[/cyan]",
+                    border_style="cyan"
+                )
+                error_console.print(result_panel)
+                
+                # Extract the actual result value
+                extracted_result = extract_tool_result_value(str(tool_result))
+                
+                # Add plain text result to final response (without Rich formatting)
+                tool_response = f"\nTool: {tool_name}\nResult: {extracted_result}\n"
+                final_response_parts.append(tool_response)
+                
+                # Add tool result to the content for the next user message
+                tool_results_content.append({
+                    "type": "tool_result",
+                    "tool_use_id": tool_id,
+                    "content": str(tool_result)
+                })
+            except Exception as tool_error:
+                # Format error for display
+                error_panel = Panel(
+                    str(tool_error),
+                    title=f"[red bold]Tool Error: {tool_name}[/red bold]",
+                    border_style="red"
+                )
+                error_console.print(error_panel)
+                
+                # Add plain text error to final response (without Rich formatting)
+                error_msg = f"\nTool: {tool_name}\nError: {str(tool_error)}\n"
+                final_response_parts.append(error_msg)
+                
+                # Add error to the content for the next user message
+                tool_results_content.append({
+                    "type": "tool_result",
+                    "tool_use_id": tool_id,
+                    "content": str(tool_error)
+                })
+    
+    return tool_results_content
+
+async def async_run_conversation_loop(session, client, claude_tools, messages, show_debug=False, show_stop_reason: bool = False):
+    """Run the main conversation loop with Claude.
+    
+    Args:
+        session: The MCP client session.
+        client: The Anthropic client.
+        claude_tools: Available tools in Claude format.
+        messages: Initial message history.
+        show_debug: Whether to show debug information.
+        show_stop_reason: Whether to show the stop reason in the output.
+        
+    Returns:
+        str: The final response from the conversation.
+    """
+    # Main conversation loop
+    final_response_parts = []
+    conversation_active = True
+    last_stop_reason_info = None
+    
+    while conversation_active:
+        error_console.print(f"[purple]Calling Claude with {len(claude_tools)} available tools and {len(messages)} messages in history...[/purple]")
+        
+        # Debug: Print message structure before sending to Claude
+        if show_debug:
+            print(f"\n[DEBUG] Sending message structure to Claude:", file=sys.stderr)
+            for i, msg in enumerate(messages):
+                print(f"  Message {i} - Role: {msg['role']}", file=sys.stderr)
+                if isinstance(msg['content'], list):
+                    print(f"    Content is a list with {len(msg['content'])} items", file=sys.stderr)
+                    for j, content_item in enumerate(msg['content']):
+                        if isinstance(content_item, dict):
+                            if content_item.get('type') == 'tool_use':
+                                print(f"      Item {j}: tool_use - Name: {content_item.get('name')}, ID: {content_item.get('id', 'MISSING')}", file=sys.stderr)
+                            elif content_item.get('type') == 'tool_result':
+                                print(f"      Item {j}: tool_result - Tool Use ID: {content_item.get('tool_use_id', 'MISSING')}", file=sys.stderr)
+                                content_preview = str(content_item.get('content', ''))[:50] + "..." if len(str(content_item.get('content', ''))) > 50 else str(content_item.get('content', ''))
+                                print(f"        Content: {content_preview}", file=sys.stderr)
+                            else:
+                                print(f"      Item {j}: {content_item.get('type', 'unknown type')}", file=sys.stderr)
+                        else:
+                            print(f"      Item {j}: {type(content_item)}", file=sys.stderr)
+                else:
+                    content_preview = str(msg['content'])[:50] + "..." if len(str(msg['content'])) > 50 else str(msg['content'])
+                    print(f"    Content: {content_preview}", file=sys.stderr)
+        
+        # Call Claude with the current message history
+        response = await async_call_claude_with_tools(client, messages, claude_tools)
+        
+        # Process Claude's response
+        assistant_message_content, has_tool_use, stop_reason_info = async_process_claude_response(response, final_response_parts)
+        last_stop_reason_info = stop_reason_info
+        
+        # Add assistant's response to message history
+        if assistant_message_content:
+            assistant_message = {
+                "role": "assistant",
+                "content": assistant_message_content
+            }
+            messages.append(assistant_message)
+            error_console.print(f"[purple]Added assistant response to message history. History now has {len(messages)} messages.[/purple]")
+        
+        # If the stop reason should be displayed to the user, show it
+        if stop_reason_info["should_notify_user"]:
+            error_console.print(Panel(
+                stop_reason_info["message"],
+                title="[yellow bold]Response Information[/yellow bold]",
+                border_style="yellow"
+            ))
+        
+        # If Claude requested to use tools, execute them and send results back
+        if has_tool_use:
+            error_console.print("[yellow bold]Claude requested tool calls, executing...[/yellow bold]")
+            
+            # Execute tool calls
+            tool_results_content = await async_execute_tool_calls(session, response, final_response_parts)
+            
+            # Add the tool results as a new user message
+            if tool_results_content:
+                tool_results_message = {
+                    "role": "user",
+                    "content": tool_results_content
+                }
+                messages.append(tool_results_message)
+                error_console.print(f"[purple]Added tool results to message history. History now has {len(messages)} messages.[/purple]")
+            
+            # Continue the conversation to get Claude's final response
+            continue
+        else:
+            # No more tool calls, end the conversation
+            error_console.print(f"[purple]No more tool calls, ending conversation. Final stop reason: {stop_reason_info['reason']}[/purple]")
+            conversation_active = False
+    
+    # Combine all response parts
+    final_response = "\n".join(final_response_parts)
+    
+    # Add stop reason information to the final response if requested
+    if show_stop_reason and last_stop_reason_info:
+        stop_reason_text = f"\n\n---\nStop reason: {last_stop_reason_info['reason']}"
+        if last_stop_reason_info["message"]:
+            stop_reason_text += f" - {last_stop_reason_info['message']}"
+        final_response += stop_reason_text
+    
+    return final_response
+
+async def async_run_mcp_command(prompt: str, show_tools: bool, server_params: StdioServerParameters, debug: bool = False, show_stop_reason: bool = False) -> str:
+    """Async implementation of the MCP command execution with context re-injection.
+    
+    Args:
+        prompt: The text prompt to send.
+        show_tools: Whether to display detailed tool information.
+        server_params: MCP server parameters.
+        debug: Whether to show debug information.
+        show_stop_reason: Whether to show the stop reason in the output.
+        
+    Returns:
+        The text response from the MCP server.
+    """
+    session = None
+    client_context = None
+    
+    try:
+        # Set up MCP session
+        session, client_context = await async_setup_mcp_session(server_params)
+        
+        # Get Anthropic client
+        client = await get_anthropic_client()
+        
+        # Fetch available tools
+        claude_tools = await async_fetch_available_tools(session, show_tools)
+        
+        # Initialize conversation with the user's prompt
+        messages = [
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ]
+        
+        # Run the conversation loop
+        final_response = await async_run_conversation_loop(session, client, claude_tools, messages, debug, show_stop_reason)
+        
+        return final_response
+
+    except Exception as e:
+        # Print the exception to stderr for debugging
+        error_console.print(Panel(f"MCP Error: {str(e)}", title="[red bold]Error[/red bold]", border_style="red"))
+        print(traceback.format_exc(), file=sys.stderr)
+        return f"MCP Error: {str(e)}"
+    finally:
+        # Clean up resources
+        if session:
+            await session.__aexit__(None, None, None)
+        if client_context:
+            await client_context.__aexit__(None, None, None)
 
 @click.command()
 @click.argument("prompt")
-@click.option("--use-mcp", is_flag=True, help="Use MCP server integration instead of direct API call")
-@click.option("--list-tools", is_flag=True, help="Display detailed information about available tools")
-def llm(prompt, use_mcp, list_tools):
+@click.option("--use-mcp", is_flag=True, help="Use MCP server integration instead of direct API call", default=True)
+@click.option("--list-tools", is_flag=True, help="Display detailed information about available tools", default=False)
+@click.option("--debug", is_flag=True, help="Show debug information", default=False)
+@click.option("--show-stop-reason", is_flag=True, help="Show the stop reason in the output", default=False)
+def llm(prompt, use_mcp = True, list_tools = False, debug = False, show_stop_reason = False):
     """Call Claude Sonnet 3.7 with the given prompt.
     
     By default, calls Claude directly via the API. Use --use-mcp to use MCP server integration.
@@ -496,11 +650,11 @@ def llm(prompt, use_mcp, list_tools):
         if use_mcp:
             # Use the MCP server integration
             error_console.print("[purple]Using MCP server integration...[/purple]")
-            result = run_llm_command_with_mcp(prompt, list_tools)
+            result = run_llm_command_with_mcp(prompt, list_tools, debug, show_stop_reason)
         else:
             # Use the synchronous function directly
             error_console.print("[purple]Using direct Claude API...[/purple]")
-            result = call_claude_sync(prompt)
+            result = call_claude_sync(prompt, show_stop_reason)
         
         # Check if the result starts with "Error:" or "MCP Error:"
         if result.startswith("Error:") or result.startswith("MCP Error:"):

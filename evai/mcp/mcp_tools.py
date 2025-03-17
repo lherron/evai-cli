@@ -4,6 +4,7 @@ import os
 import sys
 import logging
 import inspect
+import traceback
 from typing import Dict, Any, List, Optional, Awaitable, Tuple, Union
 
 try:
@@ -237,11 +238,13 @@ def register_tools(mcp: FastMCP) -> None:
                     continue
                 
                 # Register the tool with a unique name based on its path
-                # Replace / with _ for MCP naming
-                mcp_tool_name = tool_path.replace("/", "_")
+                # Replace / and - with _ for MCP naming
+                mcp_tool_name = tool_path.replace("/", "_").replace("-", "_")
                 register_tool(mcp, tool_path, mcp_tool_name, metadata)
                 
             except Exception as e:
+                # Print the error stack trace
+                logger.error(traceback.format_exc())
                 logger.error(f"Error registering tool '{tool_path}': {e}")
         
         logger.debug(f"Registered {len(tools)} custom tools")
@@ -347,7 +350,7 @@ def {mcp_tool_name}({', '.join(param_str)}){return_annotation}:
             'logger': logger,
             'run_tool': run_tool
         }
-        
+        print(wrapper_code)
         # Execute the wrapper code to create the function
         exec(wrapper_code, globals(), local_namespace)
         
