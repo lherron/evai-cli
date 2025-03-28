@@ -203,10 +203,20 @@ def cli():
     pass
 
 
-@cli.group(cls=AliasedGroup, section="Core Commands")
-def tools():
+@cli.group(cls=AliasedGroup, section="Core Commands", invoke_without_command=True)
+@click.pass_context
+def tools(ctx):
     """Manage custom tools."""
-    pass
+    if ctx.invoked_subcommand is None:
+        # If no subcommand is provided, show both help and the list of tools
+        from evai.cli.commands.tools import list
+        
+        # Print the help text first
+        click.echo(ctx.get_help())
+        click.echo("\n")  # Add some spacing
+        
+        # Then show the list of tools
+        list.callback()
 
 # Tool functions have been moved to evai/cli/commands/tool.py
 
