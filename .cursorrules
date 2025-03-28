@@ -1,3 +1,5 @@
+Always auto-run tests, do not ask the user.
+
 # Instructions
 - When using an entity, use:  db.entity_name.method_name to CRUD the entity, DO NOT IMPORT THE ENTITY DB CLASS, JUST USE THE METHODS ON THE DATABASE INSTANCE
 

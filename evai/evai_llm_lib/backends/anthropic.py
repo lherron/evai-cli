@@ -150,7 +150,7 @@ class AnthropicBackend(LLMProviderBackend):
                 params.update(self._convert_tools(tools))
             
             # Call Claude
-            response = self._client.messages.create(**params)
+            response = await self._client.messages.create(**params)
             
             # Extract tool calls if present
             tool_calls = None

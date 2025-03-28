@@ -147,7 +147,7 @@ class ChatSession:
     
     async def __aenter__(self) -> "ChatSession":
         """Enter the async context manager."""
-        llm_provider, tool_executor = await create_session_backends(
+        llm_provider, tool_executor = create_session_backends(
             provider_name=self._provider_name,
             executor_name=self._executor_name,
             config=self.config
