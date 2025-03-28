@@ -1,5 +1,8 @@
 # EVAI CLI Development Guide
 
+## Execution Rules
+- There is a venv in .venv, please use it for all python/pytest commands.
+
 ## Build & Test Commands
 - Setup: `python -m venv .venv && source .venv/bin/activate && pip install -e ".[dev]"`
 - Run all tests: `pytest`
