@@ -5,21 +5,21 @@ import pytest
 from typing import List, Optional
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from evai_llm_lib.api import (
+from evai.evai_llm_lib.api import (
     ask, ask_sync,
     chat, chat_sync,
     ChatSession, SyncChatSession
 )
-from evai_llm_lib.backends.base import (
-    LLMProvider,
-    ToolExecutor,
+from evai.evai_llm_lib.backends.base import (
+    LLMProviderBackend as LLMProvider,
+    ToolExecutorBackend as ToolExecutor,
     Message,
     ToolDefinition,
     ToolResult,
-    Response
+    LLMResponse as Response
 )
-from evai_llm_lib.config import LLMLibConfig
-from evai_llm_lib.errors import LLMLibError
+from evai.evai_llm_lib.config import LLMLibConfig
+from evai.evai_llm_lib.errors import LLMLibError
 
 # Test fixtures
 
@@ -61,7 +61,7 @@ def mock_config():
 @pytest.mark.asyncio
 async def test_ask(mock_llm_provider):
     """Test the ask() function."""
-    with patch("evai_llm_lib.api.create_llm_provider") as mock_create:
+    with patch("evai.evai_llm_lib.api.create_llm_provider") as mock_create:
         mock_create.return_value = mock_llm_provider
         
         response = await ask("Test prompt")
@@ -76,7 +76,7 @@ async def test_ask(mock_llm_provider):
 
 def test_ask_sync(mock_llm_provider):
     """Test the ask_sync() function."""
-    with patch("evai_llm_lib.api.create_llm_provider") as mock_create:
+    with patch("evai.evai_llm_lib.api.create_llm_provider") as mock_create:
         mock_create.return_value = mock_llm_provider
         
         response = ask_sync("Test prompt")
@@ -91,7 +91,7 @@ def test_ask_sync(mock_llm_provider):
 @pytest.mark.asyncio
 async def test_chat_with_string_messages(mock_llm_provider):
     """Test chat() with string messages."""
-    with patch("evai_llm_lib.api.create_llm_provider") as mock_create:
+    with patch("evai.evai_llm_lib.api.create_llm_provider") as mock_create:
         mock_create.return_value = mock_llm_provider
         
         messages = ["Hello", "How are you?"]
@@ -111,7 +111,7 @@ async def test_chat_with_string_messages(mock_llm_provider):
 @pytest.mark.asyncio
 async def test_chat_with_dict_messages(mock_llm_provider):
     """Test chat() with dict messages."""
-    with patch("evai_llm_lib.api.create_llm_provider") as mock_create:
+    with patch("evai.evai_llm_lib.api.create_llm_provider") as mock_create:
         mock_create.return_value = mock_llm_provider
         
         messages = [
@@ -132,7 +132,7 @@ async def test_chat_with_dict_messages(mock_llm_provider):
 
 def test_chat_sync(mock_llm_provider):
     """Test the chat_sync() function."""
-    with patch("evai_llm_lib.api.create_llm_provider") as mock_create:
+    with patch("evai.evai_llm_lib.api.create_llm_provider") as mock_create:
         mock_create.return_value = mock_llm_provider
         
         messages = ["Hello", "How are you?"]
@@ -148,7 +148,7 @@ def test_chat_sync(mock_llm_provider):
 @pytest.mark.asyncio
 async def test_chat_session(mock_llm_provider, mock_tool_executor):
     """Test the ChatSession class."""
-    with patch("evai_llm_lib.api.create_session_backends") as mock_create:
+    with patch("evai.evai_llm_lib.api.create_session_backends") as mock_create:
         mock_create.return_value = (mock_llm_provider, mock_tool_executor)
         
         async with ChatSession() as session:
@@ -167,7 +167,7 @@ async def test_chat_session(mock_llm_provider, mock_tool_executor):
 
 def test_sync_chat_session(mock_llm_provider, mock_tool_executor):
     """Test the SyncChatSession class."""
-    with patch("evai_llm_lib.api.create_session_backends") as mock_create:
+    with patch("evai.evai_llm_lib.api.create_session_backends") as mock_create:
         mock_create.return_value = (mock_llm_provider, mock_tool_executor)
         
         with SyncChatSession() as session:
@@ -210,7 +210,7 @@ async def test_provider_error(mock_llm_provider):
     """Test handling of provider errors."""
     mock_llm_provider.generate_response.side_effect = Exception("Provider error")
     
-    with patch("evai_llm_lib.api.create_llm_provider") as mock_create:
+    with patch("evai.evai_llm_lib.api.create_llm_provider") as mock_create:
         mock_create.return_value = mock_llm_provider
         
         with pytest.raises(LLMLibError):

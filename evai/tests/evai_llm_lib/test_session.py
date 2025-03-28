@@ -4,8 +4,8 @@ import pytest
 from typing import List, Dict, Any, Optional
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from evai_llm_lib.session import LLMChatSession
-from evai_llm_lib.backends.base import (
+from evai.evai_llm_lib.session import LLMChatSession
+from evai.evai_llm_lib.backends.base import (
     LLMProvider,
     ToolExecutor,
     Message,
@@ -14,8 +14,8 @@ from evai_llm_lib.backends.base import (
     ToolResult,
     Response
 )
-from evai_llm_lib.config import LLMLibConfig
-from evai_llm_lib.errors import LLMLibError
+from evai.evai_llm_lib.config import LLMLibConfig
+from evai.evai_llm_lib.errors import LLMLibError
 
 # Fixtures
 

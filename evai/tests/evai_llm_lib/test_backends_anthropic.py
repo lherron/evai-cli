@@ -3,10 +3,10 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from evai_llm_lib.backends.anthropic import AnthropicProvider
-from evai_llm_lib.backends.base import Message, ToolDefinition, Response
-from evai_llm_lib.config import LLMLibConfig
-from evai_llm_lib.errors import LLMLibError
+from evai.evai_llm_lib.backends.anthropic import AnthropicBackend
+from evai.evai_llm_lib.backends.base import Message, ToolDefinition, LLMResponse as Response
+from evai.evai_llm_lib.config import LLMLibConfig
+from evai.evai_llm_lib.errors import LLMLibError
 
 @pytest.fixture
 def mock_anthropic_client():
@@ -32,8 +32,8 @@ def mock_config():
 @pytest.mark.asyncio
 async def test_anthropic_initialization():
     """Test AnthropicProvider initialization."""
-    with patch("evai_llm_lib.backends.anthropic.AsyncAnthropic") as mock_anthropic:
-        provider = AnthropicProvider(
+    with patch("evai.evai_llm_lib.backends.anthropic.anthropic.Anthropic") as mock_anthropic:
+        provider = AnthropicBackend(
             config=LLMLibConfig(anthropic_api_key="test_key")
         )
         
@@ -45,10 +45,10 @@ async def test_anthropic_initialization():
 @pytest.mark.asyncio
 async def test_anthropic_generate_response(mock_anthropic_client):
     """Test generating a response from Anthropic."""
-    with patch("evai_llm_lib.backends.anthropic.AsyncAnthropic") as mock_anthropic:
+    with patch("evai.evai_llm_lib.backends.anthropic.anthropic.Anthropic") as mock_anthropic:
         mock_anthropic.return_value = mock_anthropic_client
         
-        provider = AnthropicProvider(
+        provider = AnthropicBackend(
             config=LLMLibConfig(anthropic_api_key="test_key")
         )
         await provider.initialize()
@@ -92,10 +92,10 @@ async def test_anthropic_with_tools(mock_anthropic_client):
     
     mock_anthropic_client.messages.create.return_value = tool_use_response
     
-    with patch("evai_llm_lib.backends.anthropic.AsyncAnthropic") as mock_anthropic:
+    with patch("evai.evai_llm_lib.backends.anthropic.anthropic.Anthropic") as mock_anthropic:
         mock_anthropic.return_value = mock_anthropic_client
         
-        provider = AnthropicProvider(
+        provider = AnthropicBackend(
             config=LLMLibConfig(anthropic_api_key="test_key")
         )
         await provider.initialize()
@@ -135,10 +135,10 @@ async def test_anthropic_with_tools(mock_anthropic_client):
 @pytest.mark.asyncio
 async def test_anthropic_with_multimodal(mock_anthropic_client):
     """Test generating a response with multimodal content."""
-    with patch("evai_llm_lib.backends.anthropic.AsyncAnthropic") as mock_anthropic:
+    with patch("evai.evai_llm_lib.backends.anthropic.anthropic.Anthropic") as mock_anthropic:
         mock_anthropic.return_value = mock_anthropic_client
         
-        provider = AnthropicProvider(
+        provider = AnthropicBackend(
             config=LLMLibConfig(anthropic_api_key="test_key")
         )
         await provider.initialize()
@@ -170,10 +170,10 @@ async def test_anthropic_error_handling():
     error_response = Exception("API Error")
     mock_client.messages.create.side_effect = error_response
     
-    with patch("evai_llm_lib.backends.anthropic.AsyncAnthropic") as mock_anthropic:
+    with patch("evai.evai_llm_lib.backends.anthropic.anthropic.Anthropic") as mock_anthropic:
         mock_anthropic.return_value = mock_client
         
-        provider = AnthropicProvider(
+        provider = AnthropicBackend(
             config=LLMLibConfig(anthropic_api_key="test_key")
         )
         await provider.initialize()
@@ -190,14 +190,14 @@ async def test_anthropic_error_handling():
 @pytest.mark.asyncio
 async def test_anthropic_cleanup():
     """Test cleanup method."""
-    provider = AnthropicProvider(
+    provider = AnthropicBackend(
         config=LLMLibConfig(anthropic_api_key="test_key")
     )
     # No client yet
     await provider.cleanup()
     
     # With client
-    with patch("evai_llm_lib.backends.anthropic.AsyncAnthropic") as mock_anthropic:
+    with patch("evai.evai_llm_lib.backends.anthropic.anthropic.Anthropic") as mock_anthropic:
         mock_client = AsyncMock()
         mock_anthropic.return_value = mock_client
         
