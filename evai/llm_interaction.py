@@ -115,8 +115,10 @@ class MCPServer:
         self.stdio_context: Any | None = None
         self.session: ClientSession | None = None
         self._cleanup_lock: asyncio.Lock = asyncio.Lock()
-        self.exit_stack: AsyncExitStack = AsyncExitStack()
+        self.exit_stack: AsyncExitStack | None = None
         self._stack_task = None
+        self._process = None
+        self._initialized = False
 
     async def initialize(self) -> None:
         """Initialize the server connection."""
@@ -136,20 +138,36 @@ class MCPServer:
             else None,
         )
         try:
+            # Create a new exit stack for each initialization
+            self.exit_stack = AsyncExitStack()
             # Store the current task so we can ensure cleanup happens in the same task
             self._stack_task = asyncio.current_task()
+            
+            # Enter the stdio client context
             stdio_transport = await self.exit_stack.enter_async_context(
                 stdio_client(server_params)
             )
             read, write = stdio_transport
+            
+            # Enter the client session context
             session = await self.exit_stack.enter_async_context(
                 ClientSession(read, write)
             )
             await session.initialize()
+            
+            # Store session and mark as initialized
             self.session = session
+            self._initialized = True
+            
         except Exception as e:
             logging.error(f"Error initializing server {self.name}: {e}")
-            await self.cleanup()
+            # Cleanup if initialization fails
+            if self.exit_stack:
+                try:
+                    await self.exit_stack.aclose()
+                except Exception as close_err:
+                    logging.warning(f"Error closing exit stack during initialization cleanup: {close_err}")
+                self.exit_stack = None
             raise
 
     async def list_tools(self) -> list[Any]:
@@ -224,6 +242,10 @@ class MCPServer:
     async def cleanup(self) -> None:
         """Clean up server resources."""
         async with self._cleanup_lock:
+            # If not initialized, nothing to clean up
+            if not self._initialized:
+                return
+                
             try:
                 # Check if we're in the same task that created the exit stack
                 current_task = asyncio.current_task()
@@ -232,17 +254,33 @@ class MCPServer:
                         f"Cleanup attempted in different task than initialization. "
                         f"Stack task: {self._stack_task}, current task: {current_task}"
                     )
-                    # Instead of directly closing in a different task, set session to None
-                    # so that calls will fail gracefully
-                    self.session = None
-                    return
                 
-                await self.exit_stack.aclose()
-                self.session = None
+                # Close resources regardless of task
+                if self.session:
+                    self.session = None
+                
+                # Close exit stack if it exists
+                if self.exit_stack:
+                    try:
+                        # Handle cancel scope errors by using a shield
+                        await asyncio.shield(self.exit_stack.aclose())
+                    except asyncio.CancelledError:
+                        logging.warning(f"Cancel operation during cleanup of server {self.name}")
+                    except Exception as stack_err:
+                        logging.warning(f"Error closing exit stack for server {self.name}: {stack_err}")
+                    
+                    # Always set to None to allow garbage collection
+                    self.exit_stack = None
+                
+                # Clean up remaining attributes  
                 self.stdio_context = None
                 self._stack_task = None
+                self._initialized = False
+                
             except Exception as e:
                 logging.error(f"Error during cleanup of server {self.name}: {e}")
+                # Ensure initialization state is reset even on error
+                self._initialized = False
 
 
 
@@ -335,17 +373,29 @@ class LLMSession:
 
     async def cleanup_servers(self) -> None:
         """Clean up all servers properly."""
-        # Create a task for each server's cleanup, but run them one by one to avoid task issues
         if not self.initialized:
             return
 
-        for server in self.servers:
+        cleanup_errors = []
+        
+        # Gather all servers that need cleanup
+        servers_to_cleanup = [server for server in self.servers if server.session is not None]
+        
+        # Clean up each server, collecting any errors
+        for server in servers_to_cleanup:
             try:
                 await server.cleanup()
             except Exception as e:
-                logging.warning(f"Warning during cleanup of server {server.name}: {e}")
-
+                error_msg = f"Warning during cleanup of server {server.name}: {e}"
+                logging.warning(error_msg)
+                cleanup_errors.append(error_msg)
+        
+        # Set initialized to False regardless of cleanup errors
         self.initialized = False
+        
+        # If all cleanups had errors and we had servers to clean up, log a summary
+        if cleanup_errors and len(cleanup_errors) == len(servers_to_cleanup):
+            logging.error(f"All server cleanups failed: {len(cleanup_errors)} errors")
 
     async def process_llm_response(self, llm_response: str) -> str:
         """Process the LLM response and execute tools if needed.
@@ -1318,12 +1368,14 @@ def extract_tool_result_value(result_str: str) -> str:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    # Filter out some excessive logging
     logging.getLogger("httpcore").setLevel(logging.INFO)
     logging.getLogger("anthropic").setLevel(logging.INFO)
-
+    
+    # Ignore asyncio cancel scope errors that happen during cleanup
+    logging.getLogger("asyncio").setLevel(logging.CRITICAL)
 
     config = Configuration()
-
     
     # Load server configurations from server_config.json
     try:
@@ -1343,17 +1395,34 @@ if __name__ == "__main__":
     
     session = LLMSession(servers)
     
-    prompt = "subtract 8 from 3"
-    result = asyncio.run(session.send_request(prompt, debug=True, show_stop_reason=True))
-    
-    print("\n--- RESULT ---")
-    if result["success"]:
-        print("Success: True")
-        print(f"Response:\n{result['response']}")
-        if result["tool_calls"]:
-            print("\n--- TOOL CALLS ---")
-            for i, call in enumerate(result["tool_calls"], 1):
-                print(f"Tool Call {i}: {call['tool_name']} - Result: {call.get('result', 'Error: ' + call.get('error', 'Unknown'))}")
-    else:
-        print("Success: False")
-        print(f"Error: {result['error']}")
+    try:
+        prompt = "subtract 8 from 3"
+        result = asyncio.run(session.send_request(prompt, debug=True, show_stop_reason=True))
+        
+        print("\n--- RESULT ---")
+        if result["success"]:
+            print("Success: True")
+            print(f"Response:\n{result['response']}")
+            if result["tool_calls"]:
+                print("\n--- TOOL CALLS ---")
+                for i, call in enumerate(result["tool_calls"], 1):
+                    print(f"Tool Call {i}: {call['tool_name']} - Result: {call.get('result', 'Error: ' + call.get('error', 'Unknown'))}")
+        else:
+            print("Success: False")
+            print(f"Error: {result['error']}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        # In the case of an error, ensure server processes are killed
+        import signal
+        import os
+        import psutil
+        
+        # Get current process
+        current_process = psutil.Process(os.getpid())
+        
+        # Kill all child processes to clean up any hanging MCP servers
+        for child in current_process.children(recursive=True):
+            try:
+                child.kill()
+            except:
+                pass

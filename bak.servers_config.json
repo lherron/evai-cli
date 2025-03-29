@@ -23,6 +23,15 @@
         "run",
         "/Users/lherron/projects/evai-cli/evai/mcp/server.py"
       ]
+    },
+    "playwright-mcp-server": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@executeautomation/playwright-mcp-server"
+      ]
     }
   }
 }
