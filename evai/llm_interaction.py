@@ -502,7 +502,7 @@ async def run_conversation_loop(session: ClientSession, client: anthropic.Anthro
         "final_response_parts": final_response_parts
     }
 
-async def async_run_mcp_command(prompt: str, server_params: StdioServerParameters, debug: bool = False, show_stop_reason: bool = False) -> Dict[str, Any]:
+async def async_run_mcp_command(prompt: str, server_params: StdioServerParameters, debug: bool = True, show_stop_reason: bool = False) -> Dict[str, Any]:
     """Async implementation of the MCP command execution with context re-injection.
     
     Args:
@@ -526,6 +526,8 @@ async def async_run_mcp_command(prompt: str, server_params: StdioServerParameter
         
         # Fetch available tools
         claude_tools = await fetch_available_tools(session)
+        if debug:
+            logger.debug(f"Available tools: {claude_tools}")
         
         # Initialize conversation with the user's prompt
         messages = [
@@ -583,11 +585,11 @@ async def execute_llm_request_async(
     prompt: str,
     use_mcp: bool,
     server_params: Optional[StdioServerParameters] = None,
-    debug: bool = False,
+    debug: bool = True,
     show_stop_reason: bool = False
 ) -> Dict[str, Any]:
     """
-    Executes an LLM request, either directly or via MCP.
+    Executes an LLM request with MCP server 
 
     Args:
         prompt: The text prompt to send to the LLM.
@@ -655,3 +657,51 @@ def execute_llm_request(
         debug=debug,
         show_stop_reason=show_stop_reason
     )) 
+
+# Main function for demonstration
+if __name__ == "__main__":
+    # Configure logging to show debug information
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
+    # set httpcore to INFO
+    logging.getLogger("httpcore").setLevel(logging.INFO)
+    logging.getLogger("anthropic").setLevel(logging.INFO)
+    # Example prompt that should trigger tool use
+    prompt = "subtract 8 from 3"
+    
+    print(f"Sending prompt to LLM: \"{prompt}\"")
+    print("Using MCP for tool integration...")
+    
+    # Create server parameters
+    server_params = create_mcp_server_params()
+    
+    # Execute LLM request with MCP enabled
+    result = execute_llm_request(
+        prompt=prompt,
+        use_mcp=True,
+        server_params=server_params,
+        debug=True,
+        show_stop_reason=True
+    )
+    
+    # Print results
+    print("\n--- RESULT ---")
+    if result["success"]:
+        print("Success: True")
+        print(f"Response:\n{result['response']}")
+        
+        # Print tool calls if any
+        if result["tool_calls"]:
+            print("\n--- TOOL CALLS ---")
+            for i, tool_call in enumerate(result["tool_calls"], 1):
+                print(f"Tool Call {i}:")
+                print(f"  Tool: {tool_call['tool_name']}")
+                print(f"  Args: {tool_call['tool_args']}")
+                print(f"  Result: {tool_call['extracted_result']}")
+                if tool_call['error']:
+                    print(f"  Error: {tool_call['error']}")
+    else:
+        print("Success: False")
+        print(f"Error: {result['error']}") 
