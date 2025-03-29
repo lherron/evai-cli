@@ -214,7 +214,7 @@ async def async_run_mcp_command(prompt: str, show_tools: bool, server_params: St
         client = await get_anthropic_client()
         
         # Fetch available tools
-        claude_tools = await async_fetch_available_tools(session, show_tools)
+        claude_tools = await fetch_available_tools(session, show_tools)
         
         # Initialize conversation with the user's prompt
         messages = [
@@ -312,7 +312,46 @@ async def async_setup_mcp_session(server_params: StdioServerParameters) -> Tuple
     
     return session, client_context
 
-async def async_fetch_available_tools(session: ClientSession, show_tools: bool = False) -> List[Any]:
+def print_tools_table(claude_tools: List[Any]) -> None:
+    # Create tool descriptions for the panel content
+    tool_descriptions = []
+    
+    # Using Any type to handle different possible structures
+    for tool in claude_tools:
+        try:
+            # Try accessing as a dictionary
+            if hasattr(tool, 'get'):
+                name = tool.get('name', 'Unknown')
+                description = tool.get('description', '')
+            # Try accessing as an object with attributes
+            elif hasattr(tool, 'name'):
+                name = getattr(tool, 'name', 'Unknown')
+                description = getattr(tool, 'description', '')
+            else:
+                name = str(tool)
+                description = ''
+            
+            # Add formatted tool information to the list
+            tool_descriptions.append(f"[yellow bold]{name}[/yellow bold]: [cyan]{description}[/cyan]")
+        except Exception:
+            # Fallback for any other type
+            tool_descriptions.append(f"[yellow bold]{str(tool)}[/yellow bold]")
+    
+    # Join all tool descriptions with newlines
+    panel_content = "\n\n".join(tool_descriptions)
+    
+    # Create and display the panel with width set to expand to terminal width
+    tools_panel = Panel(
+        panel_content,
+        title="[yellow bold]Available Tools[/yellow bold]",
+        border_style="yellow",
+        expand=True,  # Make panel expand to full width
+        width=error_console.width  # Set width to console width
+    )
+    
+    error_console.print(tools_panel)
+        
+async def fetch_available_tools(session: ClientSession, show_tools: bool = False) -> List[Any]:
     """Fetch available tools from the MCP server.
     
     Args:
@@ -333,42 +372,11 @@ async def async_fetch_available_tools(session: ClientSession, show_tools: bool =
                 "input_schema": tool.inputSchema
             })
     
-    # Only display detailed tool information if requested
-    if show_tools:
-        # Create a table to display available tools
-        tools_table = Table(title="Available Tools", box=ROUNDED, border_style="yellow")
-        tools_table.add_column("Tool Name", style="yellow bold")
-        tools_table.add_column("Description", style="cyan")
-        
-        # Using Any type to handle different possible structures
-        for tool in claude_tools:
-                try:
-                    # Try accessing as a dictionary
-                    if hasattr(tool, 'get'):
-                        name = tool.get('name', 'Unknown')
-                        description = tool.get('description', '')
-                    # Try accessing as an object with attributes
-                    elif hasattr(tool, 'name'):
-                        name = getattr(tool, 'name', 'Unknown')
-                        description = getattr(tool, 'description', '')
-                    else:
-                        name = str(tool)
-                        description = ''
-                    tools_table.add_row(name, description)
-                except Exception:
-                    # Fallback for any other type
-                    tools_table.add_row(str(tool), '')
-        
-        error_console.print(tools_table)
-    else:
-        # Just print a simple list of available tools
-        # Using string representation as a fallback
-        tool_names = [str(getattr(tool, 'name', tool)) for tool in claude_tools]
-        error_console.print(f"Available tools: {', '.join(tool_names)}")
-    
+    print_tools_table(claude_tools)
+
     return claude_tools
 
-async def async_call_claude_with_tools(client: Any, messages: List[Dict[str, Any]], claude_tools: List[Dict[str, Any]]) -> Any:
+async def call_claude_with_tools(client: Any, messages: List[Dict[str, Any]], claude_tools: List[Dict[str, Any]]) -> Any:
     """Call Claude API with the current message history and tools.
     
     Args:
@@ -385,7 +393,7 @@ async def async_call_claude_with_tools(client: Any, messages: List[Dict[str, Any
     try:
         # Call Claude with the current message history
         response = client.messages.create(
-            model="claude-3-7-sonnet-20250219",
+            model="claude-3-7-sonnet-latest",
             messages=messages,
             tools=claude_tools if claude_tools else None,
             max_tokens=10000
@@ -394,18 +402,17 @@ async def async_call_claude_with_tools(client: Any, messages: List[Dict[str, Any
     except Exception as e:
         print(f"[ERROR] Claude API error: {str(e)}", file=sys.stderr)
         # If we have a message format error, try to recover by simplifying the message history
-        if "messages" in str(e) and len(messages) > 1:
-            # Keep only the initial user message
-            simplified_messages = [messages[0]]
-            response = client.messages.create(
-                model="claude-3-7-sonnet-20250219",
-                messages=simplified_messages,
-                tools=claude_tools if claude_tools else None,
-                max_tokens=1000
-            )
-            return response
-        else:
-            raise
+        # if "messages" in str(e) and len(messages) > 1:
+        #     # Keep only the initial user message
+        #     simplified_messages = [messages[0]]
+        #     response = client.messages.create(
+        #         model="claude-3-7-sonnet-latest",
+        #         messages=simplified_messages,
+        #         tools=claude_tools if claude_tools else None,
+        #         max_tokens=1000
+        #     )
+        #     return response
+        raise
 
 def async_process_claude_response(response: Any, final_response_parts: List[str]) -> Tuple[List[Dict[str, Any]], bool, Dict[str, Any]]:
     """Process Claude's response and prepare message content.
@@ -601,7 +608,7 @@ async def async_run_conversation_loop(session: ClientSession, client: anthropic.
                     print(f"    Content: {content_preview}", file=sys.stderr)
         
         # Call Claude with the current message history
-        response = await async_call_claude_with_tools(client, messages, claude_tools)
+        response = await call_claude_with_tools(client, messages, claude_tools)
         
         # Process Claude's response
         assistant_message_content, has_tool_use, stop_reason_info = async_process_claude_response(response, final_response_parts)

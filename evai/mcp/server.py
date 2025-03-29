@@ -5,13 +5,9 @@ An stdio implementation of an MCP server.  It is spawned from MCP
 clients (Claude Desktop, Claude Code, etc).  
 """
 
-import os
 import sys
 import logging
-import json
-import subprocess
-import importlib.util
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any
 
 try:
     from mcp.server.fastmcp import FastMCP, Context
@@ -26,22 +22,9 @@ except ImportError:
 
 # Add the parent directory to sys.path
 # sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from evai.tool_storage import (
-    list_tools, 
-    run_tool, 
-    load_tool_metadata, 
-    get_tool_dir,
-    save_tool_metadata,
-    edit_tool_metadata,
-    edit_tool_implementation,
-    run_lint_check,
-    import_tool_module
-)
-
 # Import the new modules
 from evai.mcp.prompts import register_prompts
-from evai.mcp.tools import register_built_in_tools, register_tools, register_tool
+from evai.mcp.tools import register_tools, register_tool
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -64,7 +47,7 @@ class EVAIServer:
         self.tools: Dict[str, Any] = {}
         
         # Use the new modules for registration
-        register_built_in_tools(self.mcp)
+        # register_built_in_tools(self.mcp)
         register_prompts(self.mcp, self)
         register_tools(self.mcp)
         
