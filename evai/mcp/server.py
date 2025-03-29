@@ -1,4 +1,9 @@
-"""MCP server integration for EVAI CLI."""
+"""
+MCP server integration for EVAI CLI.
+
+An stdio implementation of an MCP server.  It is spawned from MCP
+clients (Claude Desktop, Claude Code, etc).  
+"""
 
 import os
 import sys
@@ -35,8 +40,8 @@ from evai.tool_storage import (
 )
 
 # Import the new modules
-from evai.mcp.mcp_prompts import register_prompts
-from evai.mcp.mcp_tools import register_built_in_tools, register_tools, register_tool
+from evai.mcp.prompts import register_prompts
+from evai.mcp.tools import register_built_in_tools, register_tools, register_tool
 
 # Set up logging
 logger = logging.getLogger(__name__)

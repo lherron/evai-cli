@@ -259,7 +259,7 @@ def run_llm_command_with_mcp(prompt: str, show_tools: bool = False, debug: bool 
         "mcp[cli]",
         "mcp",
         "run",
-        "/Users/lherron/projects/evai-cli/evai/mcp/mcp_server.py"
+        "/Users/lherron/projects/evai-cli/evai/mcp/server.py"
         ],  # Path to the MCP server script
         env=None  # Using default environment
     )

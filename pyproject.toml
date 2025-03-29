@@ -15,6 +15,7 @@ dependencies = [
 dev = [
     "pytest>=7.4.0",
     "flake8>=6.1.0",
+    "mypy>=1.15.0",
 ]
 
 [project.scripts]
@@ -27,3 +28,62 @@ build-backend = "setuptools.build_meta"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = "test_*.py"
+[tool.mypy]
+# --- Basic Setup ---
+python_version = "3.12"
+# Selectively ignore imports for modules without stubs (use overrides below)
+# DO NOT use ignore_missing_imports = true globally
+follow_imports = "silent" # Recommended mode for handling missing imports gracefully
+
+# --- Error Reporting ---
+# Enable errors! This is crucial.
+# ignore_errors = false # This is the default, no need to explicitly set it to false
+
+# --- Warnings (Highly Recommended) ---
+warn_redundant_casts = true   # Warns about casts that are not needed.
+warn_unused_ignores = true    # Warns about # type: ignore comments that are no longer needed.
+warn_return_any = true        # Warns about functions returning Any implicitly or explicitly.
+warn_unreachable = true       # Warns about code determined to be unreachable.
+
+# --- Strictness Settings (Good defaults for improving safety) ---
+disallow_untyped_defs = true        # Functions must have type annotations.
+disallow_incomplete_defs = true     # Functions must be fully annotated (args and return).
+check_untyped_defs = false          # Less relevant if disallowing untyped defs. Keep false for performance.
+disallow_untyped_decorators = true  # Decorators must be typed.
+no_implicit_optional = true         # Must explicitly use Optional[T] for values that can be None.
+strict_optional = true              # Enforces explicit checks for None (highly recommended).
+
+# --- Stricter Options (Consider enabling later) ---
+# disallow_any_generics = false     # Start with false, enable later if desired (e.g., disallow list[Any])
+# disallow_subclassing_any = false  # Start with false
+# disallow_untyped_calls = false    # Start with false, requires all called functions to be typed
+
+# --- Module Overrides ---
+
+# Relax rules for tests (common practice)
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+# Add other relaxations for tests if needed, e.g.:
+# check_untyped_defs = false # Already global default, but explicit if needed
+# strict_optional = false    # If None checks are too cumbersome *specifically* in tests
+
+# Ignore missing imports ONLY for specific libraries known to lack stubs
+[[tool.mypy.overrides]]
+module = [
+    "openai.*",
+    "mcp.*",
+    # Add other third-party libs without stubs here
+]
+ignore_missing_imports = true
+
+# Keep this if evai.cli.mcp_server truly imports things mypy cannot find,
+# but ideally, try to resolve the underlying issues within your own code later.
+[[tool.mypy.overrides]]
+module = "evai.cli.mcp_server"
+ignore_missing_imports = true
+# Consider if you also need to relax definition checks for this specific module,
+# but try to avoid it if possible.
+# disallow_untyped_defs = false
+# disallow_incomplete_defs = false
