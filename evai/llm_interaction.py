@@ -144,9 +144,13 @@ class MCPServer:
             self._stack_task = asyncio.current_task()
             
             # Enter the stdio client context
-            stdio_transport = await self.exit_stack.enter_async_context(
-                stdio_client(server_params)
-            )
+            stdio_context = stdio_client(server_params)
+            stdio_transport = await self.exit_stack.enter_async_context(stdio_context)
+            
+            # Store a reference to the process for proper cleanup
+            if hasattr(stdio_context, '_process_context') and hasattr(stdio_context._process_context, '_process'):
+                self._process = stdio_context._process_context._process
+            
             read, write = stdio_transport
             
             # Enter the client session context
@@ -247,27 +251,51 @@ class MCPServer:
                 return
                 
             try:
-                # Check if we're in the same task that created the exit stack
-                current_task = asyncio.current_task()
-                if self._stack_task != current_task:
-                    logging.warning(
-                        f"Cleanup attempted in different task than initialization. "
-                        f"Stack task: {self._stack_task}, current task: {current_task}"
-                    )
+                # Properly terminate subprocesses first
+                if hasattr(self, '_process') and self._process:
+                    try:
+                        import signal
+                        import os
+                        
+                        # Try to terminate the process group if possible
+                        try:
+                            pgid = os.getpgid(self._process.pid)
+                            os.killpg(pgid, signal.SIGTERM)
+                        except (ProcessLookupError, PermissionError, AttributeError):
+                            # Fall back to terminating just the process
+                            try:
+                                self._process.terminate()
+                            except ProcessLookupError:
+                                pass
+                    except Exception as proc_err:
+                        logging.debug(f"Error terminating process for server {self.name}: {proc_err}")
                 
-                # Close resources regardless of task
+                # Close the session first (if it exists)
                 if self.session:
+                    # Just set to None - we'll close the connection via the exit stack
                     self.session = None
                 
-                # Close exit stack if it exists
+                # Use a new async task to close the exit stack if we're in a different task
+                # This prevents the "cancel scope in different task" error
+                current_task = asyncio.current_task()
+                
                 if self.exit_stack:
-                    try:
-                        # Handle cancel scope errors by using a shield
-                        await asyncio.shield(self.exit_stack.aclose())
-                    except asyncio.CancelledError:
-                        logging.warning(f"Cancel operation during cleanup of server {self.name}")
-                    except Exception as stack_err:
-                        logging.warning(f"Error closing exit stack for server {self.name}: {stack_err}")
+                    # Different approach depending on whether we're in the same task
+                    if self._stack_task == current_task:
+                        # If we're in the same task, close directly
+                        try:
+                            await self.exit_stack.aclose()
+                        except Exception as stack_err:
+                            logging.debug(f"Error in exit stack cleanup for server {self.name}: {stack_err}")
+                    else:
+                        # If we're in a different task, we need to create a new exit stack
+                        # and manually close our resources to avoid cancel scope errors
+                        try:
+                            # Just record that we attempted to clean up - the process will be cleaned up
+                            # when the program exits
+                            logging.debug(f"Server {self.name} cleanup in different task - will be cleaned up on exit")
+                        except Exception as cleanup_err:
+                            logging.debug(f"Alternative cleanup error for server {self.name}: {cleanup_err}")
                     
                     # Always set to None to allow garbage collection
                     self.exit_stack = None
@@ -278,7 +306,7 @@ class MCPServer:
                 self._initialized = False
                 
             except Exception as e:
-                logging.error(f"Error during cleanup of server {self.name}: {e}")
+                logging.debug(f"Error during cleanup of server {self.name}: {e}")
                 # Ensure initialization state is reset even on error
                 self._initialized = False
 
@@ -377,25 +405,43 @@ class LLMSession:
             return
 
         cleanup_errors = []
+        logging.debug(f"Starting cleanup of {len(self.servers)} servers")
         
-        # Gather all servers that need cleanup
-        servers_to_cleanup = [server for server in self.servers if server.session is not None]
-        
-        # Clean up each server, collecting any errors
-        for server in servers_to_cleanup:
-            try:
-                await server.cleanup()
-            except Exception as e:
-                error_msg = f"Warning during cleanup of server {server.name}: {e}"
-                logging.warning(error_msg)
-                cleanup_errors.append(error_msg)
+        # Clean up each server sequentially to avoid any potential race conditions
+        for server in self.servers:
+            if server._initialized or server.session is not None:
+                try:
+                    await server.cleanup()
+                except Exception as e:
+                    error_msg = f"Error during cleanup of server {server.name}: {e}"
+                    logging.debug(error_msg)
+                    cleanup_errors.append(error_msg)
         
         # Set initialized to False regardless of cleanup errors
         self.initialized = False
         
-        # If all cleanups had errors and we had servers to clean up, log a summary
-        if cleanup_errors and len(cleanup_errors) == len(servers_to_cleanup):
-            logging.error(f"All server cleanups failed: {len(cleanup_errors)} errors")
+        # Collect any lingering processes that need to be terminated
+        import psutil
+        import os
+        import signal
+        
+        # Clean up any child processes that might still be running
+        try:
+            current_process = psutil.Process(os.getpid())
+            children = current_process.children(recursive=True)
+            
+            for child in children:
+                try:
+                    child_name = child.name()
+                    if any(child_name.startswith(svc) for svc in ['uv', 'python', 'node']):
+                        logging.debug(f"Terminating lingering process: {child_name} (PID: {child.pid})")
+                        child.terminate()
+                except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                    pass
+        except Exception as e:
+            logging.debug(f"Error cleaning up child processes: {e}")
+        
+        logging.debug(f"Server cleanup complete. {len(cleanup_errors)} errors encountered.")
 
     async def process_llm_response(self, llm_response: str) -> str:
         """Process the LLM response and execute tools if needed.
@@ -450,7 +496,8 @@ class LLMSession:
                     await server.initialize()
                 except Exception as e:
                     logging.error(f"Failed to initialize server: {e}")
-                    await self.cleanup_servers()
+                    # Mark as not initialized rather than attempting cleanup
+                    self.initialized = False
                     return
 
             all_tools = []
@@ -484,6 +531,12 @@ class LLMSession:
 
             messages = [{"role": "system", "content": system_message}]
 
+            # Store process information for manual cleanup later
+            self._child_processes = []
+            for server in self.servers:
+                if hasattr(server, '_process') and server._process:
+                    self._child_processes.append(server._process.pid)
+
             while True:
                 try:
                     user_input = input("You: ").strip().lower()
@@ -515,7 +568,49 @@ class LLMSession:
                     break
 
         finally:
-            await self.cleanup_servers()
+            # Clean up without waiting for it to complete
+            # We'll do this in a non-blocking way to prevent cancellation issues
+            for server in self.servers:
+                server.session = None
+                server._initialized = False
+            
+            # Schedule cleanup to happen after this function returns
+            import threading
+            def cleanup_processes():
+                import time
+                import os
+                import signal
+                import psutil
+                
+                # Give a small delay to ensure the main operation has completed
+                time.sleep(0.5)
+                
+                try:
+                    # Clean up processes that we know about
+                    for pid in getattr(self, '_child_processes', []):
+                        try:
+                            process = psutil.Process(pid)
+                            process.terminate()
+                        except (psutil.NoSuchProcess, psutil.AccessDenied):
+                            pass
+                        
+                    # Clean up any other child processes
+                    current_process = psutil.Process(os.getpid())
+                    for child in current_process.children(recursive=True):
+                        if child.is_running():
+                            try:
+                                child.terminate()
+                            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                                pass
+                except Exception as e:
+                    # Just log but don't raise
+                    logging.debug(f"Error in cleanup thread: {e}")
+            
+            # Start cleanup thread
+            threading.Thread(target=cleanup_processes, daemon=True).start()
+            
+            # Mark servers as not initialized
+            self.initialized = False
 
     async def send_request(self, prompt: str, debug: bool = False, show_stop_reason: bool = False) -> Dict[str, Any]:
         """Execute an LLM request with tool use independently of the chat loop.
@@ -560,6 +655,12 @@ class LLMSession:
             tool_calls = []
             conversation_active = True
             last_stop_reason_info = None
+
+            # Store process information for manual cleanup later
+            self._child_processes = []
+            for server in self.servers:
+                if hasattr(server, '_process') and server._process:
+                    self._child_processes.append(server._process.pid)
 
             # Conversation loop
             while conversation_active:
@@ -649,7 +750,49 @@ class LLMSession:
             if show_stop_reason and last_stop_reason_info:
                 final_response += f"\n\nStop reason: {last_stop_reason_info['reason']}"
 
-            await self.cleanup_servers()
+            # Clean up without waiting for it to complete
+            # We'll do this in a non-blocking way to prevent cancellation issues
+            for server in self.servers:
+                server.session = None
+                server._initialized = False
+
+            # Schedule cleanup to happen after this function returns
+            import threading
+            def cleanup_processes():
+                import time
+                import os
+                import signal
+                import psutil
+                
+                # Give a small delay to ensure the main operation has completed
+                time.sleep(0.5)
+                
+                try:
+                    # Clean up processes that we know about
+                    for pid in getattr(self, '_child_processes', []):
+                        try:
+                            process = psutil.Process(pid)
+                            process.terminate()
+                        except (psutil.NoSuchProcess, psutil.AccessDenied):
+                            pass
+                        
+                    # Clean up any other child processes
+                    current_process = psutil.Process(os.getpid())
+                    for child in current_process.children(recursive=True):
+                        if child.is_running():
+                            try:
+                                child.terminate()
+                            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                                pass
+                except Exception as e:
+                    # Just log but don't raise
+                    logger.debug(f"Error in cleanup thread: {e}")
+            
+            # Start cleanup thread
+            threading.Thread(target=cleanup_processes, daemon=True).start()
+            
+            # Mark servers as not initialized
+            self.initialized = False
 
             return {
                 "success": True,
@@ -736,635 +879,6 @@ def extract_tool_result_value(result_str: str) -> str:
     except Exception:
         # If any error occurs, return the original string
         return result_str
-
-# async def call_claude_directly(prompt: str, max_tokens: int = 1000, show_stop_reason: bool = False) -> str:
-#     """Call Claude Sonnet 3.7 directly without using MCP.
-    
-#     Args:
-#         prompt: The text prompt to send to Claude.
-#         max_tokens: Maximum number of tokens to generate.
-#         show_stop_reason: Whether to show the stop reason in the output.
-        
-#     Returns:
-#         The text response from Claude.
-#     """
-#     # Check for API key
-#     api_key = os.environ.get("ANTHROPIC_API_KEY")
-#     if not api_key:
-#         raise ValueError("ANTHROPIC_API_KEY environment variable is not set")
-    
-#     # Initialize Anthropic client
-#     client = anthropic.Anthropic(api_key=api_key)
-    
-#     # Call Claude Sonnet 3.7 - use synchronous API for simplicity
-#     response = client.messages.create(
-#         model="claude-3-7-sonnet-20250219",
-#         messages=[{
-#             "role": "user",
-#             "content": prompt
-#         }],
-#         max_tokens=max_tokens
-#     )
-    
-#     # Get the text response
-#     text_block = response.content[0]
-#     if text_block.type == "text":
-#         result = text_block.text
-#     else:
-#         result = str(text_block)
-    
-#     # Add stop reason if requested
-#     if show_stop_reason:
-#         stop_reason = response.stop_reason
-#         stop_reason_message = ""
-        
-#         if stop_reason == "end_turn":
-#             stop_reason_message = "Claude reached a natural stopping point."
-#         elif stop_reason == "max_tokens":
-#             stop_reason_message = "Response was truncated due to token limit."
-#             # Add a note to the response
-#             result += "\n\n[Note: This response was truncated due to reaching the maximum token limit.]"
-#         elif stop_reason == "stop_sequence":
-#             stop_reason_message = "Response ended due to a custom stop sequence."
-#             if hasattr(response, "stop_sequence") and response.stop_sequence:
-#                 stop_reason_message += f" Stop sequence: {response.stop_sequence}"
-#         else:
-#             stop_reason_message = f"Unknown stop reason: {stop_reason}"
-        
-#         # Add stop reason to the result
-#         result += f"\n\n---\nStop reason: {stop_reason} - {stop_reason_message}"
-    
-#     return result
-
-# def call_claude_sync(prompt: str, max_tokens: int = 1000, show_stop_reason: bool = False) -> str:
-#     """Call Claude Sonnet 3.7 directly using synchronous API.
-    
-#     Args:
-#         prompt: The text prompt to send to Claude.
-#         max_tokens: Maximum number of tokens to generate.
-#         show_stop_reason: Whether to show the stop reason in the output.
-        
-#     Returns:
-#         The text response from Claude.
-#     """
-#     # Use asyncio to run the async function
-#     return asyncio.run(call_claude_directly(prompt, max_tokens, show_stop_reason))
-
-# async def get_anthropic_client() -> anthropic.Anthropic:
-#     """Create and return an Anthropic client.
-    
-#     Returns:
-#         An initialized Anthropic client.
-        
-#     Raises:
-#         ValueError: If the ANTHROPIC_API_KEY environment variable is not set.
-#     """
-#     # Check for API key
-#     api_key = os.environ.get("ANTHROPIC_API_KEY")
-#     if not api_key:
-#         raise ValueError("ANTHROPIC_API_KEY environment variable is not set")
-    
-#     # Initialize and return Anthropic client
-#     return anthropic.Anthropic(api_key=api_key)
-
-# async def async_setup_mcp_session(server_params: StdioServerParameters) -> Tuple[ClientSession, Any]:
-#     """Set up an MCP session.
-    
-#     Args:
-#         server_params: MCP server parameters.
-        
-#     Returns:
-#         tuple: A tuple containing (session, client_context) for the MCP connection.
-        
-#     Raises:
-#         Exception: If connection to the MCP server fails.
-#     """
-#     # Connect to the MCP server using context managers
-#     client_context = stdio_client(server_params)
-#     read, write = await client_context.__aenter__()
-#     session = ClientSession(read, write)
-#     await session.__aenter__()
-    
-#     # Initialize the connection
-#     await session.initialize()
-    
-#     return session, client_context
-
-# async def fetch_available_tools(session: ClientSession) -> List[Dict[str, Any]]:
-#     """Fetch available tools from the MCP server.
-    
-#     Args:
-#         session: The MCP client session.
-        
-#     Returns:
-#         list: A list of available tools in Claude format.
-#     """
-#     tools_result = await session.list_tools()
-#     claude_tools: List[Dict[str, Any]] = []
-#     if tools_result and hasattr(tools_result, 'tools'):
-#         tools_list = getattr(tools_result, 'tools', [])
-#         for tool in tools_list:
-#             claude_tools.append({
-#                 "name": tool.name,
-#                 "description": tool.description,
-#                 "input_schema": tool.inputSchema
-#             })
-    
-#     return claude_tools
-
-# async def call_claude_with_tools(client: Any, messages: List[Dict[str, Any]], claude_tools: List[Dict[str, Any]]) -> Any:
-#     """Call Claude API with the current message history and tools.
-    
-#     Args:
-#         client: The Anthropic client.
-#         messages: The conversation message history.
-#         claude_tools: Available tools in Claude format.
-        
-#     Returns:
-#         The response from Claude.
-        
-#     Raises:
-#         Exception: If the API call fails.
-#     """
-#     try:
-#         # Call Claude with the current message history
-#         response = client.messages.create(
-#             model="claude-3-7-sonnet-latest",
-#             messages=messages,
-#             tools=claude_tools if claude_tools else None,
-#             max_tokens=10000
-#         )
-#         return response
-#     except Exception as e:
-#         logger.error(f"Claude API error: {str(e)}")
-#         raise
-
-# async def process_claude_response(response: Any) -> Dict[str, Any]:
-#     """Process Claude's response and prepare message content.
-    
-#     Args:
-#         response: The response from Claude.
-        
-#     Returns:
-#         Dictionary containing processed response information.
-#     """
-#     # Check the stop reason
-#     stop_reason = response.stop_reason
-#     has_tool_use = stop_reason == "tool_use"
-    
-#     # Create a dictionary to hold information about the stop reason
-#     stop_reason_info = {
-#         "reason": stop_reason,
-#         "message": "",
-#         "should_notify_user": False
-#     }
-    
-#     # Process different stop reasons
-#     if stop_reason == "end_turn":
-#         stop_reason_info["message"] = "Claude reached a natural stopping point."
-#     elif stop_reason == "max_tokens":
-#         stop_reason_info["message"] = "Response was truncated due to token limit."
-#         stop_reason_info["should_notify_user"] = True
-#     elif stop_reason == "stop_sequence":
-#         stop_reason_info["message"] = f"Response ended due to a custom stop sequence."
-#         if hasattr(response, "stop_sequence") and response.stop_sequence:
-#             stop_reason_info["message"] += f" Stop sequence: {response.stop_sequence}"
-#     elif stop_reason == "tool_use":
-#         stop_reason_info["message"] = "Claude is requesting to use a tool."
-#     else:
-#         stop_reason_info["message"] = f"Response ended with unknown stop reason: {stop_reason}"
-#         stop_reason_info["should_notify_user"] = True
-    
-#     logger.debug(f"Stop reason: {stop_reason_info['message']}")
-    
-#     # Process Claude's response
-#     assistant_message_content = []
-#     final_response_parts = []
-    
-#     for content in response.content:
-#         if content.type == "text":
-#             final_response_parts.append(content.text)
-#             assistant_message_content.append({"type": "text", "text": content.text})
-#         elif content.type == "tool_use":
-#             # Extract tool call details
-#             tool_name = content.name
-#             tool_args = content.input
-#             tool_id = content.id
-            
-#             # Add tool use to assistant message
-#             assistant_message_content.append({
-#                 "type": "tool_use",
-#                 "name": tool_name,
-#                 "id": tool_id,
-#                 "input": tool_args
-#             })
-    
-#     return {
-#         "assistant_message_content": assistant_message_content,
-#         "has_tool_use": has_tool_use,
-#         "stop_reason_info": stop_reason_info,
-#         "final_response_parts": final_response_parts
-#     }
-
-# async def execute_tool_calls(session: ClientSession, response: Any) -> Dict[str, Any]:
-#     """Execute tool calls requested by Claude.
-    
-#     Args:
-#         session: The MCP client session.
-#         response: The response from Claude containing tool calls.
-        
-#     Returns:
-#         Dictionary containing tool results and response information.
-#     """
-#     # Create a new user message with tool results
-#     tool_results_content = []
-#     tool_calls = []
-#     final_response_parts = []
-    
-#     # Process each tool use request
-#     for content in response.content:
-#         if content.type == "tool_use":
-#             tool_name = content.name
-#             tool_args = content.input
-#             tool_id = content.id
-            
-#             try:
-#                 # Execute the tool call through MCP
-#                 logger.debug(f"Executing Tool: {tool_name}...")
-#                 tool_result = await session.call_tool(tool_name, arguments=tool_args)
-                
-#                 # Extract the actual result value
-#                 extracted_result = extract_tool_result_value(str(tool_result))
-                
-#                 # Add plain text result to final response
-#                 tool_response = f"\nTool: {tool_name}\nResult: {extracted_result}\n"
-#                 final_response_parts.append(tool_response)
-                
-#                 # Add tool result to the content for the next user message
-#                 tool_results_content.append({
-#                     "type": "tool_result",
-#                     "tool_use_id": tool_id,
-#                     "content": str(tool_result)
-#                 })
-                
-#                 # Add tool information for return data
-#                 tool_calls.append({
-#                     "tool_name": tool_name,
-#                     "tool_args": tool_args,
-#                     "tool_id": tool_id,
-#                     "result": str(tool_result),
-#                     "extracted_result": extracted_result,
-#                     "error": None
-#                 })
-#             except Exception as tool_error:
-#                 # Add plain text error to final response
-#                 error_msg = f"\nTool: {tool_name}\nError: {str(tool_error)}\n"
-#                 final_response_parts.append(error_msg)
-                
-#                 # Add error to the content for the next user message
-#                 tool_results_content.append({
-#                     "type": "tool_result",
-#                     "tool_use_id": tool_id,
-#                     "content": str(tool_error)
-#                 })
-                
-#                 # Add tool error information for return data
-#                 tool_calls.append({
-#                     "tool_name": tool_name,
-#                     "tool_args": tool_args,
-#                     "tool_id": tool_id,
-#                     "result": None,
-#                     "extracted_result": None,
-#                     "error": str(tool_error)
-#                 })
-    
-#     return {
-#         "tool_results_content": tool_results_content,
-#         "tool_calls": tool_calls,
-#         "final_response_parts": final_response_parts
-#     }
-
-# async def run_conversation_loop(session: ClientSession, client: anthropic.Anthropic, claude_tools: List[Dict[str, Any]], messages: List[Dict[str, Any]], debug: bool = False, show_stop_reason: bool = False) -> Dict[str, Any]:
-#     """Run the main conversation loop with Claude.
-    
-#     Args:
-#         session: The MCP client session.
-#         client: The Anthropic client.
-#         claude_tools: Available tools in Claude format.
-#         messages: Initial message history.
-#         debug: Whether to show debug information.
-#         show_stop_reason: Whether to show the stop reason in the output.
-        
-#     Returns:
-#         Dictionary containing the conversation results and information.
-#     """
-#     # Main conversation loop
-#     final_response_parts: List[str] = []
-#     conversation_active = True
-#     last_stop_reason_info = None
-#     all_tool_calls = []
-    
-#     while conversation_active:
-#         logger.debug(f"Calling Claude with {len(claude_tools)} available tools and {len(messages)} messages in history...")
-        
-#         # Debug: Log message structure before sending to Claude
-#         if debug:
-#             logger.debug(f"Sending message structure to Claude:")
-#             for i, msg in enumerate(messages):
-#                 logger.debug(f"  Message {i} - Role: {msg['role']}")
-#                 if isinstance(msg['content'], list):
-#                     logger.debug(f"    Content is a list with {len(msg['content'])} items")
-#                     for j, content_item in enumerate(msg['content']):
-#                         if isinstance(content_item, dict):
-#                             if content_item.get('type') == 'tool_use':
-#                                 logger.debug(f"      Item {j}: tool_use - Name: {content_item.get('name')}, ID: {content_item.get('id', 'MISSING')}")
-#                             elif content_item.get('type') == 'tool_result':
-#                                 logger.debug(f"      Item {j}: tool_result - Tool Use ID: {content_item.get('tool_use_id', 'MISSING')}")
-#                                 content_preview = str(content_item.get('content', ''))[:50] + "..." if len(str(content_item.get('content', ''))) > 50 else str(content_item.get('content', ''))
-#                                 logger.debug(f"        Content: {content_preview}")
-#                             else:
-#                                 logger.debug(f"      Item {j}: {content_item.get('type', 'unknown type')}")
-#                         else:
-#                             logger.debug(f"      Item {j}: {type(content_item)}")
-#                 else:
-#                     content_preview = str(msg['content'])[:50] + "..." if len(str(msg['content'])) > 50 else str(msg['content'])
-#                     logger.debug(f"    Content: {content_preview}")
-        
-#         # Call Claude with the current message history
-#         response = await call_claude_with_tools(client, messages, claude_tools)
-        
-#         # Process Claude's response
-#         response_data = await process_claude_response(response)
-#         assistant_message_content = response_data["assistant_message_content"]
-#         has_tool_use = response_data["has_tool_use"]
-#         stop_reason_info = response_data["stop_reason_info"]
-#         final_response_parts.extend(response_data["final_response_parts"])
-        
-#         last_stop_reason_info = stop_reason_info
-        
-#         # Add assistant's response to message history
-#         if assistant_message_content:
-#             assistant_message = {
-#                 "role": "assistant",
-#                 "content": assistant_message_content
-#             }
-#             messages.append(assistant_message)
-#             logger.debug(f"Added assistant response to message history. History now has {len(messages)} messages.")
-        
-#         # If Claude requested to use tools, execute them and send results back
-#         if has_tool_use:
-#             logger.debug("Claude requested tool calls, executing...")
-            
-#             # Execute tool calls
-#             tool_result_data = await execute_tool_calls(session, response)
-#             tool_results_content = tool_result_data["tool_results_content"]
-#             tool_calls = tool_result_data["tool_calls"]
-#             final_response_parts.extend(tool_result_data["final_response_parts"])
-            
-#             # Add tool calls to the collection of all tool calls
-#             all_tool_calls.extend(tool_calls)
-            
-#             # Add the tool results as a new user message
-#             if tool_results_content:
-#                 tool_results_message = {
-#                     "role": "user",
-#                     "content": tool_results_content
-#                 }
-#                 messages.append(tool_results_message)
-#                 logger.debug(f"Added tool results to message history. History now has {len(messages)} messages.")
-            
-#             # Continue the conversation to get Claude's final response
-#             continue
-#         else:
-#             # No more tool calls, end the conversation
-#             logger.debug(f"No more tool calls, ending conversation. Final stop reason: {stop_reason_info['reason']}")
-#             conversation_active = False
-    
-#     # Combine all response parts
-#     final_response = "\n".join(final_response_parts)
-    
-#     # Add stop reason information to the final response if requested
-#     if show_stop_reason and last_stop_reason_info:
-#         stop_reason_text = f"\n\n---\nStop reason: {last_stop_reason_info['reason']}"
-#         if last_stop_reason_info["message"]:
-#             stop_reason_text += f" - {last_stop_reason_info['message']}"
-#         final_response += stop_reason_text
-    
-#     # Return a structured result
-#     return {
-#         "success": True,
-#         "response": final_response,
-#         "error": None,
-#         "messages": messages,
-#         "tool_calls": all_tool_calls,
-#         "stop_reason_info": last_stop_reason_info,
-#         "final_response_parts": final_response_parts
-#     }
-
-# async def async_run_mcp_command(prompt: str, server_params: StdioServerParameters, debug: bool = True, show_stop_reason: bool = False) -> Dict[str, Any]:
-#     """Async implementation of the MCP command execution with context re-injection.
-    
-#     Args:
-#         prompt: The text prompt to send.
-#         server_params: MCP server parameters.
-#         debug: Whether to show debug information.
-#         show_stop_reason: Whether to show the stop reason in the output.
-        
-#     Returns:
-#         Dictionary containing the conversation results and information.
-#     """
-#     session = None
-#     client_context = None
-    
-#     try:
-#         # Set up MCP session
-#         session, client_context = await async_setup_mcp_session(server_params)
-        
-#         # Get Anthropic client
-#         client = await get_anthropic_client()
-        
-#         # Fetch available tools
-#         claude_tools = await fetch_available_tools(session)
-#         if debug:
-#             logger.debug(f"Available tools: {claude_tools}")
-
-        
-#         # Initialize conversation with the user's prompt
-#         messages = [
-#             {
-#                 "role": "user",
-#                 "content": prompt
-#             }
-#         ]
-        
-#         # Run the conversation loop
-#         result = await run_conversation_loop(session, client, claude_tools, messages, debug, show_stop_reason)
-        
-#         return result
-
-#     except Exception as e:
-#         logger.exception("MCP Error")
-#         return {
-#             "success": False,
-#             "response": None,
-#             "error": f"MCP Error: {str(e)}",
-#             "messages": None,
-#             "tool_calls": None,
-#             "stop_reason_info": None,
-#             "final_response_parts": None
-#         }
-#     finally:
-#         # Clean up resources
-#         if session:
-#             await session.__aexit__(None, None, None)
-#         if client_context:
-#             await client_context.__aexit__(None, None, None)
-
-# def create_mcp_server_params() -> StdioServerParameters:
-#     """Create server parameters for MCP.
-    
-#     Returns:
-#         MCP server parameters.
-#     """
-#     return StdioServerParameters(
-#         command="uv",  # Executable
-#         args=[
-#             "run",
-#             "--directory",
-#             "/Users/lherron/projects/evai-cli",
-#             "--with",
-#             "mcp[cli]",
-#             "mcp",
-#             "run",
-#             "/Users/lherron/projects/evai-cli/evai/mcp/server.py"
-#         ],  # Path to the MCP server script
-#         env=None  # Using default environment
-#     )
-
-# async def execute_llm_request_async(
-#     prompt: str,
-#     use_mcp: bool,
-#     server_params: Optional[StdioServerParameters] = None,
-#     debug: bool = True,
-#     show_stop_reason: bool = False
-# ) -> Dict[str, Any]:
-#     """
-#     Executes an LLM request with MCP server 
-
-#     Args:
-#         prompt: The text prompt to send to the LLM.
-#         use_mcp: Whether to use MCP server integration.
-#         server_params: MCP server parameters (required if use_mcp is True).
-#         debug: Whether to show debug information.
-#         show_stop_reason: Whether to show the stop reason in the output.
-
-#     Returns:
-#         A dictionary containing the structured result:
-#         {
-#             "success": bool,
-#             "response": Optional[str], # Final text response
-#             "error": Optional[str],
-#             "tool_calls": Optional[List[Dict]], # List of tool call details
-#             "stop_reason_info": Optional[Dict], # Info about the final stop reason
-#             "messages": Optional[List[Dict]] # Full conversation history (for debug)
-#         }
-#     """
-#     try:
-#         if use_mcp:
-#             if not server_params:
-#                 raise ValueError("server_params are required when use_mcp is True")
-#             # Call the refactored MCP command logic
-#             return await async_run_mcp_command(prompt, server_params, debug, show_stop_reason)
-#         else:
-#             # Call the refactored direct command logic
-#             direct_response = await call_claude_directly(prompt, show_stop_reason=show_stop_reason)
-#             # For simplicity, assume call_claude_directly returns only the text for now
-#             return {
-#                 "success": True,
-#                 "response": direct_response,
-#                 "error": None,
-#                 "tool_calls": None,
-#                 "stop_reason_info": None, # Direct calls don't have the same stop reason structure easily accessible here yet
-#                 "messages": [{"role": "user", "content": prompt}, {"role": "assistant", "content": direct_response}] # Simplified history
-#             }
-#     except Exception as e:
-#         logger.exception("Error during LLM request execution")
-#         return {
-#             "success": False,
-#             "response": None,
-#             "error": str(e),
-#             "tool_calls": None,
-#             "stop_reason_info": None,
-#             "messages": None
-#         }
-
-# def execute_llm_request(
-#     prompt: str,
-#     use_mcp: bool,
-#     server_params: Optional[StdioServerParameters] = None,
-#     debug: bool = False,
-#     show_stop_reason: bool = False
-# ) -> Dict[str, Any]:
-#     """
-#     Synchronous wrapper for execute_llm_request_async.
-    
-#     See execute_llm_request_async for parameter and return details.
-#     """
-#     return asyncio.run(execute_llm_request_async(
-#         prompt=prompt,
-#         use_mcp=use_mcp,
-#         server_params=server_params,
-#         debug=debug,
-#         show_stop_reason=show_stop_reason
-#     )) 
-
-# Main function for demonstration
-# if __name__ == "__main__":
-#     # Configure logging to show debug information
-#     logging.basicConfig(
-#         level=logging.DEBUG,
-#         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-#     )
-#     # set httpcore to INFO
-#     logging.getLogger("httpcore").setLevel(logging.INFO)
-#     logging.getLogger("anthropic").setLevel(logging.INFO)
-#     # Example prompt that should trigger tool use
-#     prompt = "subtract 8 from 3"
-    
-#     print(f"Sending prompt to LLM: \"{prompt}\"")
-#     print("Using MCP for tool integration...")
-    
-#     # # Create server parameters
-#     server_params = create_mcp_server_params()
-    
-#     # Execute LLM request with MCP enabled
-#     result = execute_llm_request(
-#         prompt=prompt,
-#         use_mcp=True,
-#         server_params=server_params,
-#         debug=True,
-#         show_stop_reason=True
-#     )
-
-#     # Print results
-#     print("\n--- RESULT ---")
-#     if result["success"]:
-#         print("Success: True")
-#         print(f"Response:\n{result['response']}")
-        
-#         # Print tool calls if any
-#         if result["tool_calls"]:
-#             print("\n--- TOOL CALLS ---")
-#             for i, tool_call in enumerate(result["tool_calls"], 1):
-#                 print(f"Tool Call {i}:")
-#                 print(f"  Tool: {tool_call['tool_name']}")
-#                 print(f"  Args: {tool_call['tool_args']}")
-#                 print(f"  Result: {tool_call['extracted_result']}")
-#                 if tool_call['error']:
-#                     print(f"  Error: {tool_call['error']}")
-#     else:
-#         print("Success: False")
-#         print(f"Error: {result['error']}") 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")

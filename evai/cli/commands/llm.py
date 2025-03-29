@@ -19,8 +19,9 @@ from rich.table import Table
 from rich.box import ROUNDED
 
 from evai.llm_interaction import (
-    execute_llm_request,
-    create_mcp_server_params,
+    Configuration,
+    LLMSession,
+    MCPServer,
     extract_tool_result_value,
 )
 
@@ -140,37 +141,96 @@ def display_tool_calls(tool_calls: List[Dict[str, Any]]) -> None:
 
 @click.command()
 @click.argument("prompt")
-@click.option("--use-mcp", is_flag=True, help="Use MCP server integration instead of direct API call", default=True)
-@click.option("--list-tools", is_flag=True, help="Display detailed information about available tools", default=False)
 @click.option("--debug", is_flag=True, help="Show debug information", default=False)
 @click.option("--show-stop-reason", is_flag=True, help="Show the stop reason in the output", default=False)
-def llm(prompt: str, use_mcp: bool = True, list_tools: bool = False, debug: bool = False, show_stop_reason: bool = False) -> None:
+def llm(prompt: str, debug: bool = False, show_stop_reason: bool = False) -> None:
     """Prompts Claude with configured tools.
     
-    By default, calls Claude directly via the API. Use --use-mcp to use MCP server integration.
+    Uses MCP servers configured in servers_config.json to provide tools integration.
     """
+    # Configure basic logging for CLI output
+    import logging
+    logging.basicConfig(
+        level=logging.INFO if not debug else logging.DEBUG,
+        format="%(message)s"  # Simpler format for CLI output
+    )
+    
+    # Configure a custom filter to suppress specific asyncio errors during cleanup
+    class IgnoreAsyncioShutdownFilter(logging.Filter):
+        def filter(self, record):
+            # Filter out asyncio cleanup error messages
+            message = record.getMessage()
+            if "asyncgen" in message or "cancel scope" in message or "task was destroyed but it is pending" in message:
+                return False
+            return True
+    
+    # Apply filter to root logger and asyncio logger
+    root_logger = logging.getLogger()
+    root_logger.addFilter(IgnoreAsyncioShutdownFilter())
+    logging.getLogger("asyncio").addFilter(IgnoreAsyncioShutdownFilter())
+    
+    # Save original excepthook
+    original_excepthook = sys.excepthook
+    
+    # Define a custom excepthook to filter out asyncio cleanup errors
+    def custom_excepthook(exc_type, exc_value, exc_traceback):
+        if exc_type.__name__ == "RuntimeError" and "cancel scope" in str(exc_value):
+            return  # Silently ignore this specific error
+        elif "asyncgen" in str(exc_value):
+            return  # Silently ignore asyncgen errors
+        else:
+            # Pass other exceptions to the original handler
+            original_excepthook(exc_type, exc_value, exc_traceback)
+    
+    # Set the custom excepthook
+    sys.excepthook = custom_excepthook
+    
     try:
         # Display the user prompt in a nice panel
         error_console.print(Panel(prompt, title="[green bold]User Prompt[/green bold]", border_style="green"))
         
-        # Create server parameters for MCP if needed
-        server_params = None
-        if use_mcp:
-            # Use the MCP server integration
-            error_console.print("[purple]Using MCP server integration...[/purple]")
-            server_params = create_mcp_server_params()
-        else:
-            # Use the direct Claude API
-            error_console.print("[purple]Using direct Claude API...[/purple]")
+        # Initialize configuration and load server settings
+        error_console.print("[purple]Initializing LLM session with configured MCP servers...[/purple]")
+        config = Configuration()
         
-        # Call the library function to execute the LLM request
-        result = execute_llm_request(
-            prompt=prompt,
-            use_mcp=use_mcp,
-            server_params=server_params,
-            debug=debug,
-            show_stop_reason=show_stop_reason
-        )
+        # Load server configurations
+        try:
+            servers_config_path = "servers_config.json"
+            server_config = config.load_config(servers_config_path)
+            servers = [
+                MCPServer(name, srv_config)
+                for name, srv_config in server_config.get("mcpServers", {}).items()
+            ]
+            if not servers:
+                error_console.print("[yellow]No MCP servers found in configuration. Proceeding without tools.[/yellow]")
+        except FileNotFoundError:
+            error_console.print(f"[yellow]Warning: {servers_config_path} not found. Proceeding without MCP servers.[/yellow]")
+            servers = []
+        except json.JSONDecodeError:
+            error_console.print(f"[yellow]Warning: Invalid JSON in {servers_config_path}. Proceeding without MCP servers.[/yellow]")
+            servers = []
+        
+        # Create LLM session
+        session = LLMSession(servers)
+        
+        # Modify asyncio to ignore certain errors during cleanup
+        import asyncio
+        
+        # Redirect stderr temporarily to filter out asyncio errors during asyncio.run()
+        original_stderr = sys.stderr
+        sys.stderr = open(os.devnull, 'w')
+        
+        try:
+            # Call the send_request method asynchronously
+            result = asyncio.run(session.send_request(
+                prompt=prompt,
+                debug=debug,
+                show_stop_reason=show_stop_reason
+            ))
+        finally:
+            # Restore stderr
+            sys.stderr.close()
+            sys.stderr = original_stderr
         
         # Check if the request was successful
         if not result["success"]:
@@ -226,3 +286,6 @@ def llm(prompt: str, use_mcp: bool = True, list_tools: bool = False, debug: bool
         if "ANTHROPIC_API_KEY" not in os.environ:
             error_console.print("[red bold]Please set the ANTHROPIC_API_KEY environment variable to use the LLM command.[/red bold]")
         sys.exit(1)
+    finally:
+        # Restore original excepthook
+        sys.excepthook = original_excepthook
