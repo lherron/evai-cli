@@ -504,31 +504,24 @@ async def async_execute_tool_calls(session: ClientSession, response: Any, final_
             tool_args = content.input
             tool_id = content.id
             
-            # Create a panel for tool execution
-            tool_panel = Panel(
-                f"[cyan]Arguments:[/cyan] {tool_args}",
-                title=f"[yellow bold]Executing Tool: {tool_name}[/yellow bold]",
-                border_style="yellow"
-            )
-            error_console.print(tool_panel)
-            
             try:
                 # Execute the tool call through MCP
+                error_console.print(f"[yellow bold]Executing Tool: {tool_name}...[/yellow bold]")
                 tool_result = await session.call_tool(tool_name, arguments=tool_args)
                 
                 # Unused variable - we kept it for future implementation but need a pass to satisfy mypy
                 pass
                 
-                # Format tool result for display
+                # Extract the actual result value
+                extracted_result = extract_tool_result_value(str(tool_result))
+                
+                # Create a combined panel with both tool execution details and results
                 result_panel = Panel(
-                    str(tool_result),
-                    title=f"[cyan]Tool Result: {tool_name}[/cyan]",
+                    f"[cyan]Arguments:[/cyan] {tool_args}\n\n[cyan]Result:[/cyan] {str(tool_result)}",
+                    title=f"[yellow bold]Tool Request: {tool_name}[/yellow bold]",
                     border_style="cyan"
                 )
                 error_console.print(result_panel)
-                
-                # Extract the actual result value
-                extracted_result = extract_tool_result_value(str(tool_result))
                 
                 # Add plain text result to final response (without Rich formatting)
                 tool_response = f"\nTool: {tool_name}\nResult: {extracted_result}\n"
@@ -543,7 +536,7 @@ async def async_execute_tool_calls(session: ClientSession, response: Any, final_
             except Exception as tool_error:
                 # Format error for display
                 error_panel = Panel(
-                    str(tool_error),
+                    f"[cyan]Arguments:[/cyan] {tool_args}\n\n[red]Error:[/red] {str(tool_error)}",
                     title=f"[red bold]Tool Error: {tool_name}[/red bold]",
                     border_style="red"
                 )
