@@ -5,7 +5,7 @@ import sys
 import logging
 import inspect
 import traceback
-from typing import Dict, Any, List, Optional, Awaitable, Tuple, Union
+from typing import Dict, Any, List, Optional, Awaitable, Tuple, Union, cast, Callable
 
 try:
     from mcp.server.fastmcp import FastMCP
@@ -42,7 +42,7 @@ def register_built_in_tools(mcp: FastMCP) -> None:
     logger.debug("Registering built-in tools")
     
     @mcp.tool(name="call_llm")
-    async def call_llm(prompt: str, ctx: Any) -> str:
+    async def call_llm(prompt: str, ctx: Any) -> Any:
         """Call the LLM with the given prompt via MCP sampling.
         
         Args:
@@ -57,18 +57,21 @@ def register_built_in_tools(mcp: FastMCP) -> None:
         logger.debug("Calling LLM with prompt via MCP sampling")
         message = types.CreateMessageRequestParams(
             messages=[
-                types.PromptMessage(
+                types.SamplingMessage(
                     role="user",
                     content=types.TextContent(type="text", text=prompt)
                 )
             ],
-            modelPreferences={"hints": [{"name": "claude-3-sonnet"}]},
+            modelPreferences=types.ModelPreferences(hints=[types.ModelHint(name="claude-3-sonnet")]),
             includeContext="none",
             maxTokens=1000
         )
         # Send the sampling request to the client
         response = await ctx.send_request("sampling/createMessage", message)
-        return response.content.text
+        if hasattr(response, 'content') and hasattr(response.content, 'text'):
+            return response.content.text
+        # Ensure we always return a string
+        return str(response) if response is not None else ""
     
     @mcp.tool(name="list_tools")
     def list_available_tools() -> Dict[str, Any]:
@@ -364,10 +367,12 @@ def {mcp_tool_name}({', '.join(param_str)}){return_annotation}:
             wrapper_func.__doc__ = metadata.get("description", f"Run the {tool_path} tool")
         
         # Register the tool with MCP
-        mcp.tool(
+        # Pass the function directly as a callable
+        func_tool = mcp.tool(
             name=mcp_tool_name,
             description=metadata.get("description", "")
-        )(wrapper_func)
+        )
+        func_tool(wrapper_func) # type: ignore
         
         logger.debug(f"Successfully registered tool: {tool_path} as {mcp_tool_name}")
     except Exception as e:

@@ -5,6 +5,8 @@ import os
 import json
 import click
 import yaml
+import subprocess
+from typing import Optional, List, Dict, Any, Tuple, Union
 from evai.tool_storage import (
     get_tool_dir, 
     save_tool_metadata, 
@@ -28,7 +30,7 @@ console = Console()
 @click.option("--type", type=click.Choice(["tool", "group"]), required=True, help="Type of entity to create")
 @click.option("--name", required=True, help="Name of the entity")
 @click.option("--parent", default=None, help="Parent group for subtools")
-def add(type, name, parent):
+def add(type: str, name: str, parent: Optional[str]) -> None:
     """Add a new tool or group."""
     try:
         # Construct the full path based on parent
@@ -43,6 +45,7 @@ def add(type, name, parent):
             }
             
             # Add the group using the new unified function
+            from evai.tool_storage import add_tool
             add_tool(path, metadata, "")
             
             click.echo(f"Group '{path}' created successfully.")
@@ -94,6 +97,7 @@ def add(type, name, parent):
                 implementation = f'"""Custom tool implementation for {name}."""\n\n\ndef tool_{name}() -> dict:\n    """Execute the tool."""\n    return {{"status": "success"}}\n'
             
             # Add the tool using the new unified function
+            from evai.tool_storage import add_tool
             add_tool(path, default_metadata, implementation)
             
             click.echo(f"Tool '{path}' created successfully.")
@@ -106,16 +110,16 @@ def add(type, name, parent):
 
 @click.command()
 @click.argument("tool_name")
-def new(tool_name):
+def new(tool_name: str) -> None:
     """Alias for 'add' - Add a new custom tool."""
-    add.callback(tool_name)
+    add(type="tool", name=tool_name, parent=None)
 
 
 @click.command()
 @click.argument("path")
 @click.option("--metadata/--no-metadata", default=True, help="Edit tool metadata")
 @click.option("--implementation/--no-implementation", default=True, help="Edit tool implementation")
-def edit(path, metadata, implementation):
+def edit(path: str, metadata: bool, implementation: bool) -> None:
     """Edit an existing tool or group."""
     try:
         # Get the tool directory
@@ -163,7 +167,8 @@ def edit(path, metadata, implementation):
             except Exception as e:
                 click.echo(f"Error validating metadata: {e}", err=True)
                 if click.confirm("Would you like to try again?"):
-                    return edit(path, True, False)
+                    edit(path, True, False)
+                    return
                 click.echo("Skipping metadata validation.")
         
         # Edit implementation if requested
@@ -251,13 +256,13 @@ def edit(path, metadata, implementation):
 @click.argument("tool_name")
 @click.option("--metadata/--no-metadata", default=True, help="Edit tool metadata")
 @click.option("--implementation/--no-implementation", default=True, help="Edit tool implementation")
-def e(tool_name, metadata, implementation):
+def e(tool_name: str, metadata: bool, implementation: bool) -> None:
     """Alias for 'edit' - Edit an existing tool."""
-    edit.callback(tool_name, metadata, implementation)
+    edit(path=tool_name, metadata=metadata, implementation=implementation)
 
 
 @click.command()
-def list():
+def list() -> None:
     """List all available tools and groups."""
     try:
         # Get the list of tools and groups
@@ -304,16 +309,16 @@ def list():
 
 
 @click.command()
-def ls():
+def ls() -> None:
     """Alias for 'list' - List all available tools."""
-    list.callback()
+    list()
 
 
 @click.command()
 @click.argument("path")
 @click.argument("args", nargs=-1)
 @click.option("--param", "-p", multiple=True, help="Tool parameters in the format key=value (for backward compatibility)")
-def run(path, args, param):
+def run(path: str, args: tuple, param: tuple) -> None:
     """Run a tool with the given arguments.
     
     Arguments can be provided as positional arguments after the tool path,
@@ -405,15 +410,15 @@ def run(path, args, param):
 @click.argument("tool_name")
 @click.argument("args", nargs=-1)
 @click.option("--param", "-p", multiple=True, help="Tool parameters in the format key=value (for backward compatibility)")
-def r(tool_name, args, param):
+def r(tool_name: str, args: tuple, param: tuple) -> None:
     """Alias for 'run' - Run a tool with the given arguments."""
-    run.callback(tool_name, args, param)
+    run(path=tool_name, args=args, param=param)
 
 
 @click.command()
 @click.argument("path")
 @click.option("--force", "-f", is_flag=True, help="Force removal without confirmation")
-def remove(path, force):
+def remove(path: str, force: bool) -> None:
     """Remove a tool or group."""
     try:
         # Determine if the path exists and what type it is
@@ -456,14 +461,14 @@ def remove(path, force):
 @click.command()
 @click.argument("tool_name")
 @click.option("--force", "-f", is_flag=True, help="Force removal without confirmation")
-def rm(tool_name, force):
+def rm(tool_name: str, force: bool) -> None:
     """Alias for 'remove' - Remove a custom tool."""
-    remove.callback(tool_name, force)
+    remove(path=tool_name, force=force)
 
 
 @click.command()
 @click.argument("path")
-def show(path):
+def show(path: str) -> None:
     """Show detailed information about a tool."""
     try:
         # Load tool metadata
@@ -563,6 +568,6 @@ def show(path):
 
 @click.command()
 @click.argument("tool_name")
-def s(tool_name):
+def s(tool_name: str) -> None:
     """Alias for 'show' - Show detailed information about a tool."""
-    show.callback(tool_name) 
+    show(path=tool_name) 

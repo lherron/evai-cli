@@ -50,7 +50,7 @@ PROMPTS = {
 }
 
 
-def register_prompts(mcp: FastMCP, server) -> None:
+def register_prompts(mcp: FastMCP, server: Any) -> None:
     """
     Register all available prompts.
     
@@ -78,9 +78,9 @@ def register_prompts(mcp: FastMCP, server) -> None:
             content = server.read_file(path)
             
             # Return the file content as a prompt message
-            return [PromptMessage(role="user", content=f"Please analyze this file:\n\n```\n{content}\n```")]
+            return [PromptMessage(role="user", content=types.TextContent(type="text", text=f"Please analyze this file:\n\n```\n{content}\n```"))]
         except Exception as e:
             logger.error(f"Error analyzing file: {e}")
-            return [PromptMessage(role="user", content=f"Error analyzing file: {e}")]
+            return [PromptMessage(role="user", content=types.TextContent(type="text", text=f"Error analyzing file: {e}"))]
     
     logger.debug("Prompts registered successfully") 

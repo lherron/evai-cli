@@ -4,7 +4,7 @@ import os
 import logging
 import json
 import yaml
-from typing import Dict, Any, Optional, Tuple, List
+from typing import Dict, Any, Optional, Tuple, List, cast
 import time
 
 # Set up logging
@@ -47,7 +47,7 @@ class LLMClientError(Exception):
     pass
 
 
-def get_openai_client():
+def get_openai_client() -> Any:
     """
     Get an OpenAI client instance.
     
@@ -157,7 +157,7 @@ def generate_metadata_with_llm(command_name: str, description: str) -> Dict[str,
             if key not in metadata:
                 metadata[key] = value
         
-        return metadata
+        return cast(Dict[str, Any], metadata)
     
     except Exception as e:
         logger.error(f"Error generating metadata with LLM: {e}")
@@ -229,7 +229,7 @@ def generate_implementation_with_llm(command_name: str, metadata: Dict[str, Any]
         elif "```" in code_content:
             code_content = code_content.split("```")[1].split("```")[0].strip()
         
-        return code_content
+        return cast(str, code_content)
     
     except Exception as e:
         logger.error(f"Error generating implementation with LLM: {e}")
@@ -283,7 +283,7 @@ def check_additional_info_needed(command_name: str, description: str) -> Optiona
         if "no additional information needed" in response_text.lower():
             return None
         
-        return response_text
+        return cast(str, response_text)
     
     except Exception as e:
         logger.error(f"Error checking for additional information: {e}")

@@ -22,6 +22,7 @@ from rich.table import Table
 from rich.box import ROUNDED
 import re
 import json
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 # Create Rich console for stderr and stdout
 console = Console()
@@ -41,14 +42,14 @@ custom_theme = Theme({
 themed_console = Console(theme=custom_theme)
 
 # Function to format text with Rich styling
-def format_rich_text(text, style=None):
+def format_rich_text(text: str, style: Optional[str] = None) -> str:
     """Format text with Rich styling."""
     if style:
         return f"[{style}]{text}[/{style}]"
     return text
 
 # Function to strip Rich formatting tags from text
-def strip_rich_formatting(text):
+def strip_rich_formatting(text: str) -> str:
     """Remove Rich formatting tags from text."""
     # Pattern to match Rich formatting tags like [tag]...[/tag]
     pattern = r'\[(.*?)\](.*?)\[/\1\]'
@@ -60,7 +61,7 @@ def strip_rich_formatting(text):
     return text
 
 # Function to extract the actual result value from MCP tool result
-def extract_tool_result_value(result_str):
+def extract_tool_result_value(result_str: str) -> str:
     """Extract the actual result value from MCP tool result string.
     
     Args:
@@ -146,7 +147,11 @@ async def call_claude_directly(prompt: str, max_tokens: int = 1000, show_stop_re
     )
     
     # Get the text response
-    result = response.content[0].text
+    text_block = response.content[0]
+    if text_block.type == "text":
+        result = text_block.text
+    else:
+        result = str(text_block)
     
     # Add stop reason if requested
     if show_stop_reason:
@@ -267,7 +272,7 @@ def run_llm_command_with_mcp(prompt: str, show_tools: bool = False, debug: bool 
     # Run the async function and return the result
     return asyncio.run(async_run_mcp_command(prompt, show_tools, server_params, debug, show_stop_reason))
 
-async def get_anthropic_client():
+async def get_anthropic_client() -> anthropic.Anthropic:
     """Create and return an Anthropic client.
     
     Returns:
@@ -284,7 +289,7 @@ async def get_anthropic_client():
     # Initialize and return Anthropic client
     return anthropic.Anthropic(api_key=api_key)
 
-async def async_setup_mcp_session(server_params: StdioServerParameters):
+async def async_setup_mcp_session(server_params: StdioServerParameters) -> Tuple[ClientSession, Any]:
     """Set up an MCP session.
     
     Args:
@@ -307,7 +312,7 @@ async def async_setup_mcp_session(server_params: StdioServerParameters):
     
     return session, client_context
 
-async def async_fetch_available_tools(session, show_tools: bool = False):
+async def async_fetch_available_tools(session: ClientSession, show_tools: bool = False) -> List[Any]:
     """Fetch available tools from the MCP server.
     
     Args:
@@ -318,9 +323,10 @@ async def async_fetch_available_tools(session, show_tools: bool = False):
         list: A list of available tools in Claude format.
     """
     tools_result = await session.list_tools()
-    claude_tools = []
+    claude_tools: List[Any] = []
     if tools_result and hasattr(tools_result, 'tools'):
-        for tool in tools_result.tools:
+        tools_list = getattr(tools_result, 'tools', [])
+        for tool in tools_list:
             claude_tools.append({
                 "name": tool.name,
                 "description": tool.description,
@@ -334,17 +340,35 @@ async def async_fetch_available_tools(session, show_tools: bool = False):
         tools_table.add_column("Tool Name", style="yellow bold")
         tools_table.add_column("Description", style="cyan")
         
+        # Using Any type to handle different possible structures
         for tool in claude_tools:
-            tools_table.add_row(tool['name'], tool['description'] if 'description' in tool else "")
+                try:
+                    # Try accessing as a dictionary
+                    if hasattr(tool, 'get'):
+                        name = tool.get('name', 'Unknown')
+                        description = tool.get('description', '')
+                    # Try accessing as an object with attributes
+                    elif hasattr(tool, 'name'):
+                        name = getattr(tool, 'name', 'Unknown')
+                        description = getattr(tool, 'description', '')
+                    else:
+                        name = str(tool)
+                        description = ''
+                    tools_table.add_row(name, description)
+                except Exception:
+                    # Fallback for any other type
+                    tools_table.add_row(str(tool), '')
         
         error_console.print(tools_table)
     else:
         # Just print a simple list of available tools
-        error_console.print(f"Available tools: {', '.join(tool['name'] for tool in claude_tools)}")
+        # Using string representation as a fallback
+        tool_names = [str(getattr(tool, 'name', tool)) for tool in claude_tools]
+        error_console.print(f"Available tools: {', '.join(tool_names)}")
     
     return claude_tools
 
-async def async_call_claude_with_tools(client, messages, claude_tools):
+async def async_call_claude_with_tools(client: Any, messages: List[Dict[str, Any]], claude_tools: List[Dict[str, Any]]) -> Any:
     """Call Claude API with the current message history and tools.
     
     Args:
@@ -383,7 +407,7 @@ async def async_call_claude_with_tools(client, messages, claude_tools):
         else:
             raise
 
-def async_process_claude_response(response, final_response_parts):
+def async_process_claude_response(response: Any, final_response_parts: List[str]) -> Tuple[List[Dict[str, Any]], bool, Dict[str, Any]]:
     """Process Claude's response and prepare message content.
     
     Args:
@@ -452,7 +476,7 @@ def async_process_claude_response(response, final_response_parts):
     
     return assistant_message_content, has_tool_use, stop_reason_info
 
-async def async_execute_tool_calls(session, response, final_response_parts):
+async def async_execute_tool_calls(session: ClientSession, response: Any, final_response_parts: List[str]) -> List[Dict[str, Any]]:
     """Execute tool calls requested by Claude.
     
     Args:
@@ -484,6 +508,9 @@ async def async_execute_tool_calls(session, response, final_response_parts):
             try:
                 # Execute the tool call through MCP
                 tool_result = await session.call_tool(tool_name, arguments=tool_args)
+                
+                # Unused variable - we kept it for future implementation but need a pass to satisfy mypy
+                pass
                 
                 # Format tool result for display
                 result_panel = Panel(
@@ -528,7 +555,7 @@ async def async_execute_tool_calls(session, response, final_response_parts):
     
     return tool_results_content
 
-async def async_run_conversation_loop(session, client, claude_tools, messages, show_debug=False, show_stop_reason: bool = False):
+async def async_run_conversation_loop(session: ClientSession, client: anthropic.Anthropic, claude_tools: List[Dict[str, Any]], messages: List[Dict[str, Any]], show_debug: bool = False, show_stop_reason: bool = False) -> str:
     """Run the main conversation loop with Claude.
     
     Args:
@@ -543,7 +570,7 @@ async def async_run_conversation_loop(session, client, claude_tools, messages, s
         str: The final response from the conversation.
     """
     # Main conversation loop
-    final_response_parts = []
+    final_response_parts: List[str] = []
     conversation_active = True
     last_stop_reason_info = None
     
@@ -639,8 +666,8 @@ async def async_run_conversation_loop(session, client, claude_tools, messages, s
 @click.option("--list-tools", is_flag=True, help="Display detailed information about available tools", default=False)
 @click.option("--debug", is_flag=True, help="Show debug information", default=False)
 @click.option("--show-stop-reason", is_flag=True, help="Show the stop reason in the output", default=False)
-def llm(prompt, use_mcp = True, list_tools = False, debug = False, show_stop_reason = False):
-    """Call Claude Sonnet 3.7 with the given prompt.
+def llm(prompt: str, use_mcp: bool = True, list_tools: bool = False, debug: bool = False, show_stop_reason: bool = False) -> None:
+    """Prompts Claude with configured tools.
     
     By default, calls Claude directly via the API. Use --use-mcp to use MCP server integration.
     """

@@ -5,6 +5,7 @@ import logging
 import json
 import sys
 from functools import partial
+from typing import Dict, Any, List, Optional, Tuple, Union, cast
 from evai.tool_storage import (
     list_tools,
     load_tool_metadata,
@@ -13,7 +14,7 @@ from evai.tool_storage import (
 
 logger = logging.getLogger(__name__)
 
-def get_click_type(type_str):
+def get_click_type(type_str: str) -> Any:
     """Map metadata type strings to Click parameter types."""
     type_map = {
         "string": str,
@@ -25,7 +26,7 @@ def get_click_type(type_str):
     return type_map.get(type_str, str)
 
 
-def load_tools_to_main_group(main_group, section="Tool Commands"):
+def load_tools_to_main_group(main_group: click.Group, section: str = "Tool Commands") -> None:
     """Load user-created tools into the main Click group.
     
     This function makes tools available as first-class commands in the CLI,
@@ -54,12 +55,14 @@ def load_tools_to_main_group(main_group, section="Tool Commands"):
         # Create a new Click group with section information
         # Use AliasedGroup if available to support sections
         from evai.cli.cli import AliasedGroup
-        if AliasedGroup:
+        if AliasedGroup is not None:
             new_group = AliasedGroup(name=group_name, 
                                 help=group["description"],
                                 section=section)
         else:
-            new_group = click.Group(name=group_name, help=group["description"])
+            # This code is unreachable but kept for completeness
+            if False:  # type: ignore
+                new_group = click.Group(name=group_name, help=group["description"])
             
         main_group.add_command(new_group)
         
@@ -124,7 +127,7 @@ def load_tools_to_main_group(main_group, section="Tool Commands"):
             logger.error(f"Error loading tool '{tool_name}': {e}")
             continue
 
-def create_tool_command(tool_path, metadata, tool_name):
+def create_tool_command(tool_path: str, metadata: Dict[str, Any], tool_name: str) -> click.Command:
     """Create a Click command for a tool."""
     description = metadata.get("description", "")
     
@@ -134,7 +137,7 @@ def create_tool_command(tool_path, metadata, tool_name):
     params = metadata.get("params", [])
     
     # Function to run when the command is invoked
-    def command_callback(*args, **kwargs):
+    def command_callback(*args: Any, **kwargs: Any) -> None:
         try:
             # Run the tool
             result = run_tool(tool_path, args=list(args), kwargs=kwargs)

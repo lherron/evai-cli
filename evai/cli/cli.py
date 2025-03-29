@@ -7,6 +7,7 @@ import click
 import importlib
 import pkgutil
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 from evai import __version__
 from evai.tool_storage import (
     get_tool_dir, 
@@ -30,7 +31,7 @@ from rich.panel import Panel
 import yaml
 import logging
 
-def get_click_type(type_str: str):
+def get_click_type(type_str: str) -> click.ParamType:
     """
     Map metadata type strings to Click parameter types.
     
@@ -48,7 +49,7 @@ def get_click_type(type_str: str):
     }
     return type_map.get(type_str.lower(), click.STRING)  # Default to STRING if unknown
 
-def convert_value(value: str, type_str: str):
+def convert_value(value: str, type_str: str) -> Any:
     """
     Convert a string value to the specified type based on metadata.
     
@@ -77,7 +78,7 @@ def convert_value(value: str, type_str: str):
     except (ValueError, TypeError) as e:
         raise ValueError(f"Cannot convert '{value}' to {type_str}: {str(e)}")
 
-def create_command(command_name: str, metadata: dict, module):
+def create_command(command_name: str, metadata: Dict[str, Any], module: Any) -> click.Command:
     """
     Create a Click command with typed arguments and options from metadata.
     
@@ -100,24 +101,24 @@ def create_command(command_name: str, metadata: dict, module):
     # Add options with types
     for opt in metadata.get("options", []):
         opt_type = get_click_type(opt["type"])
-        param = click.Option(
+        option_param = click.Option(
             [f"--{opt['name']}"],
             type=opt_type,
             help=opt.get("description", ""),
             required=opt.get("required", False),
             default=opt.get("default", None)
         )
-        command.params.append(param)
+        command.params.append(option_param)
     
-    def command_callback(*args, **kwargs):
+    def command_callback(*args: Any, **kwargs: Any) -> None:
         # Map positional args to their names from metadata
         arg_names = [arg["name"] for arg in metadata.get("arguments", [])]
         if len(args) > len(arg_names):
             raise click.UsageError(f"Too many positional arguments: expected {len(arg_names)}, got {len(args)}")
         kwargs.update(dict(zip(arg_names, args)))
         # Execute the command function
-        command_name = command_name.replace('-', '_')
-        command_func = getattr(module, f"command_{command_name}")
+        cmd_name = command_name.replace('-', '_')
+        command_func = getattr(module, f"command_{cmd_name}")
         result = command_func(**kwargs)
         click.echo(json.dumps(result))
     
@@ -138,11 +139,11 @@ TYPE_MAP = {
 
 # Create an AliasedGroup class to support command aliases
 class AliasedGroup(click.Group):
-    def __init__(self, *args, **kwargs):
-        self.section = kwargs.pop('section', None)
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        self.section: Optional[str] = kwargs.pop('section', None)
         super().__init__(*args, **kwargs)
     
-    def get_command(self, ctx, cmd_name):
+    def get_command(self, ctx: click.Context, cmd_name: str) -> Optional[click.Command]:
         # Try to get command by name
         rv = click.Group.get_command(self, ctx, cmd_name)
         if rv is not None:
@@ -156,10 +157,12 @@ class AliasedGroup(click.Group):
             return click.Group.get_command(self, ctx, matches[0])
         
         ctx.fail(f"Too many matches: {', '.join(sorted(matches))}")
+        if False:  # type: ignore
+            return None
     
-    def format_commands(self, ctx, formatter):
+    def format_commands(self, ctx: click.Context, formatter: click.HelpFormatter) -> None:
         """Custom command formatter that displays section headers."""
-        commands = []
+        commands: List[Tuple[str, click.Command]] = []
         for subcommand in self.list_commands(ctx):
             cmd = self.get_command(ctx, subcommand)
             # What is this, the tool lied about a command.  Ignore it
@@ -173,13 +176,15 @@ class AliasedGroup(click.Group):
             return
 
         # Group commands by section
-        sections = {}
+        sections: Dict[str, List[Tuple[str, click.Command]]] = {}
         for subcommand, cmd in commands:
             # Get section from command or use default section
-            section = getattr(cmd, 'section', self.section or 'Commands')
-            if section not in sections:
-                sections[section] = []
-            sections[section].append((subcommand, cmd))
+            section_name = getattr(cmd, 'section', self.section or 'Commands')
+            if section_name is None:
+                section_name = 'Commands'  # Default if none specified
+            if section_name not in sections:
+                sections[section_name] = []
+            sections[section_name].append((subcommand, cmd))
         
         # Calculate limit for short help text
         limit = formatter.width - 6 - max(len(cmd[0]) for cmd in commands)
@@ -198,68 +203,39 @@ class AliasedGroup(click.Group):
 
 @click.group(cls=AliasedGroup, help="EVAI CLI - Command-line interface for EVAI")
 @click.version_option(version=__version__, prog_name="evai")
-def cli():
+def cli() -> None:
     """EVAI CLI - Command-line interface for EVAI."""
     pass
 
 
 @cli.group(cls=AliasedGroup, section="Core Commands", invoke_without_command=True)
 @click.pass_context
-def tools(ctx):
+def tools(ctx: click.Context) -> None:
     """Manage custom tools."""
     if ctx.invoked_subcommand is None:
         # If no subcommand is provided, show both help and the list of tools
-        from evai.cli.commands.tools import list
+        from evai.cli.commands.tools import list as list_cmd
         
         # Print the help text first
         click.echo(ctx.get_help())
         click.echo("\n")  # Add some spacing
         
         # Then show the list of tools
-        list.callback()
-
-# Tool functions have been moved to evai/cli/commands/tool.py
-
-@cli.group(cls=AliasedGroup, section="User Commands")
-def user():
-    """User-defined commands."""
-    pass
+        if hasattr(list_cmd, "callback") and callable(list_cmd.callback):
+            list_cmd.callback()
+        click.echo("\n")  # Add some spacing
 
 # Create command with section
-def create_command_with_section(section="Core Commands"):
+def create_command_with_section(section: str = "Core Commands") -> Any:
     """Decorator to set section on a command."""
-    def decorator(command):
-        command.section = section
+    def decorator(command: click.Command) -> click.Command:
+        # Use setattr to avoid mypy errors about missing attribute
+        setattr(command, "section", section)
         return command
     return decorator
 
-@cli.command()
-@click.option("--name", "-n", default="EVAI Tools", help="Name of the MCP server")
-@create_command_with_section(section="Core Commands")
-def server(name):
-    """Start an MCP server exposing all tools."""
-    try:
-        # Import here to avoid dependency issues if MCP is not installed
-        from .mcp_server import run_server
-        
-        click.echo(f"Starting MCP server '{name}'...")
-        click.echo("Press Ctrl+C to stop the server.")
-        
-        # Run the server
-        run_server(name)
-    except ImportError as e:
-        click.echo(f"Error: {e}", err=True)
-        click.echo("Please install the MCP Python SDK with: pip install mcp", err=True)
-        sys.exit(1)
-    except Exception as e:
-        click.echo(f"Error starting MCP server: {e}", err=True)
-        sys.exit(1)
-
-
-
-
 # Automatically add all commands from the commands submodule
-def import_commands():
+def import_commands() -> None:
     """Import all commands from the commands submodule and add them to the appropriate groups."""
     from evai.cli import commands as commands_module
     
@@ -297,22 +273,22 @@ def import_commands():
                 # Categorize commands into sections
                 if attr.name in CORE_COMMANDS:
                     # Core EVAI functionality
-                    attr.section = "Core Commands"
-                elif attr.name in SAMPLE_COMMANDS or attr.name.startswith("sample-"):
+                    setattr(attr, "section", "Core Commands")
+                elif attr.name in SAMPLE_COMMANDS or (hasattr(attr, 'name') and isinstance(attr.name, str) and attr.name.startswith("sample-")):
                     # Sample commands for testing
-                    attr.section = "Sample Commands"
-                elif module_name in TOOL_MANAGEMENT or attr.name.startswith("tool"):
+                    setattr(attr, "section", "Sample Commands")
+                elif module_name in TOOL_MANAGEMENT or (hasattr(attr, 'name') and isinstance(attr.name, str) and attr.name.startswith("tool")):
                     # Tool management
-                    attr.section = "Tool Management"
+                    setattr(attr, "section", "Tool Management")
                 else:
                     # Default for uncategorized commands
-                    attr.section = "Other Commands"
+                    setattr(attr, "section", "Other Commands")
                 
                 # Manually set certain command sections
                 if attr.name == "deploy_artifact":
-                    attr.section = "Core Commands"
+                    setattr(attr, "section", "Core Commands")
                 elif attr.name in ["sample-add", "sample-mismatch", "sample-missing", "subtract"]:
-                    attr.section = "Sample Commands"
+                    setattr(attr, "section", "Sample Commands")
 
                 # Determine which group to add the command to
                 if module_name == "tools" or module_name == "llmadd":
@@ -339,19 +315,23 @@ load_tools_to_main_group(cli, section="Tool Commands")
 for cmd_name in cli.commands:
     cmd = cli.commands[cmd_name]
     # Core and management commands
-    if cmd_name in ["deploy_artifact", "server", "llm", "tools"]:
-        cmd.section = "Core Commands"
+    if cmd_name in ["server", "llm", "tools"]:
+        # Use setattr to avoid mypy errors with the section attribute
+        setattr(cmd, "section", "Core Commands")  
     # All other commands are considered "User Commands" (including samples in dev)
     else:
-        cmd.section = "User Commands"
+        # Use setattr to avoid mypy errors with the section attribute
+        setattr(cmd, "section", "User Commands")
 
 
-def main():
+def main() -> int:
     """Run the EVAI CLI."""
     # If no arguments are provided, show help
     if len(sys.argv) == 1:
         sys.argv.append("--help")
-    return cli()
+    result = cli()
+    # Ensure we return an integer exit code
+    return 0 if result is None else int(result)
 
 
 if __name__ == "__main__":

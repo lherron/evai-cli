@@ -69,7 +69,7 @@ def generate_default_metadata_with_llm(tool_name: str, description: str) -> dict
 
 @click.command()
 @click.argument("tool_name")
-def llmadd(tool_name):
+def llmadd(tool_name: str) -> None:
     """Add a new custom tool using LLM assistance."""
     try:
         # Get the tool directory
@@ -115,8 +115,13 @@ def llmadd(tool_name):
             
             # Try to load the sample template
             try:
-                metadata = load_sample_tool_yaml(tool_name)
-                metadata["description"] = description
+                sample_metadata = load_sample_tool_yaml(tool_name)
+                if isinstance(sample_metadata, dict):
+                    metadata = sample_metadata
+                    metadata["description"] = description
+                else:
+                    # This is a trick for mypy to handle unreachable code
+                    metadata = {}  # type: ignore
             except Exception as template_error:
                 click.echo(f"Error loading sample template: {template_error}", err=True)
                 

@@ -61,7 +61,7 @@ class EVAIServer:
         print(f"[DEBUG] Entering EVAIServer.__init__ with name=evai", file=sys.stderr)
         self.name = "evai"
         self.mcp = mcp
-        self.tools = {}
+        self.tools: Dict[str, Any] = {}
         
         # Use the new modules for registration
         register_built_in_tools(self.mcp)

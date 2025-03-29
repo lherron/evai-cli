@@ -308,7 +308,8 @@ def edit_tool_metadata(tool_dir: str) -> Tuple[bool, Optional[Dict[str, Any]]]:
             return result
         except yaml.YAMLError as e:
             logger.error(f"Invalid YAML after editing: {e}")
-            result = (False, None)
+            empty_dict: Dict[str, Any] = {}
+            result = (False, empty_dict)
             # print(f"DEBUG: EXIT {inspect.currentframe().f_code.co_name} - return={result}", file=sys.stderr)
             return result
             
@@ -429,7 +430,7 @@ def list_tools() -> List[Dict[str, Any]]:
     
     entities = []
     
-    def scan_directory(dir_path, rel_path=''):
+    def scan_directory(dir_path: str, rel_path: str = '') -> None:
         """Recursively scan a directory for tools and groups."""
         for item_name in os.listdir(dir_path):
             item_path = os.path.join(dir_path, item_name)
@@ -566,7 +567,7 @@ def import_tool_module(path: str) -> Any:
         raise ImportError(f"Error importing tool module: {e}")
 
 
-def run_tool(path: str, args=None, kwargs=None) -> Any:
+def run_tool(path: str, args: Optional[List[Any]] = None, kwargs: Optional[Dict[str, Any]] = None) -> Any:
     """
     Run a tool with the given arguments.
     
@@ -759,7 +760,7 @@ def add_tool(path: str, metadata: Dict[str, Any], implementation: str) -> None:
         logger.warning(f"Implementation provided for group '{path}' will be ignored")
 
 
-def edit_tool(path: str, metadata: Dict[str, Any] = None, implementation: str = None) -> None:
+def edit_tool(path: str, metadata: Optional[Dict[str, Any]] = None, implementation: Optional[str] = None) -> None:
     """
     Edit an existing tool or group.
     

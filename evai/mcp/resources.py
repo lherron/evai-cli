@@ -2,7 +2,7 @@
 
 import logging
 import os
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, cast
 
 try:
     from mcp.server.fastmcp import FastMCP
@@ -25,7 +25,7 @@ RESOURCES = {
         description="Access file contents within the project",
     ),
     "config-file": types.Resource(
-        uri="config://evai.json",
+        uri=types.AnyUrl("config://evai.json"),
         name="EVAI Configuration",
         description="EVAI CLI configuration file",
         mimeType="application/json"
@@ -33,7 +33,7 @@ RESOURCES = {
 }
 
 
-def register_resources(mcp: FastMCP, server) -> None:
+def register_resources(mcp: FastMCP, server: Any) -> None:
     """
     Register all available resources.
     
@@ -59,7 +59,7 @@ def register_resources(mcp: FastMCP, server) -> None:
         try:
             # Read the file
             content = server.read_file(path)
-            return content
+            return str(content)
         except Exception as e:
             logger.error(f"Error reading file: {e}")
             raise ValueError(f"Error reading file: {e}")
@@ -77,7 +77,8 @@ def register_resources(mcp: FastMCP, server) -> None:
         try:
             # Get the configuration
             config = server.get_config()
-            return config
+            # Ensure we always return a string
+            return str(config) if config is not None else "{}"
         except Exception as e:
             logger.error(f"Error reading configuration: {e}")
             raise ValueError(f"Error reading configuration: {e}")
