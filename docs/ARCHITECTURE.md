@@ -1,70 +1,69 @@
 
 ```mermaid
-
 flowchart TB
     %% External Systems
-    User([User])
-    Claude["Claude Desktop\n(MCP Client)"]
-    Terminal["Terminal/iTerm\n(CLI Interface)"]
-    AnthropicAPI["Anthropic API\n(LLM Service)"]
+    subgraph ExternalClients["External Clients"]
+        Claude["Claude Desktop<br>(MCP Client)"]
+	    MCPConfig["MCP Config<br>(External)"]
+        Terminal["Terminal<br>(MCP Client)"]
+        AIAgent["AI Agent<br>(MCP Client)"]
+    end
+    AnthropicAPI["Anthropic API<br>(LLM Service)"]
     
     %% Main evai CLI Application
     subgraph evai["evai CLI Application"]
         direction TB
         
-        Core["CLI Core\nCommand Parsing, Execution, I/O"]
+        Core["CLI Core<br>Command Parsing, Execution, I/O"]
         
         subgraph Components["Core Components"]
-            direction LR
-            MCPServer["Embedded MCP Server\n(stdio Transport)"]
-            LLMClient["LLM Client\n(Anthropic API Interface)"]
-            SelfMod["Self-Modification System\nCode Analysis, Generation, Integration"]
-        end
-        
-        subgraph Storage["Storage"]
-            Commands["Command Repository\nDefinitions, Metadata"]
-            CodeStore["Code Storage\nCommand Implementations"]
+            direction TB
+            MCPServer["Embedded MCP Server<br>(stdio Transport)"]
+            LLMClient["LLM Client Lib<br>(MCP Enabled API Interface)"]
+            
+            subgraph Storage["Tool Repository"]
+                Commands["Metadata<br>Definitions and Config"]
+                CodeStore["Implementations<br>Code Repositories"]
+            end
+            
+            LLMClient -- "Uses" --> Storage
+            MCPServer -- "Uses" --> Storage
+            %% Indicate peer relationship by same level in hierarchy
         end
         
         Core --> Components
-        Core --> Storage
-        SelfMod --> CodeStore
-        SelfMod --> Commands
         
-        %% Dynamic tool registration pathway
-        Commands -- "New/Modified\nCommands" --> MCPServer
+        %% Static command pathway
+        Commands -- "Pre-defined<br>Commands" --> MCPServer
     end
     
     %% Relations/Connections
-    User --> Claude
-    User --> Terminal
     Claude -- "MCP stdio Protocol" --> MCPServer
     Terminal -- "CLI Commands" --> Core
     LLMClient -- "API Calls" --> AnthropicAPI
+    AIAgent -- "Uses" --> LLMClient
+    Claude -- "Reads" --> MCPConfig
+    Terminal -- "Reads" --> MCPConfig
     
     %% MCP Tools
     subgraph MCPTools["MCP Tools Exposed"]
         ListCommands["list-commands"]
-        AddCommand["add-command"]
         ExecuteCommand["execute-command"]
-        ModifyCommand["modify-command"]
-        DynamicTools["Dynamic Command Tools\n(Auto-registered from Command Repository)"]
+        StaticTools["Static Command Tools<br>(Pre-defined from Command Repository)"]
     end
     
     MCPServer --> MCPTools
-    Commands -- "Dynamic Registration" --> MCPServer
+    Commands -- "Static Registration" --> MCPServer
     
     classDef externalSystems fill:#e1f5fe,stroke:#0277bd,stroke-width:2px
     classDef evaiCore fill:#fff3e0,stroke:#e65100,stroke-width:2px
     classDef storage fill:#f1f8e9,stroke:#558b2f,stroke-width:2px
-    classDef selfMod fill:#ffebee,stroke:#c62828,stroke-width:2px
     classDef component fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
     classDef tools fill:#f3e5f5,stroke:#7b1fa2,stroke-width:1px
     
-    class User,Claude,Terminal,AnthropicAPI externalSystems
+    class Claude,Terminal,AnthropicAPI,MCPConfig,ExternalClients externalSystems
     class Core evaiCore
     class Commands,CodeStore storage
-    class SelfMod selfMod
     class MCPServer,LLMClient component
-    class ListCommands,AddCommand,ExecuteCommand,ModifyCommand tools
+    class ListCommands,ExecuteCommand tools
 ```

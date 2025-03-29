@@ -4,6 +4,7 @@ import sys
 import os
 import json
 import click
+import yaml
 from evai.tool_storage import (
     get_tool_dir, 
     save_tool_metadata, 
@@ -457,4 +458,111 @@ def remove(path, force):
 @click.option("--force", "-f", is_flag=True, help="Force removal without confirmation")
 def rm(tool_name, force):
     """Alias for 'remove' - Remove a custom tool."""
-    remove.callback(tool_name, force) 
+    remove.callback(tool_name, force)
+
+
+@click.command()
+@click.argument("path")
+def show(path):
+    """Show detailed information about a tool."""
+    try:
+        # Load tool metadata
+        try:
+            metadata = load_tool_metadata(path)
+        except FileNotFoundError:
+            click.echo(f"Tool '{path}' not found.", err=True)
+            sys.exit(1)
+        
+        # Determine if this is a group
+        dir_path = get_tool_dir(path)
+        is_group = os.path.exists(os.path.join(dir_path, "group.yaml"))
+        
+        if is_group:
+            # Display group information
+            console.print(f"[bold]Group:[/bold] {metadata.get('name', path)}")
+            console.print(f"[bold]Description:[/bold] {metadata.get('description', 'No description')}")
+            
+            # List tools in this group
+            entities = list_tools()
+            group_tools = [e for e in entities if e["type"] == "tool" and e["path"].startswith(f"{path}/")]
+            
+            if group_tools:
+                console.print(f"\n[bold]Contains {len(group_tools)} tools:[/bold]")
+                for tool in group_tools:
+                    tool_name = tool["path"].split("/")[-1]
+                    console.print(f"  - {tool_name}: {tool['description']}")
+            else:
+                console.print("\n[italic]This group contains no tools.[/italic]")
+        else:
+            # Display tool information
+            console.print(f"[bold]Tool:[/bold] {metadata.get('name', path)}")
+            console.print(f"[bold]Description:[/bold] {metadata.get('description', 'No description')}")
+            
+            # Display arguments
+            arguments = metadata.get("arguments", [])
+            if arguments:
+                console.print("\n[bold]Arguments:[/bold]")
+                for arg in arguments:
+                    name = arg.get("name", "unnamed")
+                    description = arg.get("description", "No description")
+                    required = arg.get("required", True)
+                    default = arg.get("default")
+                    
+                    req_text = "[red][required][/red]" if required else ""
+                    default_text = f" [default: {default}]" if default is not None else ""
+                    
+                    console.print(f"  - [cyan]{name}[/cyan]: {description} {req_text}{default_text}")
+            
+            # Display options
+            options = metadata.get("options", [])
+            if options:
+                console.print("\n[bold]Options:[/bold]")
+                for opt in options:
+                    name = opt.get("name", "unnamed")
+                    description = opt.get("description", "No description")
+                    required = opt.get("required", False)
+                    default = opt.get("default")
+                    
+                    req_text = "[red][required][/red]" if required else ""
+                    default_text = f" [default: {default}]" if default is not None else ""
+                    
+                    console.print(f"  - [cyan]{name}[/cyan]: {description} {req_text}{default_text}")
+            
+            # Display parameters
+            params = metadata.get("params", [])
+            if params:
+                console.print("\n[bold]Parameters:[/bold]")
+                for param in params:
+                    name = param.get("name", "unnamed")
+                    description = param.get("description", "No description")
+                    required = param.get("required", True)
+                    default = param.get("default")
+                    
+                    req_text = "[red][required][/red]" if required else ""
+                    default_text = f" [default: {default}]" if default is not None else ""
+                    
+                    console.print(f"  - [cyan]{name}[/cyan]: {description} {req_text}{default_text}")
+            
+            # Display additional metadata if present
+            if "mcp_integration" in metadata and metadata["mcp_integration"].get("enabled", False):
+                console.print("\n[bold]MCP Integration:[/bold] [green]Enabled[/green]")
+            
+            if "llm_interaction" in metadata and metadata["llm_interaction"].get("enabled", False):
+                console.print("\n[bold]LLM Interaction:[/bold] [green]Enabled[/green]")
+                
+            if metadata.get("hidden", False):
+                console.print("\n[italic]This tool is hidden from the main list.[/italic]")
+                
+            if metadata.get("disabled", False):
+                console.print("\n[italic]This tool is currently disabled.[/italic]")
+    
+    except Exception as e:
+        click.echo(f"Error showing tool: {e}", err=True)
+        sys.exit(1)
+
+
+@click.command()
+@click.argument("tool_name")
+def s(tool_name):
+    """Alias for 'show' - Show detailed information about a tool."""
+    show.callback(tool_name) 
