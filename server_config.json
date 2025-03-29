@@ -1,0 +1,37 @@
+{
+  "mcpServers": {
+    "Demo": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--with",
+        "mcp[cli]",
+        "mcp",
+        "run",
+        "/Users/lherron/projects/mcp-sample/server.py"
+      ]
+    },
+    "evai-mcp-server": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "/Users/lherron/projects/evai-cli",
+        "--with",
+        "mcp[cli]",
+        "mcp",
+        "run",
+        "/Users/lherron/projects/evai-cli/evai/mcp/server.py"
+      ]
+    },
+    "playwright-mcp-server": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@executeautomation/playwright-mcp-server"
+      ]
+    }
+  }
+}
