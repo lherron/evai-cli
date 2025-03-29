@@ -185,6 +185,57 @@ def call_claude_sync(prompt: str, max_tokens: int = 1000, show_stop_reason: bool
     # Use asyncio to run the async function
     return asyncio.run(call_claude_directly(prompt, max_tokens, show_stop_reason))
 
+async def async_run_mcp_command(prompt: str, show_tools: bool, server_params: StdioServerParameters, debug: bool = False, show_stop_reason: bool = False) -> str:
+    """Async implementation of the MCP command execution with context re-injection.
+    
+    Args:
+        prompt: The text prompt to send.
+        show_tools: Whether to display detailed tool information.
+        server_params: MCP server parameters.
+        debug: Whether to show debug information.
+        show_stop_reason: Whether to show the stop reason in the output.
+        
+    Returns:
+        The text response from the MCP server.
+    """
+    session = None
+    client_context = None
+    
+    try:
+        # Set up MCP session
+        session, client_context = await async_setup_mcp_session(server_params)
+        
+        # Get Anthropic client
+        client = await get_anthropic_client()
+        
+        # Fetch available tools
+        claude_tools = await async_fetch_available_tools(session, show_tools)
+        
+        # Initialize conversation with the user's prompt
+        messages = [
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ]
+        
+        # Run the conversation loop
+        final_response = await async_run_conversation_loop(session, client, claude_tools, messages, debug, show_stop_reason)
+        
+        return final_response
+
+    except Exception as e:
+        # Print the exception to stderr for debugging
+        error_console.print(Panel(f"MCP Error: {str(e)}", title="[red bold]Error[/red bold]", border_style="red"))
+        print(traceback.format_exc(), file=sys.stderr)
+        return f"MCP Error: {str(e)}"
+    finally:
+        # Clean up resources
+        if session:
+            await session.__aexit__(None, None, None)
+        if client_context:
+            await client_context.__aexit__(None, None, None)
+
 def run_llm_command_with_mcp(prompt: str, show_tools: bool = False, debug: bool = False, show_stop_reason: bool = False) -> str:
     """Call Claude through an MCP server integration.
     
@@ -581,56 +632,6 @@ async def async_run_conversation_loop(session, client, claude_tools, messages, s
     
     return final_response
 
-async def async_run_mcp_command(prompt: str, show_tools: bool, server_params: StdioServerParameters, debug: bool = False, show_stop_reason: bool = False) -> str:
-    """Async implementation of the MCP command execution with context re-injection.
-    
-    Args:
-        prompt: The text prompt to send.
-        show_tools: Whether to display detailed tool information.
-        server_params: MCP server parameters.
-        debug: Whether to show debug information.
-        show_stop_reason: Whether to show the stop reason in the output.
-        
-    Returns:
-        The text response from the MCP server.
-    """
-    session = None
-    client_context = None
-    
-    try:
-        # Set up MCP session
-        session, client_context = await async_setup_mcp_session(server_params)
-        
-        # Get Anthropic client
-        client = await get_anthropic_client()
-        
-        # Fetch available tools
-        claude_tools = await async_fetch_available_tools(session, show_tools)
-        
-        # Initialize conversation with the user's prompt
-        messages = [
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ]
-        
-        # Run the conversation loop
-        final_response = await async_run_conversation_loop(session, client, claude_tools, messages, debug, show_stop_reason)
-        
-        return final_response
-
-    except Exception as e:
-        # Print the exception to stderr for debugging
-        error_console.print(Panel(f"MCP Error: {str(e)}", title="[red bold]Error[/red bold]", border_style="red"))
-        print(traceback.format_exc(), file=sys.stderr)
-        return f"MCP Error: {str(e)}"
-    finally:
-        # Clean up resources
-        if session:
-            await session.__aexit__(None, None, None)
-        if client_context:
-            await client_context.__aexit__(None, None, None)
 
 @click.command()
 @click.argument("prompt")
