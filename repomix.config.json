@@ -16,7 +16,7 @@
   "ignore": {
     "useGitignore": true,
     "useDefaultPatterns": true,
-    "customPatterns": []
+    "customPatterns": ["docs/**_spec.md"]
   },
   "security": {
     "enableSecurityCheck": true
