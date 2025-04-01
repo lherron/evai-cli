@@ -5,7 +5,7 @@ Okay, here is a markdown description of the `llm_interaction.py` interface, desi
 
 ## Overview
 
-This module provides the core logic for interacting with a Large Language Model (LLM) (specifically Anthropic's Claude) and integrating with Model Context Protocol (MCP) servers to enable tool use. It handles the conversation flow, tool discovery, tool execution via MCP, and returns structured results.
+This module provides the core logic for interacting with a Large Language Model (LLM) (specifically Anthropic's Claude 3.7 Sonnet) and integrating with Model Context Protocol (MCP) servers to enable tool use. It handles the conversation flow, tool discovery, tool execution via MCP, and returns structured results.
 
 **Key Goal:** To abstract the complexities of LLM calls and MCP interactions, providing a clean interface to send a prompt and receive a final response, potentially after several rounds of tool use.
 
@@ -62,39 +62,34 @@ asyncio.run(main())
 ### Main Interaction Method
 
 ```python
-async def main():
-    # ... (setup session and initialize)
-    prompt = "What is the result of subtracting 5 from 8 using the subtract tool?"
-    result_dict = await session.send_request(prompt=prompt, debug=True)
-    # ... process result_dict ...
-    await session.cleanup_servers()
+async def send_request(self, prompt: str, debug: bool = False, show_stop_reason: bool = False) -> Dict[str, Any]
 ```
 
--   **`async send_request(self, prompt: str, debug: bool = False, show_stop_reason: bool = False) -> Dict[str, Any]`**:
-    -   This is the primary method to send a user prompt to the LLM and get a final response.
-    -   Handles the entire interaction loop, including:
-        -   Sending the prompt to the LLM.
-        -   Discovering available tools from initialized MCP servers.
-        -   Facilitating LLM's decision to use tools.
-        -   Executing tools via the corresponding `MCPServer`.
-        -   Sending tool results back to the LLM.
-        -   Repeating tool use if necessary.
-        -   Returning the final consolidated response from the LLM.
-    -   **Parameters**:
-        -   `prompt` (str): The user's input/question.
-        -   `debug` (bool, optional): If `True`, enables more verbose logging during the process. Defaults to `False`.
-        -   `show_stop_reason` (bool, optional): If `True`, attempts to include the LLM's stop reason in the output (though the current implementation might include it in the main response string). Defaults to `False`.
-    -   **Returns** (Dict[str, Any]): A dictionary containing the results of the interaction:
-        -   `"success"` (bool): `True` if the request completed without fatal errors, `False` otherwise.
-        -   `"response"` (Optional[str]): The final text response from the LLM after all interactions (including tool use). `None` if an error occurred before getting a response.
-        -   `"error"` (Optional[str]): An error message if `success` is `False`. `None` otherwise.
-        -   `"tool_calls"` (List[Dict]): A list of dictionaries, each representing a tool call made during the interaction. Each dictionary has:
-            -   `"tool_name"` (str): The name of the tool called.
-            -   `"tool_args"` (Dict): The arguments passed to the tool.
-            -   `"result"` (Optional[str]): The processed result returned by the tool if successful.
-            -   `"error"` (Optional[str]): An error message if the tool execution failed.
-        -   `"stop_reason_info"` (Optional[Dict]): Information about why the LLM stopped generating (e.g., `{"reason": "end_turn"}`). `None` if not available or `show_stop_reason` is `False`.
-        -   `"messages"` (List[Dict]): The complete history of messages exchanged with the LLM during this request (useful for debugging).
+-   This is the primary method to send a user prompt to the LLM and get a final response.
+-   **Parameters**:
+    -   `prompt` (str): The user's input/question.
+    -   `debug` (bool, optional): If `True`, enables more verbose logging during the process. Defaults to `False`.
+    -   `show_stop_reason` (bool, optional): If `True`, includes the LLM's stop reason in the output. Defaults to `False`.
+-   Handles the entire interaction loop, including:
+    -   Sending the prompt to the LLM.
+    -   Discovering available tools from initialized MCP servers.
+    -   Facilitating LLM's decision to use tools.
+    -   Executing tools via the corresponding `MCPServer`.
+    -   Sending tool results back to the LLM.
+    -   Repeating tool use if necessary.
+    -   Returning the final consolidated response from the LLM.
+    -   Cleaning up any lingering processes to prevent resource leaks.
+-   **Returns** (Dict[str, Any]): A dictionary containing the results of the interaction:
+    -   `"success"` (bool): `True` if the request completed without fatal errors, `False` otherwise.
+    -   `"response"` (Optional[str]): The final text response from the LLM after all interactions (including tool use). `None` if an error occurred before getting a response.
+    -   `"error"` (Optional[str]): An error message if `success` is `False`. `None` otherwise.
+    -   `"tool_calls"` (List[Dict]): A list of dictionaries, each representing a tool call made during the interaction. Each dictionary has:
+        -   `"tool_name"` (str): The name of the tool called.
+        -   `"tool_args"` (Dict): The arguments passed to the tool.
+        -   `"result"` (Optional[str]): The processed result returned by the tool if successful.
+        -   `"error"` (Optional[str]): An error message if the tool execution failed.
+    -   `"stop_reason_info"` (Optional[Dict]): Information about why the LLM stopped generating (e.g., `{"reason": "end_turn"}`). `None` if not available or `show_stop_reason` is `False`.
+    -   `"messages"` (List[Dict]): The complete history of messages exchanged with the LLM during this request (useful for debugging).
 
 ## Helper Functions
 

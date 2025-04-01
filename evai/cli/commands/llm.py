@@ -17,6 +17,7 @@ from rich.syntax import Syntax
 from rich.theme import Theme
 from rich.table import Table
 from rich.box import ROUNDED
+import asyncio
 
 from evai.llm_interaction import (
     Configuration,
@@ -153,38 +154,8 @@ def llm(prompt: str, debug: bool = False, show_stop_reason: bool = False) -> Non
     logging.basicConfig(
         level=logging.INFO if not debug else logging.DEBUG,
         format="%(message)s"  # Simpler format for CLI output
-    )
-    
-    # Configure a custom filter to suppress specific asyncio errors during cleanup
-    class IgnoreAsyncioShutdownFilter(logging.Filter):
-        def filter(self, record):
-            # Filter out asyncio cleanup error messages
-            message = record.getMessage()
-            if "asyncgen" in message or "cancel scope" in message or "task was destroyed but it is pending" in message:
-                return False
-            return True
-    
-    # Apply filter to root logger and asyncio logger
-    root_logger = logging.getLogger()
-    root_logger.addFilter(IgnoreAsyncioShutdownFilter())
-    logging.getLogger("asyncio").addFilter(IgnoreAsyncioShutdownFilter())
-    
-    # Save original excepthook
-    original_excepthook = sys.excepthook
-    
-    # Define a custom excepthook to filter out asyncio cleanup errors
-    def custom_excepthook(exc_type, exc_value, exc_traceback):
-        if exc_type.__name__ == "RuntimeError" and "cancel scope" in str(exc_value):
-            return  # Silently ignore this specific error
-        elif "asyncgen" in str(exc_value):
-            return  # Silently ignore asyncgen errors
-        else:
-            # Pass other exceptions to the original handler
-            original_excepthook(exc_type, exc_value, exc_traceback)
-    
-    # Set the custom excepthook
-    sys.excepthook = custom_excepthook
-    
+    ) 
+
     try:
         # Display the user prompt in a nice panel
         error_console.print(Panel(prompt, title="[green bold]User Prompt[/green bold]", border_style="green"))
@@ -213,25 +184,16 @@ def llm(prompt: str, debug: bool = False, show_stop_reason: bool = False) -> Non
         # Create LLM session
         session = LLMSession(servers)
         
-        # Modify asyncio to ignore certain errors during cleanup
-        import asyncio
         
-        # Redirect stderr temporarily to filter out asyncio errors during asyncio.run()
-        original_stderr = sys.stderr
-        sys.stderr = open(os.devnull, 'w')
+        # Call the send_request method asynchronously
+        result = asyncio.run(session.send_request(
+            prompt=prompt,
+            debug=debug,
+            show_stop_reason=show_stop_reason
+        ))
         
-        try:
-            # Call the send_request method asynchronously
-            result = asyncio.run(session.send_request(
-                prompt=prompt,
-                debug=debug,
-                show_stop_reason=show_stop_reason
-            ))
-        finally:
-            # Restore stderr
-            sys.stderr.close()
-            sys.stderr = original_stderr
-        
+        asyncio.run(session.cleanup_servers())   
+
         # Check if the request was successful
         if not result["success"]:
             # Print error to stderr
@@ -243,7 +205,6 @@ def llm(prompt: str, debug: bool = False, show_stop_reason: bool = False) -> Non
                 error_console.print("[red bold]Please set the ANTHROPIC_API_KEY environment variable to use the LLM command.[/red bold]")
                 
             sys.exit(1)
-        
         # Display any tool calls
         if result.get("tool_calls"):
             display_tool_calls(result["tool_calls"])
@@ -286,6 +247,3 @@ def llm(prompt: str, debug: bool = False, show_stop_reason: bool = False) -> Non
         if "ANTHROPIC_API_KEY" not in os.environ:
             error_console.print("[red bold]Please set the ANTHROPIC_API_KEY environment variable to use the LLM command.[/red bold]")
         sys.exit(1)
-    finally:
-        # Restore original excepthook
-        sys.excepthook = original_excepthook
