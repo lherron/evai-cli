@@ -140,6 +140,53 @@ def display_tool_calls(tool_calls: List[Dict[str, Any]]) -> None:
             )
             error_console.print(result_panel)
 
+async def llm_async(prompt: str, debug: bool = False, show_stop_reason: bool = False) -> Dict[str, Any]:
+    """Async function to handle all LLM operations.
+    
+    Args:
+        prompt: The user's prompt to send to the LLM
+        debug: Whether to show debug information
+        show_stop_reason: Whether to show the stop reason in the output
+        
+    Returns:
+        Dict containing the result of the LLM interaction
+    """
+    # Initialize configuration and load server settings
+    error_console.print("[purple]Initializing LLM session with configured MCP servers...[/purple]")
+    config = Configuration()
+    
+    # Load server configurations
+    try:
+        servers_config_path = "servers_config.json"
+        server_config = config.load_config(servers_config_path)
+        servers = [
+            MCPServer(name, srv_config)
+            for name, srv_config in server_config.get("mcpServers", {}).items()
+        ]
+        if not servers:
+            error_console.print("[yellow]No MCP servers found in configuration. Proceeding without tools.[/yellow]")
+    except FileNotFoundError:
+        error_console.print(f"[yellow]Warning: {servers_config_path} not found. Proceeding without MCP servers.[/yellow]")
+        servers = []
+    except json.JSONDecodeError:
+        error_console.print(f"[yellow]Warning: Invalid JSON in {servers_config_path}. Proceeding without MCP servers.[/yellow]")
+        servers = []
+    
+    # Create LLM session
+    session = LLMSession(servers)
+    
+    try:
+        await session.start_servers()
+        result = await session.send_request(
+            prompt=prompt,
+            debug=debug,
+            show_stop_reason=show_stop_reason
+        )
+    finally:
+        await session.stop_servers()
+        
+    return result
+
 @click.command()
 @click.argument("prompt")
 @click.option("--debug", is_flag=True, help="Show debug information", default=False)
@@ -160,39 +207,8 @@ def llm(prompt: str, debug: bool = False, show_stop_reason: bool = False) -> Non
         # Display the user prompt in a nice panel
         error_console.print(Panel(prompt, title="[green bold]User Prompt[/green bold]", border_style="green"))
         
-        # Initialize configuration and load server settings
-        error_console.print("[purple]Initializing LLM session with configured MCP servers...[/purple]")
-        config = Configuration()
-        
-        # Load server configurations
-        try:
-            servers_config_path = "servers_config.json"
-            server_config = config.load_config(servers_config_path)
-            servers = [
-                MCPServer(name, srv_config)
-                for name, srv_config in server_config.get("mcpServers", {}).items()
-            ]
-            if not servers:
-                error_console.print("[yellow]No MCP servers found in configuration. Proceeding without tools.[/yellow]")
-        except FileNotFoundError:
-            error_console.print(f"[yellow]Warning: {servers_config_path} not found. Proceeding without MCP servers.[/yellow]")
-            servers = []
-        except json.JSONDecodeError:
-            error_console.print(f"[yellow]Warning: Invalid JSON in {servers_config_path}. Proceeding without MCP servers.[/yellow]")
-            servers = []
-        
-        # Create LLM session
-        session = LLMSession(servers)
-        
-        
-        # Call the send_request method asynchronously
-        result = asyncio.run(session.send_request(
-            prompt=prompt,
-            debug=debug,
-            show_stop_reason=show_stop_reason
-        ))
-        
-        asyncio.run(session.cleanup_servers())   
+        # Run the async operations
+        result = asyncio.run(llm_async(prompt, debug, show_stop_reason))
 
         # Check if the request was successful
         if not result["success"]:
@@ -205,6 +221,7 @@ def llm(prompt: str, debug: bool = False, show_stop_reason: bool = False) -> Non
                 error_console.print("[red bold]Please set the ANTHROPIC_API_KEY environment variable to use the LLM command.[/red bold]")
                 
             sys.exit(1)
+
         # Display any tool calls
         if result.get("tool_calls"):
             display_tool_calls(result["tool_calls"])

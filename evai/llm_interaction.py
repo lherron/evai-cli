@@ -29,9 +29,10 @@ class MCPTool:
     """Represents a tool with its properties and formatting."""
 
     def __init__(
-        self, name: str, description: str, input_schema: dict[str, Any]
+        self, name: str, server_name: str, description: str, input_schema: dict[str, Any]
     ) -> None:
         self.name: str = name
+        self.server_name: str = server_name
         self.description: str = description
         self.input_schema: dict[str, Any] = input_schema
 
@@ -109,14 +110,14 @@ class Configuration:
 # --- MCPServer Class (Cleanup Simplified) ---
 class MCPServer:
     def __init__(self, name: str, config: dict[str, Any]) -> None:
-        self.name: str = name
-        self.config: dict[str, Any] = config
-        self.session: Optional[ClientSession] = None
-        self._cleanup_lock: asyncio.Lock = asyncio.Lock()
-        self.exit_stack: Optional[AsyncExitStack] = None
-        self._process_pid: Optional[int] = None # Store PID for potential forceful cleanup
-        self._initialized: bool = False
-        # Removed _stack_task as the check was preventing proper cleanup
+            self.name: str = name
+            self.config: dict[str, Any] = config
+            self.session: Optional[ClientSession] = None
+            self._cleanup_lock: asyncio.Lock = asyncio.Lock()
+            self.exit_stack: Optional[AsyncExitStack] = None
+            self._process_pid: Optional[int] = None
+            self._initialized: bool = False
+            self.initialized_event = asyncio.Event()  # Signals when initialization is complete
 
     async def initialize(self) -> None:
         """Initialize the server connection."""
@@ -190,6 +191,21 @@ class MCPServer:
             self._initialized = False
             raise # Re-raise the original exception
 
+    async def run(self) -> None:
+        """Run the server's lifecycle in a single task."""
+        logger.info(f"Starting server {self.name}...")
+        try:
+            await self.initialize()
+            self.initialized_event.set()  # Signal that initialization is complete
+            # Keep the server alive until cancelled
+            await asyncio.Event().wait()  # Wait indefinitely
+        except asyncio.CancelledError:
+            logger.info(f"Server {self.name} task cancelled, initiating cleanup.")
+        except Exception as e:
+            logger.error(f"Error in server {self.name} run loop: {e}", exc_info=True)
+        finally:
+            await self.cleanup()
+
 
     async def list_tools(self) -> list[MCPTool]:
         """List available tools from the server."""
@@ -206,10 +222,10 @@ class MCPServer:
         tools = []
         for item in tools_response:
             if isinstance(item, tuple) and item[0] == "tools":
-                logging.info("Tools:")
+                logging.info(f"Tools for {self.name}:")
                 for tool in item[1]:
-                    logging.info(f"Tool: name='{tool.name}' description='{tool.description}'")
-                    tools.append(MCPTool(name=tool.name, description=tool.description, input_schema=tool.inputSchema))
+                    logging.info(f"\tTool: name='{tool.name}' description='{tool.description}'")
+                    tools.append(MCPTool(name=tool.name, server_name=self.name, description=tool.description, input_schema=tool.inputSchema))
 
 
         return tools
@@ -323,7 +339,32 @@ class LLMSession:
         self.servers: list[MCPServer] = servers
         self.anthropic_client = anthropic.Anthropic(api_key=api_key)
         self.initialized_servers: bool = False # Track server initialization state
+        self.server_tasks: list[asyncio.Task] = []  # Store server tasks
 
+    async def start_servers(self) -> None:
+        """Start all server tasks."""
+        logger.info(f"Starting {len(self.servers)} MCP server tasks...")
+        self.server_tasks = [
+            asyncio.create_task(server.run(), name=f"mcp_server_{server.name}")
+            for server in self.servers
+        ]
+        # Wait for all servers to initialize
+        await asyncio.gather(*[server.initialized_event.wait() for server in self.servers])
+        logger.info("All MCP servers have started and initialized.")
+
+    async def stop_servers(self) -> None:
+        """Stop all server tasks and trigger cleanup."""
+        if not self.server_tasks:
+            logger.debug("No server tasks to stop.")
+            return
+        logger.info(f"Stopping {len(self.server_tasks)} MCP server tasks...")
+        for task in self.server_tasks:
+            if not task.done():
+                task.cancel()
+        await asyncio.gather(*self.server_tasks, return_exceptions=True)
+        self.server_tasks = []
+        logger.info("All MCP server tasks have stopped.")
+    
     async def initialize_servers(self) -> None:
         """Initialize all MCPServer instances if not already initialized."""
         if self.initialized_servers:
@@ -401,8 +442,11 @@ class LLMSession:
                 logger.debug(f"Prompt: {prompt}")
 
             # --- Initialize Servers ---
-            await self.initialize_servers() # This now handles initialization state
-
+            # await self.initialize_servers() # This now handles initialization state
+            # Servers are already initialized; check their state
+            for server in self.servers:
+                if not server._initialized or not server.session:
+                    raise RuntimeError(f"Server {server.name} is not initialized or has no session.")
             # --- Collect Tools ---
             logger.info("Collecting tools from initialized servers.")
             all_tools_for_api = []
@@ -411,16 +455,18 @@ class LLMSession:
                 if server._initialized and server.session: # Check if server is actually ready
                     try:
                         tools = await server.list_tools()
-                        logger.debug(f"Found {len(tools)} tools in server {server.name}")
-                        for tool in tools:
-                            # Format for Anthropic API
-                            tool_api_dict = {
-                                "name": tool.name,
-                                "description": tool.description,
-                                "input_schema": tool.input_schema
-                            }
-                            all_tools_for_api.append(tool_api_dict)
-                            tool_to_server_map[tool.name] = server
+                        if len(tools) == 0:
+                            logger.warning(f"No tools found in server {server.name}")
+                        else:
+                            for tool in tools:
+                                # Format for Anthropic API
+                                tool_api_dict = {
+                                    "name": tool.name,
+                                    "description": tool.description,
+                                    "input_schema": tool.input_schema
+                                }
+                                all_tools_for_api.append(tool_api_dict)
+                                tool_to_server_map[tool.name] = server
                     except Exception as e:
                         logger.error(f"Could not list tools from server {server.name}: {e}. Skipping its tools.")
                 else:
@@ -586,10 +632,10 @@ class LLMSession:
                 "stop_reason_info": stop_reason_info if 'stop_reason_info' in locals() else None,
                 "messages": messages if debug and 'messages' in locals() else None
             }
-        finally:
-            # --- ENSURE CLEANUP ---
-            logger.info("Running cleanup after send_request.")
-            await self.cleanup_servers()
+        # finally:
+        #     # --- ENSURE CLEANUP ---
+        #     logger.info("Running cleanup after send_request.")
+        #     await self.cleanup_servers()
 
 
     async def _execute_and_format_tool(self, server: MCPServer, tool_name: str, tool_args: Dict[str, Any], tool_id: str, debug: bool) -> Tuple[Dict[str, Any], Dict[str, Any]]:
@@ -689,66 +735,6 @@ def extract_tool_result_value(result_str: str) -> str:
         # If any error occurs, return the original string
         return result_str
 
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    # Filter out some excessive logging
-    logging.getLogger("httpcore").setLevel(logging.INFO)
-    logging.getLogger("anthropic").setLevel(logging.INFO)
-    
-    # Ignore asyncio cancel scope errors that happen during cleanup
-    logging.getLogger("asyncio").setLevel(logging.CRITICAL)
-
-    config = Configuration()
-    
-    # Load server configurations from server_config.json
-    try:
-        server_config = config.load_config("servers_config.json")
-        servers = [
-            MCPServer(name, srv_config)
-            for name, srv_config in server_config["mcpServers"].items()
-        ]
-        if not servers:
-            logging.warning("No MCP servers found in configuration. Proceeding without tools.")
-    except FileNotFoundError:
-        logging.warning("server_config.json not found. Proceeding without MCP servers.")
-        servers = []
-    except json.JSONDecodeError:
-        logging.error("Invalid JSON in server_config.json. Proceeding without MCP servers.")
-        servers = []
-    
-    session = LLMSession(servers)
-    
-    try:
-        prompt = "subtract 8 from 3"
-        result = asyncio.run(session.send_request(prompt, debug=True, show_stop_reason=True))
-        
-        print("\n--- RESULT ---")
-        if result["success"]:
-            print("Success: True")
-            print(f"Response:\n{result['response']}")
-            if result["tool_calls"]:
-                print("\n--- TOOL CALLS ---")
-                for i, call in enumerate(result["tool_calls"], 1):
-                    print(f"Tool Call {i}: {call['tool_name']} - Result: {call.get('result', 'Error: ' + call.get('error', 'Unknown'))}")
-        else:
-            print("Success: False")
-            print(f"Error: {result['error']}")
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        # In the case of an error, ensure server processes are killed
-        import signal
-        import os
-        import psutil
-        
-        # Get current process
-        current_process = psutil.Process(os.getpid())
-        
-        # Kill all child processes to clean up any hanging MCP servers
-        for child in current_process.children(recursive=True):
-            try:
-                child.kill()
-            except:
-                pass
 
 # --- Main Execution Block ---
 if __name__ == "__main__":
@@ -797,12 +783,21 @@ if __name__ == "__main__":
         main_task = asyncio.current_task()
         # Example prompt that requires a tool
         # prompt = "list the available tools"
-        prompt = "use the calculator tool to subtract 8 from 3"
+        prompt = "subtract 8 from 3"
         # prompt = "what is 5 plus 12 using the calculator?" # Another example
+        print(f"\n--- Starting Servers ---\n")
 
-        print(f"\n--- Sending Request ---\nPrompt: {prompt}\n")
-        # The send_request method now includes its own try/finally for cleanup
-        result = await session.send_request(prompt, debug=True, show_stop_reason=True)
+        try:
+            await session.start_servers()  # Start all servers
+
+            print(f"\n--- Sending Request ---\nPrompt: {prompt}\n")
+            # The send_request method now includes its own try/finally for cleanup
+            result = await session.send_request(prompt, debug=True, show_stop_reason=True)
+        finally:
+            await session.stop_servers()  # Stop all servers
+
+
+
 
         print("\n--- LLM Interaction Result ---")
         print(f"Success: {result['success']}")
