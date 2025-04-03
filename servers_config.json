@@ -23,6 +23,19 @@
         "run",
         "/Users/lherron/projects/evai-cli/evai/mcp/server.py"
       ]
+    },
+    "email_triage_agent_mcp": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "/Users/lherron/agents/email-triage-agent",
+        "--with",
+        "mcp[cli]",
+        "mcp",
+        "run",
+        "/Users/lherron/agents/email-triage-agent/src/email_triage/mcp/server.py"
+      ]
     }
   }
 }

@@ -8,6 +8,7 @@ import traceback
 import re
 import json
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
+from dotenv import load_dotenv
 
 from rich.console import Console
 from rich.panel import Panel
@@ -157,7 +158,9 @@ async def llm_async(prompt: str, debug: bool = False, show_stop_reason: bool = F
     
     # Load server configurations
     try:
-        servers_config_path = "servers_config.json"
+        servers_config_path = os.getenv("EVAI_SERVERS_CONFIG", "servers_config.json")
+        if debug:
+            error_console.print(f"[purple]Using servers config from: {servers_config_path}[/purple]")
         server_config = config.load_config(servers_config_path)
         servers = [
             MCPServer(name, srv_config)
@@ -196,6 +199,9 @@ def llm(prompt: str, debug: bool = False, show_stop_reason: bool = False) -> Non
     
     Uses MCP servers configured in servers_config.json to provide tools integration.
     """
+    # Load environment variables from .env file
+    load_dotenv()
+    
     # Configure basic logging for CLI output
     import logging
     logging.basicConfig(
