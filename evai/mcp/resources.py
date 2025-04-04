@@ -32,77 +32,17 @@ RESOURCES = {
     )
 }
 
+def read_file(path: str) -> str:
+    """Read a file and return its contents."""
+    with open(path, "r") as f:
+        return f.read()
 
-def register_resources(mcp: FastMCP, server: Any) -> None:
+
+def register_resources(mcp: FastMCP) -> None:
     """
     Register all available resources.
     
     Args:
         mcp: The MCP server instance
-        server: The EVAIServer instance for file access
     """
     logger.debug("Registering resources")
-    
-    # Register file resource
-    @mcp.resource("file://{path}")
-    async def read_file(path: str) -> str:
-        """
-        Read file content from the specified path.
-        
-        Args:
-            path: Path to the file to read
-            
-        Returns:
-            The file content as a string
-        """
-        logger.debug(f"Reading file: {path}")
-        try:
-            # Read the file
-            content = server.read_file(path)
-            return str(content)
-        except Exception as e:
-            logger.error(f"Error reading file: {e}")
-            raise ValueError(f"Error reading file: {e}")
-    
-    # Register config resource
-    @mcp.resource("config://evai.json")
-    async def read_config() -> str:
-        """
-        Read EVAI configuration.
-        
-        Returns:
-            The configuration as a JSON string
-        """
-        logger.debug("Reading EVAI configuration")
-        try:
-            # Get the configuration
-            config = server.get_config()
-            # Ensure we always return a string
-            return str(config) if config is not None else "{}"
-        except Exception as e:
-            logger.error(f"Error reading configuration: {e}")
-            raise ValueError(f"Error reading configuration: {e}")
-    
-    # Register env resource
-    @mcp.resource("env://{name}")
-    async def read_env_var(name: str) -> str:
-        """
-        Read environment variable.
-        
-        Args:
-            name: Name of the environment variable
-            
-        Returns:
-            The value of the environment variable
-        """
-        logger.debug(f"Reading environment variable: {name}")
-        try:
-            value = os.environ.get(name)
-            if value is None:
-                raise ValueError(f"Environment variable {name} not found")
-            return value
-        except Exception as e:
-            logger.error(f"Error reading environment variable: {e}")
-            raise ValueError(f"Error reading environment variable: {e}")
-    
-    logger.debug("Resources registered successfully") 

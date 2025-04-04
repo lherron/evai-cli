@@ -93,7 +93,7 @@ with mock.patch.dict(sys.modules, {
 }):
     with mock.patch('evai.mcp.mcp_prompts.register_prompts', mock_register_prompts):
         # Import after mocking
-        from evai.mcp.server import EVAIServer, create_server
+        from evai.mcp.server import create_server
         from evai.tool_storage import get_tool_dir, save_tool_metadata, list_tools
 
 

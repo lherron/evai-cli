@@ -18,14 +18,8 @@ except ImportError:
 
 from evai.tool_storage import (
     list_tools, 
-    run_tool, 
-    load_tool_metadata, 
-    get_tool_dir,
-    save_tool_metadata,
-    edit_tool_metadata,
-    edit_tool_implementation,
-    run_lint_check,
-    import_tool_module
+    run_tool,  # Do not remove, used in register_tool
+    load_tool_metadata
 )
 
 # Set up logging

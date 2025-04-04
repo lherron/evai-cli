@@ -49,14 +49,18 @@ PROMPTS = {
     )
 }
 
+def read_file(path: str) -> str:
+    """Read a file and return its contents."""
+    with open(path, "r") as f:
+        return f.read()
 
-def register_prompts(mcp: FastMCP, server: Any) -> None:
+
+def register_prompts(mcp: FastMCP) -> None:
     """
     Register all available prompts.
     
     Args:
         mcp: The MCP server instance
-        server: The EVAIServer instance for file reading
     """
     logger.debug("Registering prompts")
     
@@ -75,7 +79,7 @@ def register_prompts(mcp: FastMCP, server: Any) -> None:
         logger.debug(f"Analyzing file: {path}")
         try:
             # Read the file
-            content = server.read_file(path)
+            content = read_file(path)
             
             # Return the file content as a prompt message
             return [PromptMessage(role="user", content=types.TextContent(type="text", text=f"Please analyze this file:\n\n```\n{content}\n```"))]

@@ -32,7 +32,7 @@ mcp = FastMCP("evai")
 
 
 class EVAIServer:
-    """MCP server for EVAI CLI custom tools."""
+    """MCP wrapper for EVAI CLI custom tools."""
     
     def __init__(self, mcp: FastMCP):
         """
@@ -48,7 +48,7 @@ class EVAIServer:
         
         # Use the new modules for registration
         # register_built_in_tools(self.mcp)
-        register_prompts(self.mcp, self)
+        register_prompts(self.mcp)
         register_tools(self.mcp)
         
         print(f"[DEBUG] Exiting EVAIServer.__init__", file=sys.stderr)
@@ -71,23 +71,6 @@ class EVAIServer:
             print(f"Error running MCP server: {e}", file=sys.stderr)
         print(f"[DEBUG] Exiting EVAIServer.run", file=sys.stderr)
 
-
-def create_server(name: str = "EVAI Tools") -> EVAIServer:
-    """
-    Create an MCP server for EVAI CLI custom tools.
-    
-    Args:
-        name: The name of the server
-        
-    Returns:
-        The MCP server
-    """
-    print(f"[DEBUG] Entering create_server with name={name}", file=sys.stderr)
-    server = EVAIServer(mcp)
-    print(f"[DEBUG] Exiting create_server", file=sys.stderr)
-    return server
-
-
 def run_server(name: str = "EVAI Tools") -> None:
     """
     Run an MCP server for EVAI CLI custom tools.
@@ -96,7 +79,8 @@ def run_server(name: str = "EVAI Tools") -> None:
         name: The name of the server
     """
     print(f"[DEBUG] Entering run_server with name={name}", file=sys.stderr)
-    server = create_server(name)
+    # server = create_server(name)
+    server = EVAIServer(mcp)
     server.run()
     print(f"[DEBUG] Exiting run_server", file=sys.stderr)
 
