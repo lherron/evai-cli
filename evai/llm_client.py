@@ -1,4 +1,10 @@
-"""LLM client for EVAI CLI."""
+"""
+OpenAI client used for new tool/command creation.
+
+DEPRECATED
+TODO: REMOVE THIS WHEN YOU REMOVE LLMADD
+
+"""
 
 import os
 import logging
