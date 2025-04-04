@@ -20,10 +20,9 @@ from rich.table import Table
 from rich.box import ROUNDED
 import asyncio
 
+from evai.mcp_tools import MCPConfiguration, MCPServer
 from evai.llm_interaction import (
-    Configuration,
     LLMSession,
-    MCPServer,
     extract_tool_result_value,
 )
 
@@ -155,7 +154,7 @@ async def llm_async(prompt: str, debug: bool = False, show_stop_reason: bool = F
     """
     # Initialize configuration and load server settings
     error_console.print("[purple]Initializing LLM session with configured MCP servers...[/purple]")
-    config = Configuration()
+    config = MCPConfiguration()
     
     # Load server configurations
     try:
