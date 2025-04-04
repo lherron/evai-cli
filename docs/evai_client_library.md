@@ -1,0 +1,396 @@
+Below is an updated and improved version of the `evai_client_library.md` documentation based on the provided codebase (`evai.llm` and `evai.mcp.client_tools`), incorporating the example client usage from `evai.cli.commands.llm` and the additional example you provided. The revised documentation is more detailed, structured, and includes practical examples, error handling guidance, and clarifications on key functionalities.
+
+---
+
+# EVAI Client Library Documentation
+
+## Overview
+
+The EVAI Client Library provides a Python interface for interacting with large language models (LLMs) and managing Model Control Protocol (MCP) servers. It is designed to facilitate seamless integration of LLMs with custom tools, enabling developers to build powerful command-line interfaces, automation scripts, or other applications. The library is part of the EVAI CLI project and leverages the `evai.llm` and `evai.mcp.client_tools` modules.
+
+This documentation covers the core components, installation, configuration, usage examples, and best practices for working with the EVAI Client Library.
+
+## Installation
+
+To install the EVAI Client Library, use pip to install the `evai-cli` package:
+
+```bash
+pip install evai-cli
+```
+
+Ensure you have Python 3.12 or higher installed, as specified in the project's `pyproject.toml`.
+
+### Dependencies
+
+The library depends on the following packages (listed in `requirements.txt`):
+- `anthropic>=0.18.0` - For LLM interactions with Anthropic's Claude models.
+- `mcp>=1.6.0` - For MCP server communication.
+- `python-dotenv>=1.0.0` - For environment variable management.
+- `psutil>=5.9.0` - For process management.
+
+## Core Components
+
+### `LLMSession` (from `evai.llm`)
+
+The `LLMSession` class is the primary interface for orchestrating interactions between users, LLMs, and MCP-based tools. It manages server lifecycles and processes LLM requests with optional tool integration.
+
+#### Initialization
+
+```python
+from evai.llm import LLMSession
+from evai.mcp.client_tools import MCPServerFactory
+
+# Load server configurations
+servers_config_path = os.getenv("EVAI_SERVERS_CONFIG", "servers_config.json")
+servers = MCPServerFactory.load_servers(servers_config_path)
+
+# Initialize the LLM session
+llm_session = LLMSession(servers=servers)
+```
+
+- **Parameters**:
+  - `servers`: A list of `MCPServer` instances (can be empty if no tools are needed).
+- **Requirements**:
+  - The `ANTHROPIC_API_KEY` environment variable must be set for Claude interactions.
+
+#### Key Methods
+
+1. **`start_servers()`**
+   - Starts all configured MCP servers asynchronously.
+   - Example:
+     ```python
+     await llm_session.start_servers()
+     ```
+
+2. **`send_request(prompt, debug=False, show_stop_reason=False, allowed_tools=None)`**
+   - Sends a prompt to the LLM and processes the response, potentially invoking tools.
+   - Parameters:
+     - `prompt` (str): The input prompt for the LLM.
+     - `debug` (bool): If `True`, includes detailed logging and message history in the result.
+     - `show_stop_reason` (bool): If `True`, includes stop reason details in the result (useful for debugging).
+     - `allowed_tools` (list[str] or None): Optional list of tool names to restrict tool usage.
+   - Returns: A dictionary with the response structure (see below).
+   - Example:
+     ```python
+     result = await llm_session.send_request(
+         prompt="What is the capital of France?",
+         debug=False,
+         allowed_tools=["get_location_info"]
+     )
+     ```
+
+3. **`stop_servers()`**
+   - Stops all running MCP servers and cleans up resources.
+   - Example:
+     ```python
+     await llm_session.stop_servers()
+     ```
+
+#### Result Structure
+
+The `send_request` method returns a dictionary with the following fields:
+
+```python
+{
+    "success": bool,                     # Indicates if the request was successful
+    "response": str,                     # The final text response from the LLM
+    "error": str or None,                # Error message if success=False
+    "tool_calls": list[dict],            # List of executed tool calls
+    "stop_reason_info": dict or None,    # Details about why the LLM stopped (if show_stop_reason=True)
+    "messages": list or None             # Full message history (if debug=True)
+}
+```
+
+- **`tool_calls` Entry Example**:
+  ```python
+  {
+      "tool_name": "get_location_info",
+      "tool_args": {"location": "France"},
+      "result": "The capital of France is Paris."
+  }
+  ```
+- **`stop_reason_info` Example**:
+  ```python
+  {
+      "reason": "end_turn",
+      "stop_sequence": None
+  }
+  ```
+
+### `MCPServerFactory` (from `evai.mcp.client_tools`)
+
+This utility class creates `MCPServer` instances from a configuration file.
+
+#### Usage
+
+```python
+from evai.mcp.client_tools import MCPServerFactory
+
+servers = MCPServerFactory.load_servers("servers_config.json")
+```
+
+- **Parameters**:
+  - `config_path` (str, optional): Path to the configuration file. Defaults to `EVAI_SERVERS_CONFIG` environment variable or `"servers_config.json"`.
+- **Returns**: A list of `MCPServer` instances.
+- **Behavior**: Returns an empty list if the config file is missing or invalid, with appropriate logging.
+
+### `MCPServer` (from `evai.mcp.client_tools`)
+
+The `MCPServer` class manages the lifecycle of an MCP server and provides methods for tool interaction.
+
+#### Initialization
+
+Typically instantiated via `MCPServerFactory`, but can be created manually:
+
+```python
+from evai.mcp.client_tools import MCPServer
+
+server = MCPServer(
+    name="example_server",
+    config={"command": "python", "args": ["-m", "evai.mcp.server", "tool_config.json"]}
+)
+```
+
+#### Key Methods
+
+1. **`initialize()`**
+   - Starts the server process and establishes a connection.
+   - Example:
+     ```python
+     await server.initialize()
+     ```
+
+2. **`list_tools()`**
+   - Retrieves a list of available tools from the server.
+   - Returns: List of `MCPTool` objects.
+   - Example:
+     ```python
+     tools = await server.list_tools()
+     for tool in tools:
+         print(f"Tool: {tool.name}, Description: {tool.description}")
+     ```
+
+3. **`execute_tool(tool_name, arguments, retries=1, delay=1.0)`**
+   - Executes a specified tool with given arguments.
+   - Parameters:
+     - `tool_name` (str): Name of the tool to execute.
+     - `arguments` (dict): Arguments for the tool.
+     - `retries` (int): Number of retry attempts (default: 1).
+     - `delay` (float): Delay between retries in seconds (default: 1.0).
+   - Returns: The tool's execution result.
+   - Example:
+     ```python
+     result = await server.execute_tool("echo", {"message": "Hello"})
+     ```
+
+4. **`cleanup()`**
+   - Terminates the server process and releases resources.
+   - Example:
+     ```python
+     await server.cleanup()
+     ```
+
+#### `MCPTool`
+
+Represents a tool hosted by an MCP server.
+
+```python
+class MCPTool:
+    def __init__(self, name, server_name, description, input_schema):
+        self.name = name                # str: Tool name
+        self.server_name = server_name  # str: Hosting server name
+        self.description = description  # str: Tool description
+        self.input_schema = input_schema  # dict: JSON schema for tool inputs
+```
+
+## Configuration
+
+### Configuration Files
+
+MCP servers are configured via a JSON file (default: `servers_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "example_server": {
+      "command": "python",
+      "args": ["-m", "evai.mcp.server", "tool_config.json"],
+      "env": {
+        "CUSTOM_VAR": "value"
+      }
+    }
+  }
+}
+```
+
+- **Fields**:
+  - `command`: The executable to run the server (e.g., `python`).
+  - `args`: List of arguments for the command.
+  - `env`: Optional dictionary of environment variables.
+
+### Environment Variables
+
+- **`ANTHROPIC_API_KEY`** (required): API key for Anthropic's Claude models.
+- **`EVAI_SERVERS_CONFIG`** (optional): Path to the MCP servers configuration file (defaults to `servers_config.json`).
+
+Set these in a `.env` file or your environment:
+
+```bash
+# .env.example
+ANTHROPIC_API_KEY=your_api_key_here
+EVAI_SERVERS_CONFIG=servers_config.json
+```
+
+Load them using `python-dotenv`:
+
+```python
+from dotenv import load_dotenv
+load_dotenv()
+```
+
+## Usage Examples
+
+### Example 1: Basic LLM Interaction with Tools
+
+From `evai.cli.commands.llm`:
+
+```python
+import asyncio
+import os
+import logging
+from evai.llm import LLMSession
+from evai.mcp.client_tools import MCPServerFactory
+
+async def main():
+    # Configure logging
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    # Load server configurations
+    config_path = os.getenv("EVAI_SERVERS_CONFIG", "servers_config.json")
+    servers = MCPServerFactory.load_servers(config_path)
+    if not servers:
+        logger.warning("No MCP servers found. Proceeding without tools.")
+
+    # Initialize LLM session
+    session = LLMSession(servers=servers)
+    
+    try:
+        # Start servers
+        await session.start_servers()
+        
+        # Send request
+        result = await session.send_request(
+            prompt="What is the capital of France?",
+            debug=False,
+            allowed_tools=None  # Use all available tools
+        )
+        
+        if result["success"]:
+            logger.info(f"Response: {result['response']}")
+            if result["tool_calls"]:
+                for call in result["tool_calls"]:
+                    logger.info(f"Tool {call['tool_name']} called with {call['tool_args']}")
+        else:
+            logger.error(f"Error: {result['error']}")
+    
+    finally:
+        # Clean up
+        await session.stop_servers()
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+### Example 2: Custom Client with Error Handling
+
+From the additional example provided:
+
+```python
+import asyncio
+import os
+import logging
+from evai.llm import LLMSession
+from evai.mcp.client_tools import MCPServerFactory
+
+async def generate_response(prompt: str) -> str:
+    logger = logging.getLogger(__name__)
+    logging.basicConfig(level=logging.INFO)
+
+    # Load server configurations
+    servers = []
+    config_path = os.getenv("EVAI_SERVERS_CONFIG", "servers_config.json")
+    servers = MCPServerFactory.load_servers(config_path)
+    if not servers:
+        logger.warning("No MCP servers found. Proceeding without tools.")
+
+    # Initialize LLM session
+    llm_session = LLMSession(servers=servers)
+    await llm_session.start_servers()
+
+    try:
+        # Send request
+        result = await llm_session.send_request(prompt=prompt, debug=False)
+        await llm_session.stop_servers()
+
+        if not result["success"]:
+            error_message = result.get("error", "Unknown error")
+            logger.error(f"Failed to generate response from LLM: {error_message}")
+            raise Exception(error_message)
+
+        markdown_response = result["response"]
+        logger.info("Generated Markdown response")
+        return markdown_response
+
+    except Exception as e:
+        logger.error(f"Failed to generate response using LLMSession: {e}")
+        raise
+
+if __name__ == "__main__":
+    response = asyncio.run(generate_response("Summarize the weather today"))
+    print(response)
+```
+
+## Error Handling
+
+The library provides robust error handling:
+
+1. **Server Initialization Failures**:
+   - Handled within `MCPServer.initialize()`. Logs errors and resets server state.
+   - Check `server._initialized` to verify success.
+
+2. **Tool Execution Failures**:
+   - `MCPServer.execute_tool()` includes a retry mechanism (configurable via `retries` and `delay`).
+   - Errors are logged and returned in the `tool_calls` list with an `"error"` key.
+
+3. **LLM API Errors**:
+   - Caught in `send_request()` and returned as `{"success": False, "error": str(e)}`.
+   - Common issues include missing `ANTHROPIC_API_KEY`.
+
+4. **Resource Cleanup**:
+   - Use `try`/`finally` blocks to ensure `stop_servers()` or `cleanup()` is called:
+     ```python
+     try:
+         await session.start_servers()
+         result = await session.send_request("Test prompt")
+     finally:
+         await session.stop_servers()
+     ```
+
+## Best Practices
+
+- **Environment Setup**: Always load environment variables at the start of your application using `load_dotenv()`.
+- **Logging**: Configure logging to capture detailed information, especially in debug mode.
+- **Server Management**: Start servers only when needed and stop them promptly to free resources.
+- **Tool Filtering**: Use `allowed_tools` to limit tool usage for specific requests, improving performance and security.
+- **Error Recovery**: Check `result["success"]` and handle errors gracefully, logging details for debugging.
+
+## Troubleshooting
+
+- **"ANTHROPIC_API_KEY not set"**: Ensure the environment variable is defined in `.env` or your shell.
+- **No Tools Available**: Verify `servers_config.json` exists and is correctly formatted.
+- **Server Initialization Fails**: Check the `command` and `args` in your config file for typos or missing executables.
+
+---
+
+This updated documentation provides a comprehensive guide to using the EVAI Client Library, with clearer examples, detailed method descriptions, and practical advice for developers. It reflects the current implementation in `evai.llm` and `evai.mcp.client_tools` as of April 04, 2025, and aligns with the usage patterns in the provided examples. Let me know if you'd like further refinements!
