@@ -24,13 +24,17 @@
         "/Users/lherron/projects/evai-cli/evai/mcp/server.py"
       ]
     },
-    "playwright-mcp-server": {
-      "command": "npx",
+    "email_triage_agent_mcp": {
+      "command": "uv",
       "args": [
-        "-y",
-        "@smithery/cli@latest",
         "run",
-        "@executeautomation/playwright-mcp-server"
+        "--directory",
+        "/Users/lherron/agents/email-triage-agent",
+        "--with",
+        "mcp[cli]",
+        "mcp",
+        "run",
+        "/Users/lherron/agents/email-triage-agent/src/email_triage/mcp/server.py"
       ]
     }
   }

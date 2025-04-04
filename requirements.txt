@@ -6,7 +6,7 @@ pluggy==1.5.0
 pytest==8.3.5
 pyyaml==6.0.2
 rich==13.9.4
-mcp>=0.1.0
+mcp>=1.6.0
 anthropic>=0.18.0
 psutil>=5.9.0
 python-dotenv>=1.0.0

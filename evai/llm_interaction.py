@@ -12,14 +12,13 @@ import re
 import sys
 import traceback
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
-
+import shutil
 import anthropic
 from mcp import ClientSession, StdioServerParameters
 import httpx
 from mcp.client.stdio import stdio_client
 from mcp import types
 from contextlib import AsyncExitStack
-import shutil
 from dotenv import load_dotenv
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -125,20 +124,23 @@ class MCPServer:
              logger.debug(f"Server {self.name} already initialized.")
              return
 
-        command = (
-            shutil.which("npx")
-            if self.config["command"] == "npx"
-            else self.config["command"]
-        )
+        if self.config["command"] == "npx":
+            command = shutil.which("npx")
+        else:
+            command = self.config["command"]
+
         if command is None:
             raise ValueError(f"Command '{self.config['command']}' not found or not executable.")
+
+        if self.config.get("env"):
+            env = {**os.environ, **self.config["env"]}
+        else:
+            env = os.environ
 
         server_params = StdioServerParameters(
             command=command,
             args=self.config["args"],
-            env={**os.environ, **self.config["env"]}
-            if self.config.get("env")
-            else {**os.environ}, # Ensure os.environ is always included
+            env=env
         )
         logger.info(f"Initializing server {self.name} with command: {' '.join([command] + server_params.args)}")
 
@@ -168,7 +170,13 @@ class MCPServer:
 
             session_context = ClientSession(read, write)
             session = await temp_exit_stack.enter_async_context(session_context)
-            await session.initialize()
+            try:
+                await session.initialize()
+            except Exception as e:
+                logger.error(f"Error initializing server {self.name}: {e}", exc_info=True)
+                # stack trace
+                traceback.print_exc()
+                raise # Re-raise the original exception
 
             # --- If successful, assign the stack and session ---
             self.exit_stack = temp_exit_stack
@@ -433,7 +441,7 @@ class LLMSession:
 
     # --- start (removed, focus on send_request) ---
 
-    async def send_request(self, prompt: str, debug: bool = False, show_stop_reason: bool = False) -> Dict[str, Any]:
+    async def send_request(self, prompt: str, debug: bool = False, show_stop_reason: bool = False, allowed_tools: list[str] = None) -> Dict[str, Any]:
         """Execute an LLM request with tool use independently."""
         # Use a try/finally block to ensure cleanup
         try:
@@ -472,8 +480,13 @@ class LLMSession:
                 else:
                      logger.warning(f"Skipping tool collection from server {server.name}: Not initialized or no session.")
 
-            logger.info(f"Collected {len(all_tools_for_api)} tools usable by the LLM.")
-
+            # if allowed_tools is None, use all tools
+            if allowed_tools is None:
+                logger.info(f"Using all tools in API call: {all_tools_for_api}")
+            else:
+                # Filter tools based on allowed_tools
+                all_tools_for_api = [tool for tool in all_tools_for_api if tool["name"] in allowed_tools]
+                logger.info(f"Using only the following tools in API call: {all_tools_for_api}")
             # --- Conversation Loop ---
             messages = [{"role": "user", "content": prompt}]
             final_response_parts = []
@@ -500,6 +513,7 @@ class LLMSession:
                         # Consider adding system prompt here if needed
                     )
                     logger.info(f"Received response from Anthropic. Stop reason: {response.stop_reason}")
+                    logger.debug(f"Response: {response}")
                     stop_reason_info = {"reason": response.stop_reason, "stop_sequence": response.stop_sequence}
 
 
@@ -523,6 +537,29 @@ class LLMSession:
                                 "input": content_block.input
                             })
                             tool_uses_in_response.append(content_block) # Keep track
+                        elif content_block.type == "message":
+                            # Handle message type content blocks
+                            logger.debug(f"LLM Message: {str(content_block)[:100]}...")
+                            # Extract relevant information from the message
+                            message_info = {
+                                "id": getattr(content_block, "id", None),
+                                "role": getattr(content_block, "role", None),
+                                "content": getattr(content_block, "content", []),
+                                "model": getattr(content_block, "model", None),
+                                "stop_reason": getattr(content_block, "stop_reason", None),
+                                "stop_sequence": getattr(content_block, "stop_sequence", None),
+                                "usage": getattr(content_block, "usage", None)
+                            }
+                            # Add to response content
+                            assistant_response_content.append({
+                                "type": "message",
+                                "message": message_info
+                            })
+                            # If the message has text content, add it to final response
+                            if message_info["content"]:
+                                for msg_content in message_info["content"]:
+                                    if getattr(msg_content, "type", None) == "text":
+                                        final_response_parts.append(msg_content.text)
 
                     # Add assistant's turn (text and tool requests) to messages
                     if assistant_response_content:

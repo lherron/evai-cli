@@ -141,13 +141,14 @@ def display_tool_calls(tool_calls: List[Dict[str, Any]]) -> None:
             )
             error_console.print(result_panel)
 
-async def llm_async(prompt: str, debug: bool = False, show_stop_reason: bool = False) -> Dict[str, Any]:
+async def llm_async(prompt: str, debug: bool = False, show_stop_reason: bool = False, allowed_tools: Optional[str] = None) -> Dict[str, Any]:
     """Async function to handle all LLM operations.
     
     Args:
         prompt: The user's prompt to send to the LLM
         debug: Whether to show debug information
         show_stop_reason: Whether to show the stop reason in the output
+        allowed_tools: Optional comma-separated list of allowed tool names
         
     Returns:
         Dict containing the result of the LLM interaction
@@ -180,25 +181,33 @@ async def llm_async(prompt: str, debug: bool = False, show_stop_reason: bool = F
     
     try:
         await session.start_servers()
+        # Convert comma-separated string to list if provided
+        allowed_tool_list = allowed_tools.split(",") if allowed_tools else None
         result = await session.send_request(
             prompt=prompt,
             debug=debug,
-            show_stop_reason=show_stop_reason
+            show_stop_reason=show_stop_reason,
+            allowed_tools=allowed_tool_list
         )
     finally:
-        await session.stop_servers()
+        # await session.stop_servers()
+        pass
         
     return result
 
 @click.command()
-@click.argument("prompt")
+@click.argument("prompt", type=str, default="What is the capital of France?")
 @click.option("--debug", is_flag=True, help="Show debug information", default=False)
 @click.option("--show-stop-reason", is_flag=True, help="Show the stop reason in the output", default=False)
-def llm(prompt: str, debug: bool = False, show_stop_reason: bool = False) -> None:
+@click.option("--allowed-tools", help="Comma-separated list of allowed tool names", default=None)
+def llm(prompt: str, debug: bool = False, show_stop_reason: bool = False, allowed_tools: Optional[str] = None) -> None:
     """Prompts Claude with configured tools.
     
     Uses MCP servers configured in servers_config.json to provide tools integration.
     """
+    print(f"*****************************************")
+    print(f"******** LLM request: {prompt}")
+    print(f"*****************************************")
     # Load environment variables from .env file
     load_dotenv()
     
@@ -213,9 +222,11 @@ def llm(prompt: str, debug: bool = False, show_stop_reason: bool = False) -> Non
         # Display the user prompt in a nice panel
         error_console.print(Panel(prompt, title="[green bold]User Prompt[/green bold]", border_style="green"))
         
+        print(f"******** LLM request: {prompt}")
         # Run the async operations
-        result = asyncio.run(llm_async(prompt, debug, show_stop_reason))
+        result = asyncio.run(llm_async(prompt, debug, show_stop_reason, allowed_tools))
 
+        print(f"******** LLM result: {result}")
         # Check if the request was successful
         if not result["success"]:
             # Print error to stderr
