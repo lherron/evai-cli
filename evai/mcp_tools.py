@@ -323,3 +323,56 @@ class MCPConfiguration:
         if not self.api_key:
             raise ValueError("LLM_API_KEY not found in environment variables")
         return self.api_key
+
+
+class MCPServerFactory:
+    """Factory class for creating MCP servers from configuration."""
+
+    @staticmethod
+    def load_servers(config_path: Optional[str] = None) -> list[MCPServer]:
+        """Load and create MCP servers from configuration.
+
+        Args:
+            config_path: Optional path to the server configuration file.
+                       If not provided, uses EVAI_SERVERS_CONFIG environment variable
+                       or falls back to "servers_config.json"
+
+        Returns:
+            List of initialized MCPServer instances.
+
+        Raises:
+            FileNotFoundError: If configuration file doesn't exist.
+            JSONDecodeError: If configuration file is invalid JSON.
+        """
+        # Initialize configuration
+        config = MCPConfiguration()
+        
+        # Determine config path
+        mcp_servers_config_path = config_path or os.getenv("EVAI_SERVERS_CONFIG", "servers_config.json")
+        
+        try:
+            # Load server configurations
+            server_config = config.load_config(mcp_servers_config_path)
+            
+            # Create server instances
+            servers = [
+                MCPServer(name, srv_config)
+                for name, srv_config in server_config.get("mcpServers", {}).items()
+            ]
+            
+            if not servers:
+                logger.warning("No MCP servers found in configuration.")
+            else:
+                logger.info(f"Successfully loaded {len(servers)} MCP servers from configuration.")
+            
+            return servers
+            
+        except FileNotFoundError:
+            logger.warning(f"Configuration file {mcp_servers_config_path} not found.")
+            return []
+        except json.JSONDecodeError:
+            logger.warning(f"Invalid JSON in configuration file {mcp_servers_config_path}.")
+            return []
+        except Exception as e:
+            logger.error(f"Error loading server configuration: {e}")
+            return []

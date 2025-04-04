@@ -20,7 +20,7 @@ from rich.table import Table
 from rich.box import ROUNDED
 import asyncio
 
-from evai.mcp_tools import MCPConfiguration, MCPServer
+from evai.mcp_tools import MCPConfiguration, MCPServer, MCPServerFactory
 from evai.llm_interaction import (
     LLMSession,
     extract_tool_result_value,
@@ -154,26 +154,15 @@ async def llm_async(prompt: str, debug: bool = False, show_stop_reason: bool = F
     """
     # Initialize configuration and load server settings
     error_console.print("[purple]Initializing LLM session with configured MCP servers...[/purple]")
-    config = MCPConfiguration()
     
-    # Load server configurations
-    try:
-        servers_config_path = os.getenv("EVAI_SERVERS_CONFIG", "servers_config.json")
-        if debug:
-            error_console.print(f"[purple]Using servers config from: {servers_config_path}[/purple]")
-        server_config = config.load_config(servers_config_path)
-        servers = [
-            MCPServer(name, srv_config)
-            for name, srv_config in server_config.get("mcpServers", {}).items()
-        ]
-        if not servers:
-            error_console.print("[yellow]No MCP servers found in configuration. Proceeding without tools.[/yellow]")
-    except FileNotFoundError:
-        error_console.print(f"[yellow]Warning: {servers_config_path} not found. Proceeding without MCP servers.[/yellow]")
-        servers = []
-    except json.JSONDecodeError:
-        error_console.print(f"[yellow]Warning: Invalid JSON in {servers_config_path}. Proceeding without MCP servers.[/yellow]")
-        servers = []
+    # Load server configurations using MCPServerFactory
+    mcp_servers_config_path = os.getenv("EVAI_SERVERS_CONFIG", "servers_config.json")
+    if debug:
+        error_console.print(f"[purple]Using MCP servers config from: {mcp_servers_config_path}[/purple]")
+    
+    servers = MCPServerFactory.load_servers(mcp_servers_config_path)
+    if not servers:
+        error_console.print("[yellow]No MCP servers found in configuration. Proceeding without tools.[/yellow]")
     
     # Create LLM session
     session = LLMSession(servers)
