@@ -9,12 +9,9 @@ import json
 import logging
 import os
 import re
-import sys
 import traceback
-from typing import Any, Dict, List, Optional, Tuple, Union, cast
+from typing import Any, Dict, Tuple
 import anthropic
-import httpx
-from mcp import types
 
 from evai.mcp.client_tools import MCPConfiguration, MCPServer
 # Conevai.mcp

@@ -1,11 +1,10 @@
 """MCP tools for EVAI CLI."""
 
 import os
-import sys
 import logging
 import inspect
 import traceback
-from typing import Dict, Any, List, Optional, Awaitable, Tuple, Union, cast, Callable
+from typing import Dict, Any
 
 try:
     from mcp.server.fastmcp import FastMCP
@@ -16,11 +15,8 @@ except ImportError:
         "Please install it with: pip install mcp"
     )
 
-from evai.tool_storage import (
-    list_tools, 
-    run_tool,  # Do not remove, used in register_tool
-    load_tool_metadata
-)
+from evai.tool_storage import list_tools, load_tool_metadata
+from evai.tool_storage import run_tool  # type: ignore
 
 # Set up logging
 logger = logging.getLogger(__name__)

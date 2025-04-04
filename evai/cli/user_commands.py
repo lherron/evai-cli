@@ -1,11 +1,9 @@
 # evai/cli/user_commands.py
 import click
-import importlib.util
 import logging
 import json
 import sys
-from functools import partial
-from typing import Dict, Any, List, Optional, Tuple, Union, cast
+from typing import Dict, Any
 from evai.tool_storage import (
     list_tools,
     load_tool_metadata,

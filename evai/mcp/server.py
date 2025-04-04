@@ -24,7 +24,7 @@ except ImportError:
 # sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 # Import the new modules
 from evai.mcp.prompts import register_prompts
-from evai.mcp.tools import register_tools, register_tool
+from evai.mcp.tools import register_tools
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -53,10 +53,10 @@ class EVAIServer:
         
         print(f"[DEBUG] Exiting EVAIServer.__init__", file=sys.stderr)
     
-    def read_file(self, path: str) -> str:
-        """Read a file and return its contents."""
-        with open(path, "r") as f:
-            return f.read()
+    # def read_file(self, path: str) -> str:
+    #     """Read a file and return its contents."""
+    #     with open(path, "r") as f:
+    #         return f.read()
     
     def run(self) -> None:
         """Run the MCP server."""
