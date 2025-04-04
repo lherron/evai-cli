@@ -16,7 +16,7 @@ import anthropic
 import httpx
 from mcp import types
 
-from evai.mcp_tools import MCPConfiguration, MCPServer
+from evai.mcp.client_tools import MCPConfiguration, MCPServer
 # Conevai.mcp
 logger = logging.getLogger(__name__)
 

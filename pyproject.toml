@@ -10,6 +10,7 @@ dependencies = [
     "pyyaml>=6.0.1",
     "anthropic>=0.3.0",
     "psutil",
+    "openai"
 ]
 
 [project.optional-dependencies]

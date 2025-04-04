@@ -20,7 +20,7 @@ from rich.table import Table
 from rich.box import ROUNDED
 import asyncio
 
-from evai.mcp_tools import MCPConfiguration, MCPServer, MCPServerFactory
+from evai.mcp.client_tools import MCPConfiguration, MCPServer, MCPServerFactory
 from evai.llm_interaction import (
     LLMSession,
     extract_tool_result_value,

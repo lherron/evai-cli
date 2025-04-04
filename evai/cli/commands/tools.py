@@ -6,13 +6,9 @@ import json
 import click
 import yaml
 import subprocess
-from typing import Optional, List, Dict, Any, Tuple, Union
+from typing import Optional
 from evai.tool_storage import (
     get_tool_dir, 
-    save_tool_metadata, 
-    edit_tool_metadata,
-    edit_tool_implementation,
-    run_lint_check,
     list_tools,
     run_tool,
     load_tool_metadata,
