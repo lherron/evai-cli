@@ -1,0 +1,1182 @@
+Script started on Sat Apr  5 09:04:46 2025
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J[36mlherron@max3[39m:[32m~/projects/evai-cli[39m$ [K[?2004huv run script evai.llm[P[9C [10D[P[9C [10D[P[9C [10D[P[9C [10D[P[9C [10D[P[9C [10D[@-[9C [10D[@m[9C [10D[?2004l
+09:04:54 | DEBUG    | asyncio         | Using selector: KqueueSelector
+
+--- Starting Servers ---
+
+09:04:54 | INFO     | __main__        | Starting 3 MCP server tasks...
+09:04:54 | INFO     | evai.mcp.client_tools | Starting server Demo...
+09:04:54 | INFO     | evai.mcp.client_tools | Initializing server Demo with command: uv run --with mcp[cli] mcp run /Users/lherron/projects/mcp-sample/server.py
+09:04:54 | INFO     | evai.mcp.client_tools | Starting server evai-mcp-server...
+09:04:54 | INFO     | evai.mcp.client_tools | Initializing server evai-mcp-server with command: uv run --directory /Users/lherron/projects/evai-cli --no-sync --with mcp[cli] mcp run /Users/lherron/projects/evai-cli/evai/mcp/server.py
+09:04:54 | INFO     | evai.mcp.client_tools | Starting server email_triage_agent_mcp...
+09:04:54 | INFO     | evai.mcp.client_tools | Initializing server email_triage_agent_mcp with command: uv run --directory /Users/lherron/projects/email-triage-agent --no-sync --with mcp[cli] mcp run /Users/lherron/projects/email-triage-agent/src/email_triage/mcp/server.py
+[1m[33mwarning[39m[0m[1m:[0m [1m`VIRTUAL_ENV=/Users/lherron/projects/evai-cli/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead[0m
+09:04:54 | INFO     | evai.mcp.client_tools | Server Demo initialized successfully.
+[DEBUG] Entering EVAIServer.__init__ with name=evai
+[DEBUG] Exiting EVAIServer.__init__
+09:04:54 | INFO     | evai.mcp.client_tools | Server evai-mcp-server initialized successfully.
+DEBUG:mcp.server.lowlevel.server:Initializing server 'email_triage_agent_mcp'
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for CallToolRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListResourcesRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for ReadResourceRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for PromptListRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for GetPromptRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListResourceTemplatesRequest
+DEBUG:asyncio:Using selector: KqueueSelector
+INFO:email_triage.util.fastmail_client:Initializing JMAP client with host: api.fastmail.com
+INFO:email_triage.util.fastmail_client:JMAP client initialized successfully
+09:04:54 | INFO     | evai.mcp.client_tools | Server email_triage_agent_mcp initialized successfully.
+09:04:54 | INFO     | __main__        | All MCP servers have started and initialized.
+
+--- Sending Request ---
+Prompt: subtract 8 from 3
+
+09:04:54 | INFO     | __main__        | Starting LLM request processing.
+09:04:54 | DEBUG    | __main__        | Prompt: subtract 8 from 3
+09:04:54 | INFO     | __main__        | Collecting tools from initialized servers.
+DEBUG:mcp.server.lowlevel.server:Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+[2;36m[04/05/25 09:04:54][0m[2;36m [0m[34mINFO    [0m Processing request of type ListToolsRequest                             ]8;id=894240;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py\[2mserver.py[0m]8;;\[2m:[0m]8;id=613765;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py#534\[2m534[0m]8;;\
+09:04:54 | INFO     | root            | Tools for Demo:
+09:04:54 | INFO     | root            | 	Tool: name='add' description='Add two numbers'
+[2;36m[04/05/25 09:04:54][0m[2;36m [0m[34mINFO    [0m Processing request of type ListToolsRequest                             ]8;id=80828;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py\[2mserver.py[0m]8;;\[2m:[0m]8;id=802594;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py#534\[2m534[0m]8;;\
+09:04:54 | INFO     | root            | Tools for evai-mcp-server:
+09:04:54 | INFO     | root            | 	Tool: name='subtract' description='Subtract one number from another'
+09:04:54 | INFO     | root            | 	Tool: name='deploy_artifact' description='Deploy a React component artifact to the artifacts directory'
+DEBUG:mcp.server.lowlevel.server:Received message: <mcp.shared.session.RequestResponder object at 0x106dfa9c0>
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Dispatching request of type ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Response sent
+09:04:54 | INFO     | root            | Tools for email_triage_agent_mcp:
+09:04:54 | INFO     | root            | 	Tool: name='send_user_email' description='Send an email to the chat user.
+    
+    Args:
+        subject: Subject line of the email
+        markdown_content: Markdown content of the email (will be rendered as HTML)
+        ctx: MCP context containing FastmailClient
+        
+    Returns:
+        str: Success message or error description
+    '
+09:04:54 | INFO     | __main__        | Using all tools in API call: [{'name': 'add', 'description': 'Add two numbers', 'input_schema': {'properties': {'a': {'title': 'A', 'type': 'integer'}, 'b': {'title': 'B', 'type': 'integer'}}, 'required': ['a', 'b'], 'title': 'addArguments', 'type': 'object'}}, {'name': 'subtract', 'description': 'Subtract one number from another', 'input_schema': {'properties': {'minuend': {'title': 'Minuend', 'type': 'number'}, 'subtrahend': {'title': 'Subtrahend', 'type': 'number'}}, 'required': ['minuend', 'subtrahend'], 'title': 'subtractArguments', 'type': 'object'}}, {'name': 'deploy_artifact', 'description': 'Deploy a React component artifact to the artifacts directory', 'input_schema': {'properties': {'artifact_name': {'title': 'Artifact Name', 'type': 'string'}, 'source_code': {'title': 'Source Code', 'type': 'string'}}, 'required': ['artifact_name', 'source_code'], 'title': 'deploy_artifactArguments', 'type': 'object'}}, {'name': 'send_user_email', 'description': 'Send an email to the chat user.\n    \n    Args:\n        subject: Subject line of the email\n        markdown_content: Markdown content of the email (will be rendered as HTML)\n        ctx: MCP context containing FastmailClient\n        \n    Returns:\n        str: Success message or error description\n    ', 'input_schema': {'properties': {'subject': {'title': 'Subject', 'type': 'string'}, 'markdown_content': {'title': 'Markdown Content', 'type': 'string'}}, 'required': ['subject', 'markdown_content'], 'title': 'send_user_emailArguments', 'type': 'object'}}]
+09:04:54 | INFO     | __main__        | LLM Interaction - Turn 1
+09:04:54 | DEBUG    | __main__        | Sending 1 messages and 4 tools to Anthropic.
+09:04:54 | DEBUG    | __main__        | Messages: [{'role': 'user', 'content': 'subtract 8 from 3'}]
+09:04:54 | DEBUG    | __main__        | Tools: [{'name': 'add', 'description': 'Add two numbers', 'input_schema': {'properties': {'a': {'title': 'A', 'type': 'integer'}, 'b': {'title': 'B', 'type': 'integer'}}, 'required': ['a', 'b'], 'title': 'addArguments', 'type': 'object'}}, {'name': 'subtract', 'description': 'Subtract one number from another', 'input_schema': {'properties': {'minuend': {'title': 'Minuend', 'type': 'number'}, 'subtrahend': {'title': 'Subtrahend', 'type': 'number'}}, 'required': ['minuend', 'subtrahend'], 'title': 'subtractArguments', 'type': 'object'}}, {'name': 'deploy_artifact', 'description': 'Deploy a React component artifact to the artifacts directory', 'input_schema': {'properties': {'artifact_name': {'title': 'Artifact Name', 'type': 'string'}, 'source_code': {'title': 'Source Code', 'type': 'string'}}, 'required': ['artifact_name', 'source_code'], 'title': 'deploy_artifactArguments', 'type': 'object'}}, {'name': 'send_user_email', 'description': 'Send an email to the chat user.\n    \n    Args:\n        subject: Subject line of the email\n        markdown_content: Markdown content of the email (will be rendered as HTML)\n        ctx: MCP context containing FastmailClient\n        \n    Returns:\n        str: Success message or error description\n    ', 'input_schema': {'properties': {'subject': {'title': 'Subject', 'type': 'string'}, 'markdown_content': {'title': 'Markdown Content', 'type': 'string'}}, 'required': ['subject', 'markdown_content'], 'title': 'send_user_emailArguments', 'type': 'object'}}]
+^C^C09:04:55 | INFO     | __main__        | Stopping 3 MCP server tasks...
+09:04:55 | INFO     | evai.mcp.client_tools | Server Demo task cancelled, initiating cleanup.
+09:04:55 | INFO     | evai.mcp.client_tools | Starting cleanup for server Demo...
+09:04:55 | DEBUG    | evai.mcp.client_tools | Closing AsyncExitStack for Demo.
+09:04:55 | INFO     | evai.mcp.client_tools | Server evai-mcp-server task cancelled, initiating cleanup.
+09:04:55 | INFO     | evai.mcp.client_tools | Starting cleanup for server evai-mcp-server...
+09:04:55 | DEBUG    | evai.mcp.client_tools | Closing AsyncExitStack for evai-mcp-server.
+09:04:55 | INFO     | evai.mcp.client_tools | Server email_triage_agent_mcp task cancelled, initiating cleanup.
+09:04:55 | INFO     | evai.mcp.client_tools | Starting cleanup for server email_triage_agent_mcp...
+09:04:55 | DEBUG    | evai.mcp.client_tools | Closing AsyncExitStack for email_triage_agent_mcp.
+09:04:55 | ERROR    | evai.mcp.client_tools | Error during AsyncExitStack cleanup for server evai-mcp-server: unhandled errors in a TaskGroup (1 sub-exception)
+  + Exception Group Traceback (most recent call last):
+  |   File "/Users/lherron/projects/evai-cli/evai/mcp/client_tools.py", line 218, in cleanup
+  |     await self.exit_stack.aclose()
+  |   File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextlib.py", line 696, in aclose
+  |     await self.__aexit__(None, None, None)
+  |   File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextlib.py", line 754, in __aexit__
+  |     raise exc_details[1]
+  |   File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextlib.py", line 737, in __aexit__
+  |     cb_suppress = await cb(*exc_details)
+  |                   ^^^^^^^^^^^^^^^^^^^^^^
+  |   File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextlib.py", line 217, in __aexit__
+  |     await anext(self.gen)
+  |   File "/Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/client/stdio/__init__.py", line 167, in stdio_client
+  |     anyio.create_task_group() as tg,
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+  |   File "/Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 772, in __aexit__
+  |     raise BaseExceptionGroup(
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "/Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/client/stdio/__init__.py", line 141, in stdout_reader
+    |     message = types.JSONRPCMessage.model_validate_json(line)
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/pydantic/main.py", line 744, in model_validate_json
+    |     return cls.__pydantic_validator__.validate_json(
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | pydantic_core._pydantic_core.ValidationError: 1 validation error for JSONRPCMessage
+    |   Invalid JSON: EOF while parsing a value at line 1 column 0 [type=json_invalid, input_value='', input_type=str]
+    |     For further information visit https://errors.pydantic.dev/2.11/v/json_invalid
+    | 
+    | During handling of the above exception, another exception occurred:
+    | 
+    | Traceback (most recent call last):
+    |   File "/Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/client/stdio/__init__.py", line 143, in stdout_reader
+    |     await read_stream_writer.send(exc)
+    |   File "/Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/anyio/streams/memory.py", line 242, in send
+    |     self.send_nowait(item)
+    |   File "/Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/anyio/streams/memory.py", line 213, in send_nowait
+    |     raise BrokenResourceError
+    | anyio.BrokenResourceError
+    +------------------------------------
+09:04:55 | INFO     | evai.mcp.client_tools | Cleanup finished for server evai-mcp-server.
+09:04:55 | ERROR    | evai.mcp.client_tools | Error during AsyncExitStack cleanup for server email_triage_agent_mcp: unhandled errors in a TaskGroup (1 sub-exception)
+  + Exception Group Traceback (most recent call last):
+  |   File "/Users/lherron/projects/evai-cli/evai/mcp/client_tools.py", line 218, in cleanup
+  |     await self.exit_stack.aclose()
+  |   File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextlib.py", line 696, in aclose
+  |     await self.__aexit__(None, None, None)
+  |   File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextlib.py", line 754, in __aexit__
+  |     raise exc_details[1]
+  |   File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextlib.py", line 737, in __aexit__
+  |     cb_suppress = await cb(*exc_details)
+  |                   ^^^^^^^^^^^^^^^^^^^^^^
+  |   File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextlib.py", line 217, in __aexit__
+  |     await anext(self.gen)
+  |   File "/Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/client/stdio/__init__.py", line 167, in stdio_client
+  |     anyio.create_task_group() as tg,
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+  |   File "/Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 772, in __aexit__
+  |     raise BaseExceptionGroup(
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "/Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/client/stdio/__init__.py", line 141, in stdout_reader
+    |     message = types.JSONRPCMessage.model_validate_json(line)
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/pydantic/main.py", line 744, in model_validate_json
+    |     return cls.__pydantic_validator__.validate_json(
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | pydantic_core._pydantic_core.ValidationError: 1 validation error for JSONRPCMessage
+    |   Invalid JSON: expected value at line 1 column 1 [type=json_invalid, input_value='Creating server', input_type=str]
+    |     For further information visit https://errors.pydantic.dev/2.11/v/json_invalid
+    | 
+    | During handling of the above exception, another exception occurred:
+    | 
+    | Traceback (most recent call last):
+    |   File "/Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/client/stdio/__init__.py", line 143, in stdout_reader
+    |     await read_stream_writer.send(exc)
+    |   File "/Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/anyio/streams/memory.py", line 242, in send
+    |     self.send_nowait(item)
+    |   File "/Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/anyio/streams/memory.py", line 213, in send_nowait
+    |     raise BrokenResourceError
+    | anyio.BrokenResourceError
+    +------------------------------------
+09:04:55 | INFO     | evai.mcp.client_tools | Cleanup finished for server email_triage_agent_mcp.
+09:04:55 | DEBUG    | evai.mcp.client_tools | AsyncExitStack for Demo closed.
+09:04:55 | INFO     | evai.mcp.client_tools | Cleanup finished for server Demo.
+
+Interrupted by user.
+
+--- Main execution finished ---
+Exiting.
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J[36mlherron@max3[39m:[32m~/projects/evai-cli[39m$ [K[?2004h[?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J[36mlherron@max3[39m:[32m~/projects/evai-cli[39m$ [K[?2004h[?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J[36mlherron@max3[39m:[32m~/projects/evai-cli[39m$ [K[?2004h[H[2J[0m[27m[24m[J[36mlherron@max3[39m:[32m~/projects/evai-cli[39m$ [Kvvv[?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/evai-cli[39m$ [K[?2004h[H[2J[0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/evai-cli[39m$ [Kvvuv run -m evai.llm[?2004l
+09:04:59 | DEBUG    | asyncio         | Using selector: KqueueSelector
+
+--- Starting Servers ---
+
+09:04:59 | INFO     | __main__        | Starting 3 MCP server tasks...
+09:04:59 | INFO     | evai.mcp.client_tools | Starting server Demo...
+09:04:59 | INFO     | evai.mcp.client_tools | Initializing server Demo with command: uv run --with mcp[cli] mcp run /Users/lherron/projects/mcp-sample/server.py
+09:04:59 | INFO     | evai.mcp.client_tools | Starting server evai-mcp-server...
+09:04:59 | INFO     | evai.mcp.client_tools | Initializing server evai-mcp-server with command: uv run --directory /Users/lherron/projects/evai-cli --no-sync --with mcp[cli] mcp run /Users/lherron/projects/evai-cli/evai/mcp/server.py
+09:04:59 | INFO     | evai.mcp.client_tools | Starting server email_triage_agent_mcp...
+09:04:59 | INFO     | evai.mcp.client_tools | Initializing server email_triage_agent_mcp with command: uv run --directory /Users/lherron/projects/email-triage-agent --no-sync --with mcp[cli] mcp run /Users/lherron/projects/email-triage-agent/src/email_triage/mcp/server.py
+[1m[33mwarning[39m[0m[1m:[0m [1m`VIRTUAL_ENV=/Users/lherron/projects/evai-cli/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead[0m
+09:04:59 | INFO     | evai.mcp.client_tools | Server Demo initialized successfully.
+[DEBUG] Entering EVAIServer.__init__ with name=evai
+[DEBUG] Exiting EVAIServer.__init__
+09:04:59 | INFO     | evai.mcp.client_tools | Server evai-mcp-server initialized successfully.
+DEBUG:mcp.server.lowlevel.server:Initializing server 'email_triage_agent_mcp'
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for CallToolRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListResourcesRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for ReadResourceRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for PromptListRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for GetPromptRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListResourceTemplatesRequest
+DEBUG:asyncio:Using selector: KqueueSelector
+INFO:email_triage.util.fastmail_client:Initializing JMAP client with host: api.fastmail.com
+INFO:email_triage.util.fastmail_client:JMAP client initialized successfully
+09:04:59 | INFO     | evai.mcp.client_tools | Server email_triage_agent_mcp initialized successfully.
+09:04:59 | INFO     | __main__        | All MCP servers have started and initialized.
+
+--- Sending Request ---
+Prompt: subtract 8 from 3
+
+09:04:59 | INFO     | __main__        | Starting LLM request processing.
+09:04:59 | DEBUG    | __main__        | Prompt: subtract 8 from 3
+09:04:59 | INFO     | __main__        | Collecting tools from initialized servers.
+DEBUG:mcp.server.lowlevel.server:Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+[2;36m[04/05/25 09:04:59][0m[2;36m [0m[34mINFO    [0m Processing request of type ListToolsRequest                             ]8;id=517882;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py\[2mserver.py[0m]8;;\[2m:[0m]8;id=611193;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py#534\[2m534[0m]8;;\
+09:04:59 | INFO     | root            | Tools for Demo:
+09:04:59 | INFO     | root            | 	Tool: name='add' description='Add two numbers'
+[2;36m[04/05/25 09:04:59][0m[2;36m [0m[34mINFO    [0m Processing request of type ListToolsRequest                             ]8;id=304295;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py\[2mserver.py[0m]8;;\[2m:[0m]8;id=547753;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py#534\[2m534[0m]8;;\
+09:04:59 | INFO     | root            | Tools for evai-mcp-server:
+09:04:59 | INFO     | root            | 	Tool: name='subtract' description='Subtract one number from another'
+09:04:59 | INFO     | root            | 	Tool: name='deploy_artifact' description='Deploy a React component artifact to the artifacts directory'
+DEBUG:mcp.server.lowlevel.server:Received message: <mcp.shared.session.RequestResponder object at 0x105a2bcb0>
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Dispatching request of type ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Response sent
+09:04:59 | INFO     | root            | Tools for email_triage_agent_mcp:
+09:04:59 | INFO     | root            | 	Tool: name='send_user_email' description='Send an email to the chat user.
+    
+    Args:
+        subject: Subject line of the email
+        markdown_content: Markdown content of the email (will be rendered as HTML)
+        ctx: MCP context containing FastmailClient
+        
+    Returns:
+        str: Success message or error description
+    '
+09:04:59 | INFO     | __main__        | Using all tools in API call: [{'name': 'add', 'description': 'Add two numbers', 'input_schema': {'properties': {'a': {'title': 'A', 'type': 'integer'}, 'b': {'title': 'B', 'type': 'integer'}}, 'required': ['a', 'b'], 'title': 'addArguments', 'type': 'object'}}, {'name': 'subtract', 'description': 'Subtract one number from another', 'input_schema': {'properties': {'minuend': {'title': 'Minuend', 'type': 'number'}, 'subtrahend': {'title': 'Subtrahend', 'type': 'number'}}, 'required': ['minuend', 'subtrahend'], 'title': 'subtractArguments', 'type': 'object'}}, {'name': 'deploy_artifact', 'description': 'Deploy a React component artifact to the artifacts directory', 'input_schema': {'properties': {'artifact_name': {'title': 'Artifact Name', 'type': 'string'}, 'source_code': {'title': 'Source Code', 'type': 'string'}}, 'required': ['artifact_name', 'source_code'], 'title': 'deploy_artifactArguments', 'type': 'object'}}, {'name': 'send_user_email', 'description': 'Send an email to the chat user.\n    \n    Args:\n        subject: Subject line of the email\n        markdown_content: Markdown content of the email (will be rendered as HTML)\n        ctx: MCP context containing FastmailClient\n        \n    Returns:\n        str: Success message or error description\n    ', 'input_schema': {'properties': {'subject': {'title': 'Subject', 'type': 'string'}, 'markdown_content': {'title': 'Markdown Content', 'type': 'string'}}, 'required': ['subject', 'markdown_content'], 'title': 'send_user_emailArguments', 'type': 'object'}}]
+09:04:59 | INFO     | __main__        | LLM Interaction - Turn 1
+09:04:59 | DEBUG    | __main__        | Sending 1 messages and 4 tools to Anthropic.
+09:04:59 | DEBUG    | __main__        | Messages: [{'role': 'user', 'content': 'subtract 8 from 3'}]
+09:04:59 | DEBUG    | __main__        | Tools: [{'name': 'add', 'description': 'Add two numbers', 'input_schema': {'properties': {'a': {'title': 'A', 'type': 'integer'}, 'b': {'title': 'B', 'type': 'integer'}}, 'required': ['a', 'b'], 'title': 'addArguments', 'type': 'object'}}, {'name': 'subtract', 'description': 'Subtract one number from another', 'input_schema': {'properties': {'minuend': {'title': 'Minuend', 'type': 'number'}, 'subtrahend': {'title': 'Subtrahend', 'type': 'number'}}, 'required': ['minuend', 'subtrahend'], 'title': 'subtractArguments', 'type': 'object'}}, {'name': 'deploy_artifact', 'description': 'Deploy a React component artifact to the artifacts directory', 'input_schema': {'properties': {'artifact_name': {'title': 'Artifact Name', 'type': 'string'}, 'source_code': {'title': 'Source Code', 'type': 'string'}}, 'required': ['artifact_name', 'source_code'], 'title': 'deploy_artifactArguments', 'type': 'object'}}, {'name': 'send_user_email', 'description': 'Send an email to the chat user.\n    \n    Args:\n        subject: Subject line of the email\n        markdown_content: Markdown content of the email (will be rendered as HTML)\n        ctx: MCP context containing FastmailClient\n        \n    Returns:\n        str: Success message or error description\n    ', 'input_schema': {'properties': {'subject': {'title': 'Subject', 'type': 'string'}, 'markdown_content': {'title': 'Markdown Content', 'type': 'string'}}, 'required': ['subject', 'markdown_content'], 'title': 'send_user_emailArguments', 'type': 'object'}}]
+09:05:01 | INFO     | __main__        | Received response from Anthropic. Stop reason: tool_use
+09:05:01 | DEBUG    | __main__        | Response: Message(id='msg_01Hdrqrzw5SBsby8qYGDsxUN', content=[TextBlock(citations=None, text="I'll calculate that for you by subtracting 8 from 3.", type='text'), ToolUseBlock(id='toolu_01C5yzXibDr9oGjphJJeze3y', input={'minuend': 3, 'subtrahend': 8}, name='subtract', type='tool_use')], model='claude-3-7-sonnet-20250219', role='assistant', stop_reason='tool_use', stop_sequence=None, type='message', usage=Usage(cache_creation_input_tokens=0, cache_read_input_tokens=0, input_tokens=782, output_tokens=90))
+09:05:01 | DEBUG    | __main__        | LLM Text: I'll calculate that for you by subtracting 8 from 3....
+09:05:01 | INFO     | __main__        | LLM requests Tool Use: subtract (ID: toolu_01C5yzXibDr9oGjphJJeze3y)
+09:05:01 | DEBUG    | __main__        | Tool Input Args: {"minuend": 3, "subtrahend": 8}
+09:05:01 | INFO     | __main__        | Executing 1 tool(s).
+09:05:01 | INFO     | evai.mcp.client_tools | Executing tool 'subtract' on server evai-mcp-server (Attempt 1/2)
+[2;36m[04/05/25 09:05:01][0m[2;36m [0m[34mINFO    [0m Processing request of type CallToolRequest                              ]8;id=138456;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py\[2mserver.py[0m]8;;\[2m:[0m]8;id=617770;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py#534\[2m534[0m]8;;\
+09:05:01 | INFO     | evai.mcp.client_tools | Tool 'subtract' executed successfully on server evai-mcp-server.
+09:05:01 | INFO     | __main__        | Tool 'subtract' execution successful (ID: toolu_01C5yzXibDr9oGjphJJeze3y).
+09:05:01 | DEBUG    | __main__        | Raw Result (ID: toolu_01C5yzXibDr9oGjphJJeze3y): meta=None content=[TextContent(type='text', text='-5.0', annotations=None)] isError=False
+09:05:01 | DEBUG    | __main__        | Extracted Result String (ID: toolu_01C5yzXibDr9oGjphJJeze3y): -5.0
+09:05:01 | INFO     | __main__        | LLM Interaction - Turn 2
+09:05:01 | DEBUG    | __main__        | Sending 3 messages and 4 tools to Anthropic.
+09:05:01 | DEBUG    | __main__        | Messages: [{'role': 'user', 'content': 'subtract 8 from 3'}, {'role': 'assistant', 'content': [{'type': 'text', 'text': "I'll calculate that for you by subtracting 8 from 3."}, {'type': 'tool_use', 'id': 'toolu_01C5yzXibDr9oGjphJJeze3y', 'name': 'subtract', 'input': {'minuend': 3, 'subtrahend': 8}}]}, {'role': 'user', 'content': [{'type': 'tool_result', 'tool_use_id': 'toolu_01C5yzXibDr9oGjphJJeze3y', 'content': '-5.0'}]}]
+09:05:01 | DEBUG    | __main__        | Tools: [{'name': 'add', 'description': 'Add two numbers', 'input_schema': {'properties': {'a': {'title': 'A', 'type': 'integer'}, 'b': {'title': 'B', 'type': 'integer'}}, 'required': ['a', 'b'], 'title': 'addArguments', 'type': 'object'}}, {'name': 'subtract', 'description': 'Subtract one number from another', 'input_schema': {'properties': {'minuend': {'title': 'Minuend', 'type': 'number'}, 'subtrahend': {'title': 'Subtrahend', 'type': 'number'}}, 'required': ['minuend', 'subtrahend'], 'title': 'subtractArguments', 'type': 'object'}}, {'name': 'deploy_artifact', 'description': 'Deploy a React component artifact to the artifacts directory', 'input_schema': {'properties': {'artifact_name': {'title': 'Artifact Name', 'type': 'string'}, 'source_code': {'title': 'Source Code', 'type': 'string'}}, 'required': ['artifact_name', 'source_code'], 'title': 'deploy_artifactArguments', 'type': 'object'}}, {'name': 'send_user_email', 'description': 'Send an email to the chat user.\n    \n    Args:\n        subject: Subject line of the email\n        markdown_content: Markdown content of the email (will be rendered as HTML)\n        ctx: MCP context containing FastmailClient\n        \n    Returns:\n        str: Success message or error description\n    ', 'input_schema': {'properties': {'subject': {'title': 'Subject', 'type': 'string'}, 'markdown_content': {'title': 'Markdown Content', 'type': 'string'}}, 'required': ['subject', 'markdown_content'], 'title': 'send_user_emailArguments', 'type': 'object'}}]
+09:05:02 | INFO     | __main__        | Received response from Anthropic. Stop reason: end_turn
+09:05:02 | DEBUG    | __main__        | Response: Message(id='msg_01GGGfj56sDAZEGszBpB8c82', content=[TextBlock(citations=None, text='The result of subtracting 8 from 3 is -5.', type='text')], model='claude-3-7-sonnet-20250219', role='assistant', stop_reason='end_turn', stop_sequence=None, type='message', usage=Usage(cache_creation_input_tokens=0, cache_read_input_tokens=0, input_tokens=887, output_tokens=21))
+09:05:02 | DEBUG    | __main__        | LLM Text: The result of subtracting 8 from 3 is -5....
+09:05:02 | INFO     | __main__        | LLM interaction finished.
+09:05:02 | INFO     | __main__        | LLM request processing complete.
+09:05:02 | DEBUG    | __main__        | Final constructed response text:
+I'll calculate that for you by subtracting 8 from 3.
+The result of subtracting 8 from 3 is -5.
+09:05:02 | DEBUG    | __main__        | Tool calls executed: [
+  {
+    "tool_name": "subtract",
+    "tool_args": {
+      "minuend": 3,
+      "subtrahend": 8
+    },
+    "result": "-5.0"
+  }
+]
+09:05:02 | INFO     | __main__        | Stopping 3 MCP server tasks...
+09:05:02 | INFO     | evai.mcp.client_tools | Server Demo task cancelled, initiating cleanup.
+09:05:02 | INFO     | evai.mcp.client_tools | Starting cleanup for server Demo...
+09:05:02 | DEBUG    | evai.mcp.client_tools | Closing AsyncExitStack for Demo.
+09:05:02 | INFO     | evai.mcp.client_tools | Server evai-mcp-server task cancelled, initiating cleanup.
+09:05:02 | INFO     | evai.mcp.client_tools | Starting cleanup for server evai-mcp-server...
+09:05:02 | DEBUG    | evai.mcp.client_tools | Closing AsyncExitStack for evai-mcp-server.
+09:05:02 | INFO     | evai.mcp.client_tools | Server email_triage_agent_mcp task cancelled, initiating cleanup.
+09:05:02 | INFO     | evai.mcp.client_tools | Starting cleanup for server email_triage_agent_mcp...
+09:05:02 | DEBUG    | evai.mcp.client_tools | Closing AsyncExitStack for email_triage_agent_mcp.
+09:05:02 | DEBUG    | evai.mcp.client_tools | AsyncExitStack for Demo closed.
+09:05:02 | INFO     | evai.mcp.client_tools | Cleanup finished for server Demo.
+09:05:02 | DEBUG    | evai.mcp.client_tools | AsyncExitStack for evai-mcp-server closed.
+09:05:02 | INFO     | evai.mcp.client_tools | Cleanup finished for server evai-mcp-server.
+09:05:02 | DEBUG    | evai.mcp.client_tools | AsyncExitStack for email_triage_agent_mcp closed.
+09:05:02 | INFO     | evai.mcp.client_tools | Cleanup finished for server email_triage_agent_mcp.
+09:05:02 | INFO     | __main__        | All MCP server tasks have stopped.
+
+--- LLM Interaction Result ---
+Success: True
+
+Final Response:
+I'll calculate that for you by subtracting 8 from 3.
+The result of subtracting 8 from 3 is -5.
+
+Tool Calls Made:
+  1. Tool: subtract
+     Args: {"minuend": 3, "subtrahend": 8}
+     Outcome: Result: -5.0
+
+Stop Reason: end_turn
+
+--- Message History (Debug) ---
+[USER]:
+subtract 8 from 3
+---
+[ASSISTANT]:
+{'type': 'text', 'text': "I'll calculate that for you by subtracting 8 from 3."}
+{'type': 'tool_use', 'id': 'toolu_01C5yzXibDr9oGjphJJeze3y', 'name': 'subtract', 'input': {'minuend': 3, 'subtrahend': 8}}
+---
+[USER]:
+{'type': 'tool_result', 'tool_use_id': 'toolu_01C5yzXibDr9oGjphJJeze3y', 'content': '-5.0'}
+---
+[ASSISTANT]:
+{'type': 'text', 'text': 'The result of subtracting 8 from 3 is -5.'}
+---
+
+--- Main execution finished ---
+Exiting.
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/evai-cli[39m$ [K[?2004h[H[2J[0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/evai-cli[39m$ [Kuv run -m evai.llm[?2004l
+09:12:47 | DEBUG    | asyncio         | Using selector: KqueueSelector
+
+--- Starting Servers ---
+
+09:12:47 | INFO     | __main__        | Starting 3 MCP server tasks...
+09:12:47 | INFO     | evai.mcp.client_tools | Starting server Demo...
+09:12:47 | INFO     | evai.mcp.client_tools | Initializing server Demo with command: uv run --with mcp[cli] mcp run /Users/lherron/projects/mcp-sample/server.py
+09:12:47 | INFO     | evai.mcp.client_tools | Starting server evai-mcp-server...
+09:12:47 | INFO     | evai.mcp.client_tools | Initializing server evai-mcp-server with command: uv run --directory /Users/lherron/projects/evai-cli --no-sync --with mcp[cli] mcp run /Users/lherron/projects/evai-cli/evai/mcp/server.py
+09:12:47 | INFO     | evai.mcp.client_tools | Starting server email_triage_agent_mcp...
+09:12:47 | INFO     | evai.mcp.client_tools | Initializing server email_triage_agent_mcp with command: uv run --directory /Users/lherron/projects/email-triage-agent --no-sync --with mcp[cli] mcp run /Users/lherron/projects/email-triage-agent/src/email_triage/mcp/server.py
+[1m[33mwarning[39m[0m[1m:[0m [1m`VIRTUAL_ENV=/Users/lherron/projects/evai-cli/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead[0m
+09:12:47 | INFO     | evai.mcp.client_tools | Server Demo initialized successfully.
+[DEBUG] Entering EVAIServer.__init__ with name=evai
+[DEBUG] Exiting EVAIServer.__init__
+09:12:47 | INFO     | evai.mcp.client_tools | Server evai-mcp-server initialized successfully.
+DEBUG:mcp.server.lowlevel.server:Initializing server 'email_triage_agent_mcp'
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for CallToolRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListResourcesRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for ReadResourceRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for PromptListRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for GetPromptRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListResourceTemplatesRequest
+DEBUG:asyncio:Using selector: KqueueSelector
+INFO:email_triage.util.fastmail_client:Initializing JMAP client with host: api.fastmail.com
+INFO:email_triage.util.fastmail_client:JMAP client initialized successfully
+09:12:47 | INFO     | evai.mcp.client_tools | Server email_triage_agent_mcp initialized successfully.
+09:12:47 | INFO     | __main__        | All MCP servers have started and initialized.
+
+--- Sending Request ---
+Prompt: subtract 8 from 3
+
+09:12:47 | INFO     | __main__        | Starting LLM request processing.
+09:12:47 | DEBUG    | __main__        | Prompt: subtract 8 from 3
+09:12:47 | INFO     | __main__        | Collecting tools from initialized servers.
+DEBUG:mcp.server.lowlevel.server:Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+[2;36m[04/05/25 09:12:47][0m[2;36m [0m[34mINFO    [0m Processing request of type ListToolsRequest                             ]8;id=114328;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py\[2mserver.py[0m]8;;\[2m:[0m]8;id=400102;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py#534\[2m534[0m]8;;\
+09:12:47 | INFO     | root            | Tools for Demo:
+09:12:47 | INFO     | root            | 	Tool: name='add' description='Add two numbers'
+[2;36m[04/05/25 09:12:47][0m[2;36m [0m[34mINFO    [0m Processing request of type ListToolsRequest                             ]8;id=819191;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py\[2mserver.py[0m]8;;\[2m:[0m]8;id=627296;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py#534\[2m534[0m]8;;\
+09:12:47 | INFO     | root            | Tools for evai-mcp-server:
+09:12:47 | INFO     | root            | 	Tool: name='subtract' description='Subtract one number from another'
+09:12:47 | INFO     | root            | 	Tool: name='deploy_artifact' description='Deploy a React component artifact to the artifacts directory'
+DEBUG:mcp.server.lowlevel.server:Received message: <mcp.shared.session.RequestResponder object at 0x105c2fbc0>
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Dispatching request of type ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Response sent
+09:12:47 | INFO     | root            | Tools for email_triage_agent_mcp:
+09:12:47 | INFO     | root            | 	Tool: name='send_user_email' description='Send an email to the chat user.
+    
+    Args:
+        subject: Subject line of the email
+        markdown_content: Markdown content of the email (will be rendered as HTML)
+        ctx: MCP context containing FastmailClient
+        
+    Returns:
+        str: Success message or error description
+    '
+09:12:47 | INFO     | __main__        | Using all tools in API call: [{'name': 'add', 'description': 'Add two numbers', 'input_schema': {'properties': {'a': {'title': 'A', 'type': 'integer'}, 'b': {'title': 'B', 'type': 'integer'}}, 'required': ['a', 'b'], 'title': 'addArguments', 'type': 'object'}}, {'name': 'subtract', 'description': 'Subtract one number from another', 'input_schema': {'properties': {'minuend': {'title': 'Minuend', 'type': 'number'}, 'subtrahend': {'title': 'Subtrahend', 'type': 'number'}}, 'required': ['minuend', 'subtrahend'], 'title': 'subtractArguments', 'type': 'object'}}, {'name': 'deploy_artifact', 'description': 'Deploy a React component artifact to the artifacts directory', 'input_schema': {'properties': {'artifact_name': {'title': 'Artifact Name', 'type': 'string'}, 'source_code': {'title': 'Source Code', 'type': 'string'}}, 'required': ['artifact_name', 'source_code'], 'title': 'deploy_artifactArguments', 'type': 'object'}}, {'name': 'send_user_email', 'description': 'Send an email to the chat user.\n    \n    Args:\n        subject: Subject line of the email\n        markdown_content: Markdown content of the email (will be rendered as HTML)\n        ctx: MCP context containing FastmailClient\n        \n    Returns:\n        str: Success message or error description\n    ', 'input_schema': {'properties': {'subject': {'title': 'Subject', 'type': 'string'}, 'markdown_content': {'title': 'Markdown Content', 'type': 'string'}}, 'required': ['subject', 'markdown_content'], 'title': 'send_user_emailArguments', 'type': 'object'}}]
+09:12:47 | INFO     | __main__        | LLM Interaction - Turn 1
+09:12:47 | DEBUG    | __main__        | Sending 1 messages and 4 tools to Anthropic.
+09:12:47 | DEBUG    | __main__        | Messages: [{'role': 'user', 'content': 'subtract 8 from 3'}]
+09:12:47 | DEBUG    | __main__        | Tools: [{'name': 'add', 'description': 'Add two numbers', 'input_schema': {'properties': {'a': {'title': 'A', 'type': 'integer'}, 'b': {'title': 'B', 'type': 'integer'}}, 'required': ['a', 'b'], 'title': 'addArguments', 'type': 'object'}}, {'name': 'subtract', 'description': 'Subtract one number from another', 'input_schema': {'properties': {'minuend': {'title': 'Minuend', 'type': 'number'}, 'subtrahend': {'title': 'Subtrahend', 'type': 'number'}}, 'required': ['minuend', 'subtrahend'], 'title': 'subtractArguments', 'type': 'object'}}, {'name': 'deploy_artifact', 'description': 'Deploy a React component artifact to the artifacts directory', 'input_schema': {'properties': {'artifact_name': {'title': 'Artifact Name', 'type': 'string'}, 'source_code': {'title': 'Source Code', 'type': 'string'}}, 'required': ['artifact_name', 'source_code'], 'title': 'deploy_artifactArguments', 'type': 'object'}}, {'name': 'send_user_email', 'description': 'Send an email to the chat user.\n    \n    Args:\n        subject: Subject line of the email\n        markdown_content: Markdown content of the email (will be rendered as HTML)\n        ctx: MCP context containing FastmailClient\n        \n    Returns:\n        str: Success message or error description\n    ', 'input_schema': {'properties': {'subject': {'title': 'Subject', 'type': 'string'}, 'markdown_content': {'title': 'Markdown Content', 'type': 'string'}}, 'required': ['subject', 'markdown_content'], 'title': 'send_user_emailArguments', 'type': 'object'}}]
+09:12:49 | INFO     | __main__        | Received response from Anthropic. Stop reason: tool_use
+09:12:49 | DEBUG    | __main__        | Response: Message(id='msg_01JhEEUTchvKTu7EvzGrmipS', content=[TextBlock(citations=None, text="I'll use the subtract function to calculate 3 - 8 for you.", type='text'), ToolUseBlock(id='toolu_01Rmx4mpVSm7s3rrRq5qt61W', input={'minuend': 3, 'subtrahend': 8}, name='subtract', type='tool_use')], model='claude-3-7-sonnet-20250219', role='assistant', stop_reason='tool_use', stop_sequence=None, type='message', usage=Usage(cache_creation_input_tokens=0, cache_read_input_tokens=0, input_tokens=782, output_tokens=91))
+09:12:49 | DEBUG    | __main__        | LLM Text: I'll use the subtract function to calculate 3 - 8 for you....
+09:12:49 | INFO     | __main__        | LLM requests Tool Use: subtract (ID: toolu_01Rmx4mpVSm7s3rrRq5qt61W)
+09:12:49 | DEBUG    | __main__        | Tool Input Args: {"minuend": 3, "subtrahend": 8}
+09:12:49 | INFO     | __main__        | Executing 1 tool(s).
+09:12:49 | INFO     | evai.mcp.client_tools | Executing tool 'subtract' on server evai-mcp-server (Attempt 1/2)
+[2;36m[04/05/25 09:12:49][0m[2;36m [0m[34mINFO    [0m Processing request of type CallToolRequest                              ]8;id=206135;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py\[2mserver.py[0m]8;;\[2m:[0m]8;id=222938;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py#534\[2m534[0m]8;;\
+09:12:49 | INFO     | evai.mcp.client_tools | Tool 'subtract' executed successfully on server evai-mcp-server.
+09:12:49 | INFO     | __main__        | Tool 'subtract' execution successful (ID: toolu_01Rmx4mpVSm7s3rrRq5qt61W).
+09:12:49 | DEBUG    | __main__        | Raw Result (ID: toolu_01Rmx4mpVSm7s3rrRq5qt61W): meta=None content=[TextContent(type='text', text='-5.0', annotations=None)] isError=False
+09:12:49 | DEBUG    | __main__        | Extracted Result String (ID: toolu_01Rmx4mpVSm7s3rrRq5qt61W): -5.0
+09:12:49 | INFO     | __main__        | LLM Interaction - Turn 2
+09:12:49 | DEBUG    | __main__        | Sending 3 messages and 4 tools to Anthropic.
+09:12:49 | DEBUG    | __main__        | Messages: [{'role': 'user', 'content': 'subtract 8 from 3'}, {'role': 'assistant', 'content': [{'type': 'text', 'text': "I'll use the subtract function to calculate 3 - 8 for you."}, {'type': 'tool_use', 'id': 'toolu_01Rmx4mpVSm7s3rrRq5qt61W', 'name': 'subtract', 'input': {'minuend': 3, 'subtrahend': 8}}]}, {'role': 'user', 'content': [{'type': 'tool_result', 'tool_use_id': 'toolu_01Rmx4mpVSm7s3rrRq5qt61W', 'content': '-5.0'}]}]
+09:12:49 | DEBUG    | __main__        | Tools: [{'name': 'add', 'description': 'Add two numbers', 'input_schema': {'properties': {'a': {'title': 'A', 'type': 'integer'}, 'b': {'title': 'B', 'type': 'integer'}}, 'required': ['a', 'b'], 'title': 'addArguments', 'type': 'object'}}, {'name': 'subtract', 'description': 'Subtract one number from another', 'input_schema': {'properties': {'minuend': {'title': 'Minuend', 'type': 'number'}, 'subtrahend': {'title': 'Subtrahend', 'type': 'number'}}, 'required': ['minuend', 'subtrahend'], 'title': 'subtractArguments', 'type': 'object'}}, {'name': 'deploy_artifact', 'description': 'Deploy a React component artifact to the artifacts directory', 'input_schema': {'properties': {'artifact_name': {'title': 'Artifact Name', 'type': 'string'}, 'source_code': {'title': 'Source Code', 'type': 'string'}}, 'required': ['artifact_name', 'source_code'], 'title': 'deploy_artifactArguments', 'type': 'object'}}, {'name': 'send_user_email', 'description': 'Send an email to the chat user.\n    \n    Args:\n        subject: Subject line of the email\n        markdown_content: Markdown content of the email (will be rendered as HTML)\n        ctx: MCP context containing FastmailClient\n        \n    Returns:\n        str: Success message or error description\n    ', 'input_schema': {'properties': {'subject': {'title': 'Subject', 'type': 'string'}, 'markdown_content': {'title': 'Markdown Content', 'type': 'string'}}, 'required': ['subject', 'markdown_content'], 'title': 'send_user_emailArguments', 'type': 'object'}}]
+09:12:50 | INFO     | __main__        | Received response from Anthropic. Stop reason: end_turn
+09:12:50 | DEBUG    | __main__        | Response: Message(id='msg_01P7YFcFZcq7Y4gjpzd4EARP', content=[TextBlock(citations=None, text='The result of subtracting 8 from 3 is -5.', type='text')], model='claude-3-7-sonnet-20250219', role='assistant', stop_reason='end_turn', stop_sequence=None, type='message', usage=Usage(cache_creation_input_tokens=0, cache_read_input_tokens=0, input_tokens=888, output_tokens=21))
+09:12:50 | DEBUG    | __main__        | LLM Text: The result of subtracting 8 from 3 is -5....
+09:12:50 | INFO     | __main__        | LLM interaction finished.
+09:12:50 | INFO     | __main__        | LLM request processing complete.
+09:12:50 | DEBUG    | __main__        | Final constructed response text:
+I'll use the subtract function to calculate 3 - 8 for you.
+The result of subtracting 8 from 3 is -5.
+09:12:50 | DEBUG    | __main__        | Tool calls executed: [
+  {
+    "tool_name": "subtract",
+    "tool_args": {
+      "minuend": 3,
+      "subtrahend": 8
+    },
+    "result": "-5.0"
+  }
+]
+
+--- Standard LLM Interaction Result ---
+Success: True
+
+Final Response:
+I'll use the subtract function to calculate 3 - 8 for you.
+The result of subtracting 8 from 3 is -5.
+
+Tool Calls Made:
+  1. Tool: subtract
+     Args: {"minuend": 3, "subtrahend": 8}
+     Outcome: Result: -5.0
+
+Stop Reason: end_turn
+
+--- Message History (Debug) ---
+[USER]:
+subtract 8 from 3
+---
+[ASSISTANT]:
+{'type': 'text', 'text': "I'll use the subtract function to calculate 3 - 8 for you."}
+{'type': 'tool_use', 'id': 'toolu_01Rmx4mpVSm7s3rrRq5qt61W', 'name': 'subtract', 'input': {'minuend': 3, 'subtrahend': 8}}
+---
+[USER]:
+{'type': 'tool_result', 'tool_use_id': 'toolu_01Rmx4mpVSm7s3rrRq5qt61W', 'content': '-5.0'}
+---
+[ASSISTANT]:
+{'type': 'text', 'text': 'The result of subtracting 8 from 3 is -5.'}
+---
+09:12:50 | INFO     | __main__        | Stopping 3 MCP server tasks...
+09:12:50 | INFO     | evai.mcp.client_tools | Server Demo task cancelled, initiating cleanup.
+09:12:50 | INFO     | evai.mcp.client_tools | Starting cleanup for server Demo...
+09:12:50 | DEBUG    | evai.mcp.client_tools | Closing AsyncExitStack for Demo.
+09:12:50 | INFO     | evai.mcp.client_tools | Server evai-mcp-server task cancelled, initiating cleanup.
+09:12:50 | INFO     | evai.mcp.client_tools | Starting cleanup for server evai-mcp-server...
+09:12:50 | DEBUG    | evai.mcp.client_tools | Closing AsyncExitStack for evai-mcp-server.
+09:12:50 | INFO     | evai.mcp.client_tools | Server email_triage_agent_mcp task cancelled, initiating cleanup.
+09:12:50 | INFO     | evai.mcp.client_tools | Starting cleanup for server email_triage_agent_mcp...
+09:12:50 | DEBUG    | evai.mcp.client_tools | Closing AsyncExitStack for email_triage_agent_mcp.
+09:12:50 | DEBUG    | evai.mcp.client_tools | AsyncExitStack for email_triage_agent_mcp closed.
+09:12:50 | INFO     | evai.mcp.client_tools | Cleanup finished for server email_triage_agent_mcp.
+09:12:50 | DEBUG    | evai.mcp.client_tools | AsyncExitStack for Demo closed.
+09:12:50 | INFO     | evai.mcp.client_tools | Cleanup finished for server Demo.
+09:12:50 | DEBUG    | evai.mcp.client_tools | AsyncExitStack for evai-mcp-server closed.
+09:12:50 | INFO     | evai.mcp.client_tools | Cleanup finished for server evai-mcp-server.
+09:12:50 | INFO     | __main__        | All MCP server tasks have stopped.
+
+--- Main execution finished ---
+Exiting.
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/evai-cli[39m$ [K[?2004huv run -m evai.llm[H[2J[0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/evai-cli[39m$ uv run -m evai.llm[K[?2004l
+09:13:10 | DEBUG    | asyncio         | Using selector: KqueueSelector
+
+--- Starting Servers ---
+
+09:13:10 | INFO     | __main__        | Starting 3 MCP server tasks...
+09:13:10 | INFO     | evai.mcp.client_tools | Starting server Demo...
+09:13:10 | INFO     | evai.mcp.client_tools | Initializing server Demo with command: uv run --with mcp[cli] mcp run /Users/lherron/projects/mcp-sample/server.py
+09:13:10 | INFO     | evai.mcp.client_tools | Starting server evai-mcp-server...
+09:13:10 | INFO     | evai.mcp.client_tools | Initializing server evai-mcp-server with command: uv run --directory /Users/lherron/projects/evai-cli --no-sync --with mcp[cli] mcp run /Users/lherron/projects/evai-cli/evai/mcp/server.py
+09:13:10 | INFO     | evai.mcp.client_tools | Starting server email_triage_agent_mcp...
+09:13:10 | INFO     | evai.mcp.client_tools | Initializing server email_triage_agent_mcp with command: uv run --directory /Users/lherron/projects/email-triage-agent --no-sync --with mcp[cli] mcp run /Users/lherron/projects/email-triage-agent/src/email_triage/mcp/server.py
+[1m[33mwarning[39m[0m[1m:[0m [1m`VIRTUAL_ENV=/Users/lherron/projects/evai-cli/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead[0m
+09:13:10 | INFO     | evai.mcp.client_tools | Server Demo initialized successfully.
+[DEBUG] Entering EVAIServer.__init__ with name=evai
+[DEBUG] Exiting EVAIServer.__init__
+09:13:10 | INFO     | evai.mcp.client_tools | Server evai-mcp-server initialized successfully.
+DEBUG:mcp.server.lowlevel.server:Initializing server 'email_triage_agent_mcp'
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for CallToolRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListResourcesRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for ReadResourceRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for PromptListRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for GetPromptRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListResourceTemplatesRequest
+DEBUG:asyncio:Using selector: KqueueSelector
+INFO:email_triage.util.fastmail_client:Initializing JMAP client with host: api.fastmail.com
+INFO:email_triage.util.fastmail_client:JMAP client initialized successfully
+09:13:10 | INFO     | evai.mcp.client_tools | Server email_triage_agent_mcp initialized successfully.
+09:13:10 | INFO     | __main__        | All MCP servers have started and initialized.
+
+--- Sending Request with Structured Output ---
+
+09:13:10 | INFO     | __main__        | Starting LLM request processing.
+09:13:10 | DEBUG    | __main__        | Prompt: Extract the following information: name is John Doe, age is 30, occupation is Software Engineer
+09:13:10 | INFO     | __main__        | Collecting tools from initialized servers.
+DEBUG:mcp.server.lowlevel.server:Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+[2;36m[04/05/25 09:13:10][0m[2;36m [0m[34mINFO    [0m Processing request of type ListToolsRequest                             ]8;id=465305;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py\[2mserver.py[0m]8;;\[2m:[0m]8;id=109485;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py#534\[2m534[0m]8;;\
+09:13:10 | INFO     | root            | Tools for Demo:
+09:13:10 | INFO     | root            | 	Tool: name='add' description='Add two numbers'
+[2;36m[04/05/25 09:13:10][0m[2;36m [0m[34mINFO    [0m Processing request of type ListToolsRequest                             ]8;id=600314;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py\[2mserver.py[0m]8;;\[2m:[0m]8;id=646272;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py#534\[2m534[0m]8;;\
+09:13:10 | INFO     | root            | Tools for evai-mcp-server:
+09:13:10 | INFO     | root            | 	Tool: name='subtract' description='Subtract one number from another'
+09:13:10 | INFO     | root            | 	Tool: name='deploy_artifact' description='Deploy a React component artifact to the artifacts directory'
+DEBUG:mcp.server.lowlevel.server:Received message: <mcp.shared.session.RequestResponder object at 0x105200170>
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Dispatching request of type ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Response sent
+09:13:10 | INFO     | root            | Tools for email_triage_agent_mcp:
+09:13:10 | INFO     | root            | 	Tool: name='send_user_email' description='Send an email to the chat user.
+    
+    Args:
+        subject: Subject line of the email
+        markdown_content: Markdown content of the email (will be rendered as HTML)
+        ctx: MCP context containing FastmailClient
+        
+    Returns:
+        str: Success message or error description
+    '
+09:13:10 | INFO     | __main__        | Using all tools in API call: [{'name': 'add', 'description': 'Add two numbers', 'input_schema': {'properties': {'a': {'title': 'A', 'type': 'integer'}, 'b': {'title': 'B', 'type': 'integer'}}, 'required': ['a', 'b'], 'title': 'addArguments', 'type': 'object'}}, {'name': 'subtract', 'description': 'Subtract one number from another', 'input_schema': {'properties': {'minuend': {'title': 'Minuend', 'type': 'number'}, 'subtrahend': {'title': 'Subtrahend', 'type': 'number'}}, 'required': ['minuend', 'subtrahend'], 'title': 'subtractArguments', 'type': 'object'}}, {'name': 'deploy_artifact', 'description': 'Deploy a React component artifact to the artifacts directory', 'input_schema': {'properties': {'artifact_name': {'title': 'Artifact Name', 'type': 'string'}, 'source_code': {'title': 'Source Code', 'type': 'string'}}, 'required': ['artifact_name', 'source_code'], 'title': 'deploy_artifactArguments', 'type': 'object'}}, {'name': 'send_user_email', 'description': 'Send an email to the chat user.\n    \n    Args:\n        subject: Subject line of the email\n        markdown_content: Markdown content of the email (will be rendered as HTML)\n        ctx: MCP context containing FastmailClient\n        \n    Returns:\n        str: Success message or error description\n    ', 'input_schema': {'properties': {'subject': {'title': 'Subject', 'type': 'string'}, 'markdown_content': {'title': 'Markdown Content', 'type': 'string'}}, 'required': ['subject', 'markdown_content'], 'title': 'send_user_emailArguments', 'type': 'object'}}]
+09:13:10 | INFO     | __main__        | Added structured output tool: extract_person_info
+09:13:10 | INFO     | __main__        | LLM Interaction - Turn 1
+09:13:10 | DEBUG    | __main__        | Sending 1 messages and 5 tools to Anthropic.
+09:13:10 | DEBUG    | __main__        | Messages: [{'role': 'user', 'content': 'Extract the following information: name is John Doe, age is 30, occupation is Software Engineer'}]
+09:13:10 | DEBUG    | __main__        | Tools: [{'name': 'add', 'description': 'Add two numbers', 'input_schema': {'properties': {'a': {'title': 'A', 'type': 'integer'}, 'b': {'title': 'B', 'type': 'integer'}}, 'required': ['a', 'b'], 'title': 'addArguments', 'type': 'object'}}, {'name': 'subtract', 'description': 'Subtract one number from another', 'input_schema': {'properties': {'minuend': {'title': 'Minuend', 'type': 'number'}, 'subtrahend': {'title': 'Subtrahend', 'type': 'number'}}, 'required': ['minuend', 'subtrahend'], 'title': 'subtractArguments', 'type': 'object'}}, {'name': 'deploy_artifact', 'description': 'Deploy a React component artifact to the artifacts directory', 'input_schema': {'properties': {'artifact_name': {'title': 'Artifact Name', 'type': 'string'}, 'source_code': {'title': 'Source Code', 'type': 'string'}}, 'required': ['artifact_name', 'source_code'], 'title': 'deploy_artifactArguments', 'type': 'object'}}, {'name': 'send_user_email', 'description': 'Send an email to the chat user.\n    \n    Args:\n        subject: Subject line of the email\n        markdown_content: Markdown content of the email (will be rendered as HTML)\n        ctx: MCP context containing FastmailClient\n        \n    Returns:\n        str: Success message or error description\n    ', 'input_schema': {'properties': {'subject': {'title': 'Subject', 'type': 'string'}, 'markdown_content': {'title': 'Markdown Content', 'type': 'string'}}, 'required': ['subject', 'markdown_content'], 'title': 'send_user_emailArguments', 'type': 'object'}}, {'name': 'extract_person_info', 'description': 'Extract structured information about a person', 'input_schema': {'type': 'object', 'properties': {'name': {'type': 'string', 'description': "The person's full name"}, 'age': {'type': 'integer', 'description': "The person's age"}, 'occupation': {'type': 'string', 'description': "The person's job or occupation"}}, 'required': ['name', 'age', 'occupation']}}]
+09:13:12 | INFO     | __main__        | Received response from Anthropic. Stop reason: tool_use
+09:13:12 | DEBUG    | __main__        | Response: Message(id='msg_01FePN7rVHF5CFggatQmATYm', content=[TextBlock(citations=None, text='I can help you extract this structured information using the extract_person_info function. I have all the required parameters from your message:', type='text'), ToolUseBlock(id='toolu_01G41US28ywDhU4NBHAHUeUe', input={'name': 'John Doe', 'age': 30, 'occupation': 'Software Engineer'}, name='extract_person_info', type='tool_use')], model='claude-3-7-sonnet-20250219', role='assistant', stop_reason='tool_use', stop_sequence=None, type='message', usage=Usage(cache_creation_input_tokens=0, cache_read_input_tokens=0, input_tokens=907, output_tokens=120))
+09:13:12 | DEBUG    | __main__        | LLM Text: I can help you extract this structured information using the extract_person_info function. I have al...
+09:13:12 | INFO     | __main__        | LLM requests Tool Use: extract_person_info (ID: toolu_01G41US28ywDhU4NBHAHUeUe)
+09:13:12 | DEBUG    | __main__        | Tool Input Args: {"name": "John Doe", "age": 30, "occupation": "Software Engineer"}
+09:13:12 | INFO     | __main__        | Executing 1 tool(s).
+09:13:12 | INFO     | __main__        | Structured output tool 'extract_person_info' was used - capturing response and ending conversation.
+09:13:12 | INFO     | __main__        | Ending conversation loop after structured output tool use.
+09:13:12 | INFO     | __main__        | LLM request processing complete.
+09:13:12 | DEBUG    | __main__        | Final constructed response text:
+I can help you extract this structured information using the extract_person_info function. I have all the required parameters from your message:
+09:13:12 | DEBUG    | __main__        | Tool calls executed: [
+  {
+    "tool_name": "extract_person_info",
+    "tool_args": {
+      "name": "John Doe",
+      "age": 30,
+      "occupation": "Software Engineer"
+    },
+    "result": "Structured response captured"
+  }
+]
+
+--- Structured Output LLM Interaction Result ---
+Success: True
+
+Final Response:
+I can help you extract this structured information using the extract_person_info function. I have all the required parameters from your message:
+
+Structured Response:
+{
+  "name": "John Doe",
+  "age": 30,
+  "occupation": "Software Engineer"
+}
+
+Stop Reason: tool_use
+09:13:12 | INFO     | __main__        | Stopping 3 MCP server tasks...
+09:13:12 | INFO     | evai.mcp.client_tools | Server Demo task cancelled, initiating cleanup.
+09:13:12 | INFO     | evai.mcp.client_tools | Starting cleanup for server Demo...
+09:13:12 | DEBUG    | evai.mcp.client_tools | Closing AsyncExitStack for Demo.
+09:13:12 | INFO     | evai.mcp.client_tools | Server evai-mcp-server task cancelled, initiating cleanup.
+09:13:12 | INFO     | evai.mcp.client_tools | Starting cleanup for server evai-mcp-server...
+09:13:12 | DEBUG    | evai.mcp.client_tools | Closing AsyncExitStack for evai-mcp-server.
+09:13:12 | INFO     | evai.mcp.client_tools | Server email_triage_agent_mcp task cancelled, initiating cleanup.
+09:13:12 | INFO     | evai.mcp.client_tools | Starting cleanup for server email_triage_agent_mcp...
+09:13:12 | DEBUG    | evai.mcp.client_tools | Closing AsyncExitStack for email_triage_agent_mcp.
+09:13:12 | DEBUG    | evai.mcp.client_tools | AsyncExitStack for Demo closed.
+09:13:12 | INFO     | evai.mcp.client_tools | Cleanup finished for server Demo.
+09:13:12 | DEBUG    | evai.mcp.client_tools | AsyncExitStack for evai-mcp-server closed.
+09:13:12 | INFO     | evai.mcp.client_tools | Cleanup finished for server evai-mcp-server.
+09:13:12 | DEBUG    | evai.mcp.client_tools | AsyncExitStack for email_triage_agent_mcp closed.
+09:13:12 | INFO     | evai.mcp.client_tools | Cleanup finished for server email_triage_agent_mcp.
+09:13:12 | INFO     | __main__        | All MCP server tasks have stopped.
+
+--- Main execution finished ---
+Exiting.
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/evai-cli[39m$ [K[?2004h[H[2J[0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/evai-cli[39m$ [Kuv run -m evai.llm[?2004l
+09:14:50 | DEBUG    | asyncio         | Using selector: KqueueSelector
+
+--- Starting Servers ---
+
+09:14:50 | INFO     | __main__        | Starting 3 MCP server tasks...
+09:14:50 | INFO     | evai.mcp.client_tools | Starting server Demo...
+09:14:50 | INFO     | evai.mcp.client_tools | Initializing server Demo with command: uv run --with mcp[cli] mcp run /Users/lherron/projects/mcp-sample/server.py
+09:14:50 | INFO     | evai.mcp.client_tools | Starting server evai-mcp-server...
+09:14:50 | INFO     | evai.mcp.client_tools | Initializing server evai-mcp-server with command: uv run --directory /Users/lherron/projects/evai-cli --no-sync --with mcp[cli] mcp run /Users/lherron/projects/evai-cli/evai/mcp/server.py
+09:14:50 | INFO     | evai.mcp.client_tools | Starting server email_triage_agent_mcp...
+09:14:50 | INFO     | evai.mcp.client_tools | Initializing server email_triage_agent_mcp with command: uv run --directory /Users/lherron/projects/email-triage-agent --no-sync --with mcp[cli] mcp run /Users/lherron/projects/email-triage-agent/src/email_triage/mcp/server.py
+[1m[33mwarning[39m[0m[1m:[0m [1m`VIRTUAL_ENV=/Users/lherron/projects/evai-cli/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead[0m
+09:14:51 | INFO     | evai.mcp.client_tools | Server Demo initialized successfully.
+[DEBUG] Entering EVAIServer.__init__ with name=evai
+[DEBUG] Exiting EVAIServer.__init__
+09:14:51 | INFO     | evai.mcp.client_tools | Server evai-mcp-server initialized successfully.
+DEBUG:mcp.server.lowlevel.server:Initializing server 'email_triage_agent_mcp'
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for CallToolRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListResourcesRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for ReadResourceRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for PromptListRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for GetPromptRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListResourceTemplatesRequest
+DEBUG:asyncio:Using selector: KqueueSelector
+INFO:email_triage.util.fastmail_client:Initializing JMAP client with host: api.fastmail.com
+INFO:email_triage.util.fastmail_client:JMAP client initialized successfully
+09:14:51 | INFO     | evai.mcp.client_tools | Server email_triage_agent_mcp initialized successfully.
+09:14:51 | INFO     | __main__        | All MCP servers have started and initialized.
+
+--- Sending Request with Structured Output ---
+
+DEBUG:mcp.server.lowlevel.server:Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+09:14:51 | INFO     | __main__        | Starting LLM request processing.
+09:14:51 | DEBUG    | __main__        | Prompt: Extract the following information: name is John Doe, age is 30, occupation is Software Engineer
+09:14:51 | INFO     | __main__        | Collecting tools from initialized servers.
+[2;36m[04/05/25 09:14:51][0m[2;36m [0m[34mINFO    [0m Processing request of type ListToolsRequest                             ]8;id=984603;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py\[2mserver.py[0m]8;;\[2m:[0m]8;id=338563;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py#534\[2m534[0m]8;;\
+09:14:51 | INFO     | root            | Tools for Demo:
+09:14:51 | INFO     | root            | 	Tool: name='add' description='Add two numbers'
+[2;36m[04/05/25 09:14:51][0m[2;36m [0m[34mINFO    [0m Processing request of type ListToolsRequest                             ]8;id=390684;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py\[2mserver.py[0m]8;;\[2m:[0m]8;id=595096;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py#534\[2m534[0m]8;;\
+09:14:51 | INFO     | root            | Tools for evai-mcp-server:
+09:14:51 | INFO     | root            | 	Tool: name='subtract' description='Subtract one number from another'
+09:14:51 | INFO     | root            | 	Tool: name='deploy_artifact' description='Deploy a React component artifact to the artifacts directory'
+DEBUG:mcp.server.lowlevel.server:Received message: <mcp.shared.session.RequestResponder object at 0x105c637a0>
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Dispatching request of type ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Response sent
+09:14:51 | INFO     | root            | Tools for email_triage_agent_mcp:
+09:14:51 | INFO     | root            | 	Tool: name='send_user_email' description='Send an email to the chat user.
+    
+    Args:
+        subject: Subject line of the email
+        markdown_content: Markdown content of the email (will be rendered as HTML)
+        ctx: MCP context containing FastmailClient
+        
+    Returns:
+        str: Success message or error description
+    '
+09:14:51 | INFO     | __main__        | Using all tools in API call: [{'name': 'add', 'description': 'Add two numbers', 'input_schema': {'properties': {'a': {'title': 'A', 'type': 'integer'}, 'b': {'title': 'B', 'type': 'integer'}}, 'required': ['a', 'b'], 'title': 'addArguments', 'type': 'object'}}, {'name': 'subtract', 'description': 'Subtract one number from another', 'input_schema': {'properties': {'minuend': {'title': 'Minuend', 'type': 'number'}, 'subtrahend': {'title': 'Subtrahend', 'type': 'number'}}, 'required': ['minuend', 'subtrahend'], 'title': 'subtractArguments', 'type': 'object'}}, {'name': 'deploy_artifact', 'description': 'Deploy a React component artifact to the artifacts directory', 'input_schema': {'properties': {'artifact_name': {'title': 'Artifact Name', 'type': 'string'}, 'source_code': {'title': 'Source Code', 'type': 'string'}}, 'required': ['artifact_name', 'source_code'], 'title': 'deploy_artifactArguments', 'type': 'object'}}, {'name': 'send_user_email', 'description': 'Send an email to the chat user.\n    \n    Args:\n        subject: Subject line of the email\n        markdown_content: Markdown content of the email (will be rendered as HTML)\n        ctx: MCP context containing FastmailClient\n        \n    Returns:\n        str: Success message or error description\n    ', 'input_schema': {'properties': {'subject': {'title': 'Subject', 'type': 'string'}, 'markdown_content': {'title': 'Markdown Content', 'type': 'string'}}, 'required': ['subject', 'markdown_content'], 'title': 'send_user_emailArguments', 'type': 'object'}}]
+09:14:51 | INFO     | __main__        | Added structured output tool: extract_person_info
+09:14:51 | INFO     | __main__        | LLM Interaction - Turn 1
+09:14:51 | DEBUG    | __main__        | Sending 1 messages and 5 tools to Anthropic.
+09:14:51 | DEBUG    | __main__        | Messages: [{'role': 'user', 'content': 'Extract the following information: name is John Doe, age is 30, occupation is Software Engineer'}]
+09:14:51 | DEBUG    | __main__        | Tools: [{'name': 'add', 'description': 'Add two numbers', 'input_schema': {'properties': {'a': {'title': 'A', 'type': 'integer'}, 'b': {'title': 'B', 'type': 'integer'}}, 'required': ['a', 'b'], 'title': 'addArguments', 'type': 'object'}}, {'name': 'subtract', 'description': 'Subtract one number from another', 'input_schema': {'properties': {'minuend': {'title': 'Minuend', 'type': 'number'}, 'subtrahend': {'title': 'Subtrahend', 'type': 'number'}}, 'required': ['minuend', 'subtrahend'], 'title': 'subtractArguments', 'type': 'object'}}, {'name': 'deploy_artifact', 'description': 'Deploy a React component artifact to the artifacts directory', 'input_schema': {'properties': {'artifact_name': {'title': 'Artifact Name', 'type': 'string'}, 'source_code': {'title': 'Source Code', 'type': 'string'}}, 'required': ['artifact_name', 'source_code'], 'title': 'deploy_artifactArguments', 'type': 'object'}}, {'name': 'send_user_email', 'description': 'Send an email to the chat user.\n    \n    Args:\n        subject: Subject line of the email\n        markdown_content: Markdown content of the email (will be rendered as HTML)\n        ctx: MCP context containing FastmailClient\n        \n    Returns:\n        str: Success message or error description\n    ', 'input_schema': {'properties': {'subject': {'title': 'Subject', 'type': 'string'}, 'markdown_content': {'title': 'Markdown Content', 'type': 'string'}}, 'required': ['subject', 'markdown_content'], 'title': 'send_user_emailArguments', 'type': 'object'}}, {'name': 'extract_person_info', 'description': 'Extract structured information about a person', 'input_schema': {'properties': {'name': {'description': "The person's full name", 'title': 'Name', 'type': 'string'}, 'age': {'description': "The person's age", 'title': 'Age', 'type': 'integer'}, 'occupation': {'description': "The person's job or occupation", 'title': 'Occupation', 'type': 'string'}}, 'required': ['name', 'age', 'occupation'], 'title': 'PersonInfo', 'type': 'object'}}]
+09:14:53 | INFO     | __main__        | Received response from Anthropic. Stop reason: tool_use
+09:14:53 | DEBUG    | __main__        | Response: Message(id='msg_01BrhkaPYA3gFcbtgR6vnrur', content=[TextBlock(citations=None, text="I'll help you extract this structured information using the extract_person_info function.", type='text'), ToolUseBlock(id='toolu_01AjHeeHAKjNj8PpJ6FgKFec', input={'name': 'John Doe', 'age': 30, 'occupation': 'Software Engineer'}, name='extract_person_info', type='tool_use')], model='claude-3-7-sonnet-20250219', role='assistant', stop_reason='tool_use', stop_sequence=None, type='message', usage=Usage(cache_creation_input_tokens=0, cache_read_input_tokens=0, input_tokens=933, output_tokens=110))
+09:14:53 | DEBUG    | __main__        | LLM Text: I'll help you extract this structured information using the extract_person_info function....
+09:14:53 | INFO     | __main__        | LLM requests Tool Use: extract_person_info (ID: toolu_01AjHeeHAKjNj8PpJ6FgKFec)
+09:14:53 | DEBUG    | __main__        | Tool Input Args: {"name": "John Doe", "age": 30, "occupation": "Software Engineer"}
+09:14:53 | INFO     | __main__        | Executing 1 tool(s).
+09:14:53 | INFO     | __main__        | Structured output tool 'extract_person_info' was used - capturing response and ending conversation.
+09:14:53 | INFO     | __main__        | Ending conversation loop after structured output tool use.
+09:14:53 | INFO     | __main__        | LLM request processing complete.
+09:14:53 | DEBUG    | __main__        | Final constructed response text:
+I'll help you extract this structured information using the extract_person_info function.
+09:14:53 | DEBUG    | __main__        | Tool calls executed: [
+  {
+    "tool_name": "extract_person_info",
+    "tool_args": {
+      "name": "John Doe",
+      "age": 30,
+      "occupation": "Software Engineer"
+    },
+    "result": "Structured response captured"
+  }
+]
+
+--- Structured Output LLM Interaction Result ---
+Success: True
+
+Final Response:
+I'll help you extract this structured information using the extract_person_info function.
+
+Structured Response:
+{
+  "name": "John Doe",
+  "age": 30,
+  "occupation": "Software Engineer"
+}
+
+Parsed with Pydantic:
+Name: John Doe
+Age: 30
+Occupation: Software Engineer
+
+Stop Reason: tool_use
+09:14:53 | INFO     | __main__        | Stopping 3 MCP server tasks...
+09:14:53 | INFO     | evai.mcp.client_tools | Server Demo task cancelled, initiating cleanup.
+09:14:53 | INFO     | evai.mcp.client_tools | Starting cleanup for server Demo...
+09:14:53 | DEBUG    | evai.mcp.client_tools | Closing AsyncExitStack for Demo.
+09:14:53 | INFO     | evai.mcp.client_tools | Server evai-mcp-server task cancelled, initiating cleanup.
+09:14:53 | INFO     | evai.mcp.client_tools | Starting cleanup for server evai-mcp-server...
+09:14:53 | DEBUG    | evai.mcp.client_tools | Closing AsyncExitStack for evai-mcp-server.
+09:14:53 | INFO     | evai.mcp.client_tools | Server email_triage_agent_mcp task cancelled, initiating cleanup.
+09:14:53 | INFO     | evai.mcp.client_tools | Starting cleanup for server email_triage_agent_mcp...
+09:14:53 | DEBUG    | evai.mcp.client_tools | Closing AsyncExitStack for email_triage_agent_mcp.
+09:14:53 | DEBUG    | evai.mcp.client_tools | AsyncExitStack for Demo closed.
+09:14:53 | INFO     | evai.mcp.client_tools | Cleanup finished for server Demo.
+09:14:53 | DEBUG    | evai.mcp.client_tools | AsyncExitStack for evai-mcp-server closed.
+09:14:53 | INFO     | evai.mcp.client_tools | Cleanup finished for server evai-mcp-server.
+09:14:53 | DEBUG    | evai.mcp.client_tools | AsyncExitStack for email_triage_agent_mcp closed.
+09:14:53 | INFO     | evai.mcp.client_tools | Cleanup finished for server email_triage_agent_mcp.
+09:14:53 | INFO     | __main__        | All MCP server tasks have stopped.
+
+--- Main execution finished ---
+Exiting.
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/evai-cli[39m$ [K[?2004h[H[2J[0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/evai-cli[39m$ [Kuv run -m evai.llm[?2004l
+09:17:42 | DEBUG    | asyncio         | Using selector: KqueueSelector
+
+--- Starting Servers ---
+
+09:17:42 | INFO     | __main__        | Starting 3 MCP server tasks...
+09:17:42 | INFO     | evai.mcp.client_tools | Starting server Demo...
+09:17:42 | INFO     | evai.mcp.client_tools | Initializing server Demo with command: uv run --with mcp[cli] mcp run /Users/lherron/projects/mcp-sample/server.py
+09:17:42 | INFO     | evai.mcp.client_tools | Starting server evai-mcp-server...
+09:17:42 | INFO     | evai.mcp.client_tools | Initializing server evai-mcp-server with command: uv run --directory /Users/lherron/projects/evai-cli --no-sync --with mcp[cli] mcp run /Users/lherron/projects/evai-cli/evai/mcp/server.py
+09:17:42 | INFO     | evai.mcp.client_tools | Starting server email_triage_agent_mcp...
+09:17:42 | INFO     | evai.mcp.client_tools | Initializing server email_triage_agent_mcp with command: uv run --directory /Users/lherron/projects/email-triage-agent --no-sync --with mcp[cli] mcp run /Users/lherron/projects/email-triage-agent/src/email_triage/mcp/server.py
+[1m[33mwarning[39m[0m[1m:[0m [1m`VIRTUAL_ENV=/Users/lherron/projects/evai-cli/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead[0m
+09:17:42 | INFO     | evai.mcp.client_tools | Server Demo initialized successfully.
+[DEBUG] Entering EVAIServer.__init__ with name=evai
+[DEBUG] Exiting EVAIServer.__init__
+09:17:42 | INFO     | evai.mcp.client_tools | Server evai-mcp-server initialized successfully.
+DEBUG:mcp.server.lowlevel.server:Initializing server 'email_triage_agent_mcp'
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for CallToolRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListResourcesRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for ReadResourceRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for PromptListRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for GetPromptRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListResourceTemplatesRequest
+DEBUG:asyncio:Using selector: KqueueSelector
+INFO:email_triage.util.fastmail_client:Initializing JMAP client with host: api.fastmail.com
+INFO:email_triage.util.fastmail_client:JMAP client initialized successfully
+09:17:42 | INFO     | evai.mcp.client_tools | Server email_triage_agent_mcp initialized successfully.
+09:17:42 | INFO     | __main__        | All MCP servers have started and initialized.
+
+--- Sending Request with Structured Output ---
+
+DEBUG:mcp.server.lowlevel.server:Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+09:17:42 | INFO     | __main__        | Starting LLM request processing.
+09:17:42 | DEBUG    | __main__        | Prompt: Use subtract tool to calculate the age and then Extract the following information: name is John Doe, birth_year is 1970, occupation is Software Engineer
+09:17:42 | INFO     | __main__        | Collecting tools from initialized servers.
+[2;36m[04/05/25 09:17:42][0m[2;36m [0m[34mINFO    [0m Processing request of type ListToolsRequest                             ]8;id=296444;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py\[2mserver.py[0m]8;;\[2m:[0m]8;id=629173;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py#534\[2m534[0m]8;;\
+09:17:42 | INFO     | root            | Tools for Demo:
+09:17:42 | INFO     | root            | 	Tool: name='add' description='Add two numbers'
+[2;36m[04/05/25 09:17:42][0m[2;36m [0m[34mINFO    [0m Processing request of type ListToolsRequest                             ]8;id=641166;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py\[2mserver.py[0m]8;;\[2m:[0m]8;id=991519;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py#534\[2m534[0m]8;;\
+09:17:42 | INFO     | root            | Tools for evai-mcp-server:
+09:17:42 | INFO     | root            | 	Tool: name='subtract' description='Subtract one number from another'
+09:17:42 | INFO     | root            | 	Tool: name='deploy_artifact' description='Deploy a React component artifact to the artifacts directory'
+DEBUG:mcp.server.lowlevel.server:Received message: <mcp.shared.session.RequestResponder object at 0x10386f920>
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Dispatching request of type ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Response sent
+09:17:42 | INFO     | root            | Tools for email_triage_agent_mcp:
+09:17:42 | INFO     | root            | 	Tool: name='send_user_email' description='Send an email to the chat user.
+    
+    Args:
+        subject: Subject line of the email
+        markdown_content: Markdown content of the email (will be rendered as HTML)
+        ctx: MCP context containing FastmailClient
+        
+    Returns:
+        str: Success message or error description
+    '
+09:17:42 | INFO     | __main__        | Using all tools in API call: [{'name': 'add', 'description': 'Add two numbers', 'input_schema': {'properties': {'a': {'title': 'A', 'type': 'integer'}, 'b': {'title': 'B', 'type': 'integer'}}, 'required': ['a', 'b'], 'title': 'addArguments', 'type': 'object'}}, {'name': 'subtract', 'description': 'Subtract one number from another', 'input_schema': {'properties': {'minuend': {'title': 'Minuend', 'type': 'number'}, 'subtrahend': {'title': 'Subtrahend', 'type': 'number'}}, 'required': ['minuend', 'subtrahend'], 'title': 'subtractArguments', 'type': 'object'}}, {'name': 'deploy_artifact', 'description': 'Deploy a React component artifact to the artifacts directory', 'input_schema': {'properties': {'artifact_name': {'title': 'Artifact Name', 'type': 'string'}, 'source_code': {'title': 'Source Code', 'type': 'string'}}, 'required': ['artifact_name', 'source_code'], 'title': 'deploy_artifactArguments', 'type': 'object'}}, {'name': 'send_user_email', 'description': 'Send an email to the chat user.\n    \n    Args:\n        subject: Subject line of the email\n        markdown_content: Markdown content of the email (will be rendered as HTML)\n        ctx: MCP context containing FastmailClient\n        \n    Returns:\n        str: Success message or error description\n    ', 'input_schema': {'properties': {'subject': {'title': 'Subject', 'type': 'string'}, 'markdown_content': {'title': 'Markdown Content', 'type': 'string'}}, 'required': ['subject', 'markdown_content'], 'title': 'send_user_emailArguments', 'type': 'object'}}]
+09:17:42 | INFO     | __main__        | Added structured output tool: extract_person_info
+09:17:42 | INFO     | __main__        | LLM Interaction - Turn 1
+09:17:42 | DEBUG    | __main__        | Sending 1 messages and 5 tools to Anthropic.
+09:17:42 | DEBUG    | __main__        | Messages: [{'role': 'user', 'content': 'Use subtract tool to calculate the age and then Extract the following information: name is John Doe, birth_year is 1970, occupation is Software Engineer'}]
+09:17:42 | DEBUG    | __main__        | Tools: [{'name': 'add', 'description': 'Add two numbers', 'input_schema': {'properties': {'a': {'title': 'A', 'type': 'integer'}, 'b': {'title': 'B', 'type': 'integer'}}, 'required': ['a', 'b'], 'title': 'addArguments', 'type': 'object'}}, {'name': 'subtract', 'description': 'Subtract one number from another', 'input_schema': {'properties': {'minuend': {'title': 'Minuend', 'type': 'number'}, 'subtrahend': {'title': 'Subtrahend', 'type': 'number'}}, 'required': ['minuend', 'subtrahend'], 'title': 'subtractArguments', 'type': 'object'}}, {'name': 'deploy_artifact', 'description': 'Deploy a React component artifact to the artifacts directory', 'input_schema': {'properties': {'artifact_name': {'title': 'Artifact Name', 'type': 'string'}, 'source_code': {'title': 'Source Code', 'type': 'string'}}, 'required': ['artifact_name', 'source_code'], 'title': 'deploy_artifactArguments', 'type': 'object'}}, {'name': 'send_user_email', 'description': 'Send an email to the chat user.\n    \n    Args:\n        subject: Subject line of the email\n        markdown_content: Markdown content of the email (will be rendered as HTML)\n        ctx: MCP context containing FastmailClient\n        \n    Returns:\n        str: Success message or error description\n    ', 'input_schema': {'properties': {'subject': {'title': 'Subject', 'type': 'string'}, 'markdown_content': {'title': 'Markdown Content', 'type': 'string'}}, 'required': ['subject', 'markdown_content'], 'title': 'send_user_emailArguments', 'type': 'object'}}, {'name': 'extract_person_info', 'description': 'Extract structured information about a person', 'input_schema': {'properties': {'name': {'description': "The person's full name", 'title': 'Name', 'type': 'string'}, 'age': {'description': "The person's age", 'title': 'Age', 'type': 'integer'}, 'occupation': {'description': "The person's job or occupation", 'title': 'Occupation', 'type': 'string'}}, 'required': ['name', 'age', 'occupation'], 'title': 'PersonInfo', 'type': 'object'}}]
+09:17:45 | INFO     | __main__        | Received response from Anthropic. Stop reason: tool_use
+09:17:45 | DEBUG    | __main__        | Response: Message(id='msg_019hCtryYmGkMvB3o5yaUKzA', content=[TextBlock(citations=None, text="I'll help you use the tools to extract the information about John Doe. First, I need to calculate the age by subtracting the birth year from the current year (2023).", type='text'), ToolUseBlock(id='toolu_01FbQaoY3PLTnFUrTwkqNqq1', input={'minuend': 2023, 'subtrahend': 1970}, name='subtract', type='tool_use')], model='claude-3-7-sonnet-20250219', role='assistant', stop_reason='tool_use', stop_sequence=None, type='message', usage=Usage(cache_creation_input_tokens=0, cache_read_input_tokens=0, input_tokens=945, output_tokens=114))
+09:17:45 | DEBUG    | __main__        | LLM Text: I'll help you use the tools to extract the information about John Doe. First, I need to calculate th...
+09:17:45 | INFO     | __main__        | LLM requests Tool Use: subtract (ID: toolu_01FbQaoY3PLTnFUrTwkqNqq1)
+09:17:45 | DEBUG    | __main__        | Tool Input Args: {"minuend": 2023, "subtrahend": 1970}
+09:17:45 | INFO     | __main__        | Executing 1 tool(s).
+09:17:45 | INFO     | evai.mcp.client_tools | Executing tool 'subtract' on server evai-mcp-server (Attempt 1/2)
+[2;36m[04/05/25 09:17:45][0m[2;36m [0m[34mINFO    [0m Processing request of type CallToolRequest                              ]8;id=294627;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py\[2mserver.py[0m]8;;\[2m:[0m]8;id=877932;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py#534\[2m534[0m]8;;\
+09:17:45 | INFO     | evai.mcp.client_tools | Tool 'subtract' executed successfully on server evai-mcp-server.
+09:17:45 | INFO     | __main__        | Tool 'subtract' execution successful (ID: toolu_01FbQaoY3PLTnFUrTwkqNqq1).
+09:17:45 | DEBUG    | __main__        | Raw Result (ID: toolu_01FbQaoY3PLTnFUrTwkqNqq1): meta=None content=[TextContent(type='text', text='53.0', annotations=None)] isError=False
+09:17:45 | DEBUG    | __main__        | Extracted Result String (ID: toolu_01FbQaoY3PLTnFUrTwkqNqq1): 53.0
+09:17:45 | INFO     | __main__        | LLM Interaction - Turn 2
+09:17:45 | DEBUG    | __main__        | Sending 3 messages and 5 tools to Anthropic.
+09:17:45 | DEBUG    | __main__        | Messages: [{'role': 'user', 'content': 'Use subtract tool to calculate the age and then Extract the following information: name is John Doe, birth_year is 1970, occupation is Software Engineer'}, {'role': 'assistant', 'content': [{'type': 'text', 'text': "I'll help you use the tools to extract the information about John Doe. First, I need to calculate the age by subtracting the birth year from the current year (2023)."}, {'type': 'tool_use', 'id': 'toolu_01FbQaoY3PLTnFUrTwkqNqq1', 'name': 'subtract', 'input': {'minuend': 2023, 'subtrahend': 1970}}]}, {'role': 'user', 'content': [{'type': 'tool_result', 'tool_use_id': 'toolu_01FbQaoY3PLTnFUrTwkqNqq1', 'content': '53.0'}]}]
+09:17:45 | DEBUG    | __main__        | Tools: [{'name': 'add', 'description': 'Add two numbers', 'input_schema': {'properties': {'a': {'title': 'A', 'type': 'integer'}, 'b': {'title': 'B', 'type': 'integer'}}, 'required': ['a', 'b'], 'title': 'addArguments', 'type': 'object'}}, {'name': 'subtract', 'description': 'Subtract one number from another', 'input_schema': {'properties': {'minuend': {'title': 'Minuend', 'type': 'number'}, 'subtrahend': {'title': 'Subtrahend', 'type': 'number'}}, 'required': ['minuend', 'subtrahend'], 'title': 'subtractArguments', 'type': 'object'}}, {'name': 'deploy_artifact', 'description': 'Deploy a React component artifact to the artifacts directory', 'input_schema': {'properties': {'artifact_name': {'title': 'Artifact Name', 'type': 'string'}, 'source_code': {'title': 'Source Code', 'type': 'string'}}, 'required': ['artifact_name', 'source_code'], 'title': 'deploy_artifactArguments', 'type': 'object'}}, {'name': 'send_user_email', 'description': 'Send an email to the chat user.\n    \n    Args:\n        subject: Subject line of the email\n        markdown_content: Markdown content of the email (will be rendered as HTML)\n        ctx: MCP context containing FastmailClient\n        \n    Returns:\n        str: Success message or error description\n    ', 'input_schema': {'properties': {'subject': {'title': 'Subject', 'type': 'string'}, 'markdown_content': {'title': 'Markdown Content', 'type': 'string'}}, 'required': ['subject', 'markdown_content'], 'title': 'send_user_emailArguments', 'type': 'object'}}, {'name': 'extract_person_info', 'description': 'Extract structured information about a person', 'input_schema': {'properties': {'name': {'description': "The person's full name", 'title': 'Name', 'type': 'string'}, 'age': {'description': "The person's age", 'title': 'Age', 'type': 'integer'}, 'occupation': {'description': "The person's job or occupation", 'title': 'Occupation', 'type': 'string'}}, 'required': ['name', 'age', 'occupation'], 'title': 'PersonInfo', 'type': 'object'}}]
+09:17:47 | INFO     | __main__        | Received response from Anthropic. Stop reason: tool_use
+09:17:47 | DEBUG    | __main__        | Response: Message(id='msg_015hncM6VY9z1xcJTksymNRz', content=[TextBlock(citations=None, text="Now I'll extract the structured information about John Doe using the age I just calculated:", type='text'), ToolUseBlock(id='toolu_019bx1sQ4rV4WGSBVCq7PfCw', input={'name': 'John Doe', 'age': 53, 'occupation': 'Software Engineer'}, name='extract_person_info', type='tool_use')], model='claude-3-7-sonnet-20250219', role='assistant', stop_reason='tool_use', stop_sequence=None, type='message', usage=Usage(cache_creation_input_tokens=0, cache_read_input_tokens=0, input_tokens=1073, output_tokens=112))
+09:17:47 | DEBUG    | __main__        | LLM Text: Now I'll extract the structured information about John Doe using the age I just calculated:...
+09:17:47 | INFO     | __main__        | LLM requests Tool Use: extract_person_info (ID: toolu_019bx1sQ4rV4WGSBVCq7PfCw)
+09:17:47 | DEBUG    | __main__        | Tool Input Args: {"name": "John Doe", "age": 53, "occupation": "Software Engineer"}
+09:17:47 | INFO     | __main__        | Executing 1 tool(s).
+09:17:47 | INFO     | __main__        | Structured output tool 'extract_person_info' was used - capturing response and ending conversation.
+09:17:47 | INFO     | __main__        | Ending conversation loop after structured output tool use.
+09:17:47 | INFO     | __main__        | LLM request processing complete.
+09:17:47 | DEBUG    | __main__        | Final constructed response text:
+I'll help you use the tools to extract the information about John Doe. First, I need to calculate the age by subtracting the birth year from the current year (2023).
+Now I'll extract the structured information about John Doe using the age I just calculated:
+09:17:47 | DEBUG    | __main__        | Tool calls executed: [
+  {
+    "tool_name": "subtract",
+    "tool_args": {
+      "minuend": 2023,
+      "subtrahend": 1970
+    },
+    "result": "53.0"
+  },
+  {
+    "tool_name": "extract_person_info",
+    "tool_args": {
+      "name": "John Doe",
+      "age": 53,
+      "occupation": "Software Engineer"
+    },
+    "result": "Structured response captured"
+  }
+]
+
+--- Structured Output LLM Interaction Result ---
+Success: True
+
+Final Response:
+I'll help you use the tools to extract the information about John Doe. First, I need to calculate the age by subtracting the birth year from the current year (2023).
+Now I'll extract the structured information about John Doe using the age I just calculated:
+
+Structured Response:
+{
+  "name": "John Doe",
+  "age": 53,
+  "occupation": "Software Engineer"
+}
+
+Parsed with Pydantic:
+Name: John Doe
+Age: 53
+Occupation: Software Engineer
+
+Stop Reason: tool_use
+09:17:47 | INFO     | __main__        | Stopping 3 MCP server tasks...
+09:17:47 | INFO     | evai.mcp.client_tools | Server Demo task cancelled, initiating cleanup.
+09:17:47 | INFO     | evai.mcp.client_tools | Starting cleanup for server Demo...
+09:17:47 | DEBUG    | evai.mcp.client_tools | Closing AsyncExitStack for Demo.
+09:17:47 | INFO     | evai.mcp.client_tools | Server evai-mcp-server task cancelled, initiating cleanup.
+09:17:47 | INFO     | evai.mcp.client_tools | Starting cleanup for server evai-mcp-server...
+09:17:47 | DEBUG    | evai.mcp.client_tools | Closing AsyncExitStack for evai-mcp-server.
+09:17:47 | INFO     | evai.mcp.client_tools | Server email_triage_agent_mcp task cancelled, initiating cleanup.
+09:17:47 | INFO     | evai.mcp.client_tools | Starting cleanup for server email_triage_agent_mcp...
+09:17:47 | DEBUG    | evai.mcp.client_tools | Closing AsyncExitStack for email_triage_agent_mcp.
+09:17:47 | DEBUG    | evai.mcp.client_tools | AsyncExitStack for evai-mcp-server closed.
+09:17:47 | INFO     | evai.mcp.client_tools | Cleanup finished for server evai-mcp-server.
+09:17:47 | DEBUG    | evai.mcp.client_tools | AsyncExitStack for Demo closed.
+09:17:47 | INFO     | evai.mcp.client_tools | Cleanup finished for server Demo.
+09:17:47 | DEBUG    | evai.mcp.client_tools | AsyncExitStack for email_triage_agent_mcp closed.
+09:17:47 | INFO     | evai.mcp.client_tools | Cleanup finished for server email_triage_agent_mcp.
+09:17:47 | INFO     | __main__        | All MCP server tasks have stopped.
+
+--- Main execution finished ---
+Exiting.
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/evai-cli[39m$ [K[?2004huv run -m evai.llm[H[2J[0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/evai-cli[39m$ uv run -m evai.llm[K[?2004l
+09:19:12 | DEBUG    | asyncio         | Using selector: KqueueSelector
+
+--- Starting Servers ---
+
+09:19:12 | INFO     | __main__        | Starting 3 MCP server tasks...
+09:19:12 | INFO     | evai.mcp.client_tools | Starting server Demo...
+09:19:12 | INFO     | evai.mcp.client_tools | Initializing server Demo with command: uv run --with mcp[cli] mcp run /Users/lherron/projects/mcp-sample/server.py
+09:19:12 | INFO     | evai.mcp.client_tools | Starting server evai-mcp-server...
+09:19:12 | INFO     | evai.mcp.client_tools | Initializing server evai-mcp-server with command: uv run --directory /Users/lherron/projects/evai-cli --no-sync --with mcp[cli] mcp run /Users/lherron/projects/evai-cli/evai/mcp/server.py
+09:19:12 | INFO     | evai.mcp.client_tools | Starting server email_triage_agent_mcp...
+09:19:12 | INFO     | evai.mcp.client_tools | Initializing server email_triage_agent_mcp with command: uv run --directory /Users/lherron/projects/email-triage-agent --no-sync --with mcp[cli] mcp run /Users/lherron/projects/email-triage-agent/src/email_triage/mcp/server.py
+[1m[33mwarning[39m[0m[1m:[0m [1m`VIRTUAL_ENV=/Users/lherron/projects/evai-cli/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead[0m
+09:19:12 | INFO     | evai.mcp.client_tools | Server Demo initialized successfully.
+[DEBUG] Entering EVAIServer.__init__ with name=evai
+[DEBUG] Exiting EVAIServer.__init__
+09:19:12 | INFO     | evai.mcp.client_tools | Server evai-mcp-server initialized successfully.
+DEBUG:mcp.server.lowlevel.server:Initializing server 'email_triage_agent_mcp'
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for CallToolRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListResourcesRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for ReadResourceRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for PromptListRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for GetPromptRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListResourceTemplatesRequest
+DEBUG:asyncio:Using selector: KqueueSelector
+INFO:email_triage.util.fastmail_client:Initializing JMAP client with host: api.fastmail.com
+INFO:email_triage.util.fastmail_client:JMAP client initialized successfully
+09:19:12 | INFO     | evai.mcp.client_tools | Server email_triage_agent_mcp initialized successfully.
+09:19:12 | INFO     | __main__        | All MCP servers have started and initialized.
+
+--- Sending Request with Structured Output ---
+
+09:19:12 | INFO     | __main__        | Stopping 3 MCP server tasks...
+09:19:12 | INFO     | evai.mcp.client_tools | Server Demo task cancelled, initiating cleanup.
+09:19:12 | INFO     | evai.mcp.client_tools | Starting cleanup for server Demo...
+09:19:12 | DEBUG    | evai.mcp.client_tools | Closing AsyncExitStack for Demo.
+DEBUG:mcp.server.lowlevel.server:Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+09:19:12 | INFO     | evai.mcp.client_tools | Server evai-mcp-server task cancelled, initiating cleanup.
+09:19:12 | INFO     | evai.mcp.client_tools | Starting cleanup for server evai-mcp-server...
+09:19:12 | DEBUG    | evai.mcp.client_tools | Closing AsyncExitStack for evai-mcp-server.
+09:19:12 | INFO     | evai.mcp.client_tools | Server email_triage_agent_mcp task cancelled, initiating cleanup.
+09:19:12 | INFO     | evai.mcp.client_tools | Starting cleanup for server email_triage_agent_mcp...
+09:19:12 | DEBUG    | evai.mcp.client_tools | Closing AsyncExitStack for email_triage_agent_mcp.
+09:19:12 | DEBUG    | evai.mcp.client_tools | AsyncExitStack for Demo closed.
+09:19:12 | INFO     | evai.mcp.client_tools | Cleanup finished for server Demo.
+09:19:12 | DEBUG    | evai.mcp.client_tools | AsyncExitStack for evai-mcp-server closed.
+09:19:12 | INFO     | evai.mcp.client_tools | Cleanup finished for server evai-mcp-server.
+09:19:12 | DEBUG    | evai.mcp.client_tools | AsyncExitStack for email_triage_agent_mcp closed.
+09:19:12 | INFO     | evai.mcp.client_tools | Cleanup finished for server email_triage_agent_mcp.
+09:19:12 | INFO     | __main__        | All MCP server tasks have stopped.
+
+--- An unhandled error occurred in main execution ---
+Traceback (most recent call last):
+  File "/Users/lherron/projects/evai-cli/evai/llm.py", line 664, in <module>
+    asyncio.run(run_main())
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/Users/lherron/projects/evai-cli/evai/llm.py", line 658, in run_main
+    await run_structured_example()
+  File "/Users/lherron/projects/evai-cli/evai/llm.py", line 595, in run_structured_example
+    structured_prompt = f"Use subtract tool to calculate the age and then Extract the following information: name is John Doe, birth_year is 1970, occupation is Software Engineer. Current date is {datetime.now()}"
+                                                                                                                                                                                                     ^^^^^^^^^^^^
+AttributeError: module 'datetime' has no attribute 'now'
+
+--- Main execution finished ---
+Exiting.
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/evai-cli[39m$ [K[?2004huv run -m evai.llm[?2004l
+09:20:19 | DEBUG    | asyncio         | Using selector: KqueueSelector
+
+--- Starting Servers ---
+
+09:20:19 | INFO     | __main__        | Starting 3 MCP server tasks...
+09:20:19 | INFO     | evai.mcp.client_tools | Starting server Demo...
+09:20:19 | INFO     | evai.mcp.client_tools | Initializing server Demo with command: uv run --with mcp[cli] mcp run /Users/lherron/projects/mcp-sample/server.py
+09:20:19 | INFO     | evai.mcp.client_tools | Starting server evai-mcp-server...
+09:20:19 | INFO     | evai.mcp.client_tools | Initializing server evai-mcp-server with command: uv run --directory /Users/lherron/projects/evai-cli --no-sync --with mcp[cli] mcp run /Users/lherron/projects/evai-cli/evai/mcp/server.py
+09:20:19 | INFO     | evai.mcp.client_tools | Starting server email_triage_agent_mcp...
+09:20:19 | INFO     | evai.mcp.client_tools | Initializing server email_triage_agent_mcp with command: uv run --directory /Users/lherron/projects/email-triage-agent --no-sync --with mcp[cli] mcp run /Users/lherron/projects/email-triage-agent/src/email_triage/mcp/server.py
+[1m[33mwarning[39m[0m[1m:[0m [1m`VIRTUAL_ENV=/Users/lherron/projects/evai-cli/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead[0m
+09:20:19 | INFO     | evai.mcp.client_tools | Server Demo initialized successfully.
+[DEBUG] Entering EVAIServer.__init__ with name=evai
+[DEBUG] Exiting EVAIServer.__init__
+09:20:20 | INFO     | evai.mcp.client_tools | Server evai-mcp-server initialized successfully.
+DEBUG:mcp.server.lowlevel.server:Initializing server 'email_triage_agent_mcp'
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for CallToolRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListResourcesRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for ReadResourceRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for PromptListRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for GetPromptRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListResourceTemplatesRequest
+DEBUG:asyncio:Using selector: KqueueSelector
+INFO:email_triage.util.fastmail_client:Initializing JMAP client with host: api.fastmail.com
+INFO:email_triage.util.fastmail_client:JMAP client initialized successfully
+09:20:20 | INFO     | evai.mcp.client_tools | Server email_triage_agent_mcp initialized successfully.
+09:20:20 | INFO     | __main__        | All MCP servers have started and initialized.
+
+--- Sending Request with Structured Output ---
+
+09:20:20 | INFO     | __main__        | Stopping 3 MCP server tasks...
+DEBUG:mcp.server.lowlevel.server:Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+09:20:20 | INFO     | evai.mcp.client_tools | Server Demo task cancelled, initiating cleanup.
+09:20:20 | INFO     | evai.mcp.client_tools | Starting cleanup for server Demo...
+09:20:20 | DEBUG    | evai.mcp.client_tools | Closing AsyncExitStack for Demo.
+09:20:20 | INFO     | evai.mcp.client_tools | Server evai-mcp-server task cancelled, initiating cleanup.
+09:20:20 | INFO     | evai.mcp.client_tools | Starting cleanup for server evai-mcp-server...
+09:20:20 | DEBUG    | evai.mcp.client_tools | Closing AsyncExitStack for evai-mcp-server.
+09:20:20 | INFO     | evai.mcp.client_tools | Server email_triage_agent_mcp task cancelled, initiating cleanup.
+09:20:20 | INFO     | evai.mcp.client_tools | Starting cleanup for server email_triage_agent_mcp...
+09:20:20 | DEBUG    | evai.mcp.client_tools | Closing AsyncExitStack for email_triage_agent_mcp.
+09:20:20 | DEBUG    | evai.mcp.client_tools | AsyncExitStack for evai-mcp-server closed.
+09:20:20 | INFO     | evai.mcp.client_tools | Cleanup finished for server evai-mcp-server.
+09:20:20 | DEBUG    | evai.mcp.client_tools | AsyncExitStack for Demo closed.
+09:20:20 | INFO     | evai.mcp.client_tools | Cleanup finished for server Demo.
+09:20:20 | DEBUG    | evai.mcp.client_tools | AsyncExitStack for email_triage_agent_mcp closed.
+09:20:20 | INFO     | evai.mcp.client_tools | Cleanup finished for server email_triage_agent_mcp.
+09:20:20 | INFO     | __main__        | All MCP server tasks have stopped.
+
+--- An unhandled error occurred in main execution ---
+Traceback (most recent call last):
+  File "/Users/lherron/projects/evai-cli/evai/llm.py", line 666, in <module>
+    asyncio.run(run_main())
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.9/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/Users/lherron/projects/evai-cli/evai/llm.py", line 660, in run_main
+    await run_structured_example()
+  File "/Users/lherron/projects/evai-cli/evai/llm.py", line 596, in run_structured_example
+    now = datetime.now()
+          ^^^^^^^^^^^^
+AttributeError: module 'datetime' has no attribute 'now'
+
+--- Main execution finished ---
+Exiting.
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/evai-cli[39m$ [K[?2004huv run -m evai.llm[H[2J[0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/evai-cli[39m$ uv run -m evai.llm[K[?2004l
+09:21:13 | DEBUG    | asyncio         | Using selector: KqueueSelector
+
+--- Starting Servers ---
+
+09:21:13 | INFO     | __main__        | Starting 3 MCP server tasks...
+09:21:13 | INFO     | evai.mcp.client_tools | Starting server Demo...
+09:21:13 | INFO     | evai.mcp.client_tools | Initializing server Demo with command: uv run --with mcp[cli] mcp run /Users/lherron/projects/mcp-sample/server.py
+09:21:13 | INFO     | evai.mcp.client_tools | Starting server evai-mcp-server...
+09:21:13 | INFO     | evai.mcp.client_tools | Initializing server evai-mcp-server with command: uv run --directory /Users/lherron/projects/evai-cli --no-sync --with mcp[cli] mcp run /Users/lherron/projects/evai-cli/evai/mcp/server.py
+09:21:13 | INFO     | evai.mcp.client_tools | Starting server email_triage_agent_mcp...
+09:21:13 | INFO     | evai.mcp.client_tools | Initializing server email_triage_agent_mcp with command: uv run --directory /Users/lherron/projects/email-triage-agent --no-sync --with mcp[cli] mcp run /Users/lherron/projects/email-triage-agent/src/email_triage/mcp/server.py
+[1m[33mwarning[39m[0m[1m:[0m [1m`VIRTUAL_ENV=/Users/lherron/projects/evai-cli/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead[0m
+09:21:14 | INFO     | evai.mcp.client_tools | Server Demo initialized successfully.
+[DEBUG] Entering EVAIServer.__init__ with name=evai
+[DEBUG] Exiting EVAIServer.__init__
+09:21:14 | INFO     | evai.mcp.client_tools | Server evai-mcp-server initialized successfully.
+DEBUG:mcp.server.lowlevel.server:Initializing server 'email_triage_agent_mcp'
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for CallToolRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListResourcesRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for ReadResourceRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for PromptListRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for GetPromptRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListResourceTemplatesRequest
+DEBUG:asyncio:Using selector: KqueueSelector
+INFO:email_triage.util.fastmail_client:Initializing JMAP client with host: api.fastmail.com
+INFO:email_triage.util.fastmail_client:JMAP client initialized successfully
+09:21:14 | INFO     | evai.mcp.client_tools | Server email_triage_agent_mcp initialized successfully.
+09:21:14 | INFO     | __main__        | All MCP servers have started and initialized.
+
+--- Sending Request with Structured Output ---
+
+DEBUG:mcp.server.lowlevel.server:Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+09:21:14 | INFO     | __main__        | Starting LLM request processing.
+09:21:14 | DEBUG    | __main__        | Prompt: Use subtract tool to calculate the age and then Extract the following information: name is John Doe, birth_year is 1970, occupation is Software Engineer. Current date is 2025-04-05 09:21:14.129084
+09:21:14 | INFO     | __main__        | Collecting tools from initialized servers.
+[2;36m[04/05/25 09:21:14][0m[2;36m [0m[34mINFO    [0m Processing request of type ListToolsRequest                             ]8;id=558555;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py\[2mserver.py[0m]8;;\[2m:[0m]8;id=581339;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py#534\[2m534[0m]8;;\
+09:21:14 | INFO     | root            | Tools for Demo:
+09:21:14 | INFO     | root            | 	Tool: name='add' description='Add two numbers'
+[2;36m[04/05/25 09:21:14][0m[2;36m [0m[34mINFO    [0m Processing request of type ListToolsRequest                             ]8;id=221570;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py\[2mserver.py[0m]8;;\[2m:[0m]8;id=774625;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py#534\[2m534[0m]8;;\
+09:21:14 | INFO     | root            | Tools for evai-mcp-server:
+09:21:14 | INFO     | root            | 	Tool: name='subtract' description='Subtract one number from another'
+09:21:14 | INFO     | root            | 	Tool: name='deploy_artifact' description='Deploy a React component artifact to the artifacts directory'
+DEBUG:mcp.server.lowlevel.server:Received message: <mcp.shared.session.RequestResponder object at 0x1074683b0>
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Dispatching request of type ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Response sent
+09:21:14 | INFO     | root            | Tools for email_triage_agent_mcp:
+09:21:14 | INFO     | root            | 	Tool: name='send_user_email' description='Send an email to the chat user.
+    
+    Args:
+        subject: Subject line of the email
+        markdown_content: Markdown content of the email (will be rendered as HTML)
+        ctx: MCP context containing FastmailClient
+        
+    Returns:
+        str: Success message or error description
+    '
+09:21:14 | INFO     | __main__        | Using all tools in API call: [{'name': 'add', 'description': 'Add two numbers', 'input_schema': {'properties': {'a': {'title': 'A', 'type': 'integer'}, 'b': {'title': 'B', 'type': 'integer'}}, 'required': ['a', 'b'], 'title': 'addArguments', 'type': 'object'}}, {'name': 'subtract', 'description': 'Subtract one number from another', 'input_schema': {'properties': {'minuend': {'title': 'Minuend', 'type': 'number'}, 'subtrahend': {'title': 'Subtrahend', 'type': 'number'}}, 'required': ['minuend', 'subtrahend'], 'title': 'subtractArguments', 'type': 'object'}}, {'name': 'deploy_artifact', 'description': 'Deploy a React component artifact to the artifacts directory', 'input_schema': {'properties': {'artifact_name': {'title': 'Artifact Name', 'type': 'string'}, 'source_code': {'title': 'Source Code', 'type': 'string'}}, 'required': ['artifact_name', 'source_code'], 'title': 'deploy_artifactArguments', 'type': 'object'}}, {'name': 'send_user_email', 'description': 'Send an email to the chat user.\n    \n    Args:\n        subject: Subject line of the email\n        markdown_content: Markdown content of the email (will be rendered as HTML)\n        ctx: MCP context containing FastmailClient\n        \n    Returns:\n        str: Success message or error description\n    ', 'input_schema': {'properties': {'subject': {'title': 'Subject', 'type': 'string'}, 'markdown_content': {'title': 'Markdown Content', 'type': 'string'}}, 'required': ['subject', 'markdown_content'], 'title': 'send_user_emailArguments', 'type': 'object'}}]
+09:21:14 | INFO     | __main__        | Added structured output tool: extract_person_info
+09:21:14 | INFO     | __main__        | LLM Interaction - Turn 1
+09:21:14 | DEBUG    | __main__        | Sending 1 messages and 5 tools to Anthropic.
+09:21:14 | DEBUG    | __main__        | Messages: [{'role': 'user', 'content': 'Use subtract tool to calculate the age and then Extract the following information: name is John Doe, birth_year is 1970, occupation is Software Engineer. Current date is 2025-04-05 09:21:14.129084'}]
+09:21:14 | DEBUG    | __main__        | Tools: [{'name': 'add', 'description': 'Add two numbers', 'input_schema': {'properties': {'a': {'title': 'A', 'type': 'integer'}, 'b': {'title': 'B', 'type': 'integer'}}, 'required': ['a', 'b'], 'title': 'addArguments', 'type': 'object'}}, {'name': 'subtract', 'description': 'Subtract one number from another', 'input_schema': {'properties': {'minuend': {'title': 'Minuend', 'type': 'number'}, 'subtrahend': {'title': 'Subtrahend', 'type': 'number'}}, 'required': ['minuend', 'subtrahend'], 'title': 'subtractArguments', 'type': 'object'}}, {'name': 'deploy_artifact', 'description': 'Deploy a React component artifact to the artifacts directory', 'input_schema': {'properties': {'artifact_name': {'title': 'Artifact Name', 'type': 'string'}, 'source_code': {'title': 'Source Code', 'type': 'string'}}, 'required': ['artifact_name', 'source_code'], 'title': 'deploy_artifactArguments', 'type': 'object'}}, {'name': 'send_user_email', 'description': 'Send an email to the chat user.\n    \n    Args:\n        subject: Subject line of the email\n        markdown_content: Markdown content of the email (will be rendered as HTML)\n        ctx: MCP context containing FastmailClient\n        \n    Returns:\n        str: Success message or error description\n    ', 'input_schema': {'properties': {'subject': {'title': 'Subject', 'type': 'string'}, 'markdown_content': {'title': 'Markdown Content', 'type': 'string'}}, 'required': ['subject', 'markdown_content'], 'title': 'send_user_emailArguments', 'type': 'object'}}, {'name': 'extract_person_info', 'description': 'Extract structured information about a person', 'input_schema': {'properties': {'name': {'description': "The person's full name", 'title': 'Name', 'type': 'string'}, 'age': {'description': "The person's age", 'title': 'Age', 'type': 'integer'}, 'occupation': {'description': "The person's job or occupation", 'title': 'Occupation', 'type': 'string'}}, 'required': ['name', 'age', 'occupation'], 'title': 'PersonInfo', 'type': 'object'}}]
+09:21:16 | INFO     | __main__        | Received response from Anthropic. Stop reason: tool_use
+09:21:16 | DEBUG    | __main__        | Response: Message(id='msg_01RFExVfBfyvPPTnsaS2cMYP', content=[TextBlock(citations=None, text="I can help you use the tools to calculate the age and extract the person's information. Let me break this down:\n\n1. First, I'll calculate John Doe's age by subtracting his birth year (1970) from the current year (2025)\n2. Then I'll extract the structured information about John Doe\n\nLet me do this step by step:", type='text'), ToolUseBlock(id='toolu_01Cj9kmVPYxAePaoJDtg3Fns', input={'minuend': 2025, 'subtrahend': 1970}, name='subtract', type='tool_use')], model='claude-3-7-sonnet-20250219', role='assistant', stop_reason='tool_use', stop_sequence=None, type='message', usage=Usage(cache_creation_input_tokens=0, cache_read_input_tokens=0, input_tokens=965, output_tokens=154))
+09:21:16 | DEBUG    | __main__        | LLM Text: I can help you use the tools to calculate the age and extract the person's information. Let me break...
+09:21:16 | INFO     | __main__        | LLM requests Tool Use: subtract (ID: toolu_01Cj9kmVPYxAePaoJDtg3Fns)
+09:21:16 | DEBUG    | __main__        | Tool Input Args: {"minuend": 2025, "subtrahend": 1970}
+09:21:16 | INFO     | __main__        | Executing 1 tool(s).
+09:21:16 | INFO     | evai.mcp.client_tools | Executing tool 'subtract' on server evai-mcp-server (Attempt 1/2)
+[2;36m[04/05/25 09:21:16][0m[2;36m [0m[34mINFO    [0m Processing request of type CallToolRequest                              ]8;id=758874;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py\[2mserver.py[0m]8;;\[2m:[0m]8;id=674861;file:///Users/lherron/projects/evai-cli/.venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py#534\[2m534[0m]8;;\
+09:21:16 | INFO     | evai.mcp.client_tools | Tool 'subtract' executed successfully on server evai-mcp-server.
+09:21:16 | INFO     | __main__        | Tool 'subtract' execution successful (ID: toolu_01Cj9kmVPYxAePaoJDtg3Fns).
+09:21:16 | DEBUG    | __main__        | Raw Result (ID: toolu_01Cj9kmVPYxAePaoJDtg3Fns): meta=None content=[TextContent(type='text', text='55.0', annotations=None)] isError=False
+09:21:16 | DEBUG    | __main__        | Extracted Result String (ID: toolu_01Cj9kmVPYxAePaoJDtg3Fns): 55.0
+09:21:16 | INFO     | __main__        | LLM Interaction - Turn 2
+09:21:16 | DEBUG    | __main__        | Sending 3 messages and 5 tools to Anthropic.
+09:21:16 | DEBUG    | __main__        | Messages: [{'role': 'user', 'content': 'Use subtract tool to calculate the age and then Extract the following information: name is John Doe, birth_year is 1970, occupation is Software Engineer. Current date is 2025-04-05 09:21:14.129084'}, {'role': 'assistant', 'content': [{'type': 'text', 'text': "I can help you use the tools to calculate the age and extract the person's information. Let me break this down:\n\n1. First, I'll calculate John Doe's age by subtracting his birth year (1970) from the current year (2025)\n2. Then I'll extract the structured information about John Doe\n\nLet me do this step by step:"}, {'type': 'tool_use', 'id': 'toolu_01Cj9kmVPYxAePaoJDtg3Fns', 'name': 'subtract', 'input': {'minuend': 2025, 'subtrahend': 1970}}]}, {'role': 'user', 'content': [{'type': 'tool_result', 'tool_use_id': 'toolu_01Cj9kmVPYxAePaoJDtg3Fns', 'content': '55.0'}]}]
+09:21:16 | DEBUG    | __main__        | Tools: [{'name': 'add', 'description': 'Add two numbers', 'input_schema': {'properties': {'a': {'title': 'A', 'type': 'integer'}, 'b': {'title': 'B', 'type': 'integer'}}, 'required': ['a', 'b'], 'title': 'addArguments', 'type': 'object'}}, {'name': 'subtract', 'description': 'Subtract one number from another', 'input_schema': {'properties': {'minuend': {'title': 'Minuend', 'type': 'number'}, 'subtrahend': {'title': 'Subtrahend', 'type': 'number'}}, 'required': ['minuend', 'subtrahend'], 'title': 'subtractArguments', 'type': 'object'}}, {'name': 'deploy_artifact', 'description': 'Deploy a React component artifact to the artifacts directory', 'input_schema': {'properties': {'artifact_name': {'title': 'Artifact Name', 'type': 'string'}, 'source_code': {'title': 'Source Code', 'type': 'string'}}, 'required': ['artifact_name', 'source_code'], 'title': 'deploy_artifactArguments', 'type': 'object'}}, {'name': 'send_user_email', 'description': 'Send an email to the chat user.\n    \n    Args:\n        subject: Subject line of the email\n        markdown_content: Markdown content of the email (will be rendered as HTML)\n        ctx: MCP context containing FastmailClient\n        \n    Returns:\n        str: Success message or error description\n    ', 'input_schema': {'properties': {'subject': {'title': 'Subject', 'type': 'string'}, 'markdown_content': {'title': 'Markdown Content', 'type': 'string'}}, 'required': ['subject', 'markdown_content'], 'title': 'send_user_emailArguments', 'type': 'object'}}, {'name': 'extract_person_info', 'description': 'Extract structured information about a person', 'input_schema': {'properties': {'name': {'description': "The person's full name", 'title': 'Name', 'type': 'string'}, 'age': {'description': "The person's age", 'title': 'Age', 'type': 'integer'}, 'occupation': {'description': "The person's job or occupation", 'title': 'Occupation', 'type': 'string'}}, 'required': ['name', 'age', 'occupation'], 'title': 'PersonInfo', 'type': 'object'}}]
+09:21:18 | INFO     | __main__        | Received response from Anthropic. Stop reason: tool_use
+09:21:18 | DEBUG    | __main__        | Response: Message(id='msg_01KVdaYJXQqYvjs9DrUoVm9m', content=[TextBlock(citations=None, text="Now I'll extract the structured information about John Doe using the calculated age:", type='text'), ToolUseBlock(id='toolu_018a2NeMgCSUzAdhHMVhgsrd', input={'name': 'John Doe', 'age': 55, 'occupation': 'Software Engineer'}, name='extract_person_info', type='tool_use')], model='claude-3-7-sonnet-20250219', role='assistant', stop_reason='tool_use', stop_sequence=None, type='message', usage=Usage(cache_creation_input_tokens=0, cache_read_input_tokens=0, input_tokens=1133, output_tokens=110))
+09:21:18 | DEBUG    | __main__        | LLM Text: Now I'll extract the structured information about John Doe using the calculated age:...
+09:21:18 | INFO     | __main__        | LLM requests Tool Use: extract_person_info (ID: toolu_018a2NeMgCSUzAdhHMVhgsrd)
+09:21:18 | DEBUG    | __main__        | Tool Input Args: {"name": "John Doe", "age": 55, "occupation": "Software Engineer"}
+09:21:18 | INFO     | __main__        | Executing 1 tool(s).
+09:21:18 | INFO     | __main__        | Structured output tool 'extract_person_info' was used - capturing response and ending conversation.
+09:21:18 | INFO     | __main__        | Ending conversation loop after structured output tool use.
+09:21:18 | INFO     | __main__        | LLM request processing complete.
+09:21:18 | DEBUG    | __main__        | Final constructed response text:
+I can help you use the tools to calculate the age and extract the person's information. Let me break this down:
+
+1. First, I'll calculate John Doe's age by subtracting his birth year (1970) from the current year (2025)
+2. Then I'll extract the structured information about John Doe
+
+Let me do this step by step:
+Now I'll extract the structured information about John Doe using the calculated age:
+09:21:18 | DEBUG    | __main__        | Tool calls executed: [
+  {
+    "tool_name": "subtract",
+    "tool_args": {
+      "minuend": 2025,
+      "subtrahend": 1970
+    },
+    "result": "55.0"
+  },
+  {
+    "tool_name": "extract_person_info",
+    "tool_args": {
+      "name": "John Doe",
+      "age": 55,
+      "occupation": "Software Engineer"
+    },
+    "result": "Structured response captured"
+  }
+]
+
+--- Structured Output LLM Interaction Result ---
+Success: True
+
+Final Response:
+I can help you use the tools to calculate the age and extract the person's information. Let me break this down:
+
+1. First, I'll calculate John Doe's age by subtracting his birth year (1970) from the current year (2025)
+2. Then I'll extract the structured information about John Doe
+
+Let me do this step by step:
+Now I'll extract the structured information about John Doe using the calculated age:
+
+Structured Response:
+{
+  "name": "John Doe",
+  "age": 55,
+  "occupation": "Software Engineer"
+}
+
+Parsed with Pydantic:
+Name: John Doe
+Age: 55
+Occupation: Software Engineer
+
+Stop Reason: tool_use
+09:21:18 | INFO     | __main__        | Stopping 3 MCP server tasks...
+09:21:18 | INFO     | evai.mcp.client_tools | Server Demo task cancelled, initiating cleanup.
+09:21:18 | INFO     | evai.mcp.client_tools | Starting cleanup for server Demo...
+09:21:18 | DEBUG    | evai.mcp.client_tools | Closing AsyncExitStack for Demo.
+09:21:18 | INFO     | evai.mcp.client_tools | Server evai-mcp-server task cancelled, initiating cleanup.
+09:21:18 | INFO     | evai.mcp.client_tools | Starting cleanup for server evai-mcp-server...
+09:21:18 | DEBUG    | evai.mcp.client_tools | Closing AsyncExitStack for evai-mcp-server.
+09:21:18 | INFO     | evai.mcp.client_tools | Server email_triage_agent_mcp task cancelled, initiating cleanup.
+09:21:18 | INFO     | evai.mcp.client_tools | Starting cleanup for server email_triage_agent_mcp...
+09:21:18 | DEBUG    | evai.mcp.client_tools | Closing AsyncExitStack for email_triage_agent_mcp.
+09:21:18 | DEBUG    | evai.mcp.client_tools | AsyncExitStack for email_triage_agent_mcp closed.
+09:21:18 | INFO     | evai.mcp.client_tools | Cleanup finished for server email_triage_agent_mcp.
+09:21:18 | DEBUG    | evai.mcp.client_tools | AsyncExitStack for Demo closed.
+09:21:18 | INFO     | evai.mcp.client_tools | Cleanup finished for server Demo.
+09:21:18 | DEBUG    | evai.mcp.client_tools | AsyncExitStack for evai-mcp-server closed.
+09:21:18 | INFO     | evai.mcp.client_tools | Cleanup finished for server evai-mcp-server.
+09:21:18 | INFO     | __main__        | All MCP server tasks have stopped.
+
+--- Main execution finished ---
+Exiting.
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/evai-cli[39m$ [K[?2004h[H[2J[0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/evai-cli[39m$ [K

@@ -172,7 +172,7 @@ async def llm_async(prompt: str, debug: bool = False, show_stop_reason: bool = F
         # Convert comma-separated string to list if provided
         allowed_tool_list = allowed_tools.split(",") if allowed_tools else None
         result = await session.send_request(
-            prompt=prompt,
+            user_prompt=prompt,
             debug=debug,
             show_stop_reason=show_stop_reason,
             allowed_tools=allowed_tool_list

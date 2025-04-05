@@ -5,17 +5,25 @@ without directly printing to the console.
 """
 
 import asyncio
+import datetime
+from datetime import datetime as dt
 import json
 import logging
 import os
 import re
 import traceback
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Tuple, Optional, Union
 import anthropic
+from pydantic import BaseModel, Field
 
 from evai.mcp.client_tools import MCPConfiguration, MCPServer
 # Conevai.mcp
 logger = logging.getLogger(__name__)
+
+class NotGiven:
+    """Sentinel class to indicate the parameter was not specified."""
+    pass
+
 
 
 # --- MCPServer Class (Cleanup Simplified) ---
@@ -124,13 +132,21 @@ class LLMSession:
 
     # --- start (removed, focus on send_request) ---
 
-    async def send_request(self, prompt: str, debug: bool = False, show_stop_reason: bool = False, allowed_tools: list[str] = None) -> Dict[str, Any]:
+    async def send_request(
+        self,
+        user_prompt: str,
+        system_prompt: Union[str, None, NotGiven] = NotGiven(),
+        debug: bool = False,
+        show_stop_reason: bool = False,
+        allowed_tools: list[str] = None,
+        structured_output_tool: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
         """Execute an LLM request with tool use independently."""
         # Use a try/finally block to ensure cleanup
         try:
             logger.info("Starting LLM request processing.")
             if debug:
-                logger.debug(f"Prompt: {prompt}")
+                logger.debug(f"Prompt: {user_prompt}")
 
             # --- Initialize Servers ---
             # await self.initialize_servers() # This now handles initialization state
@@ -170,11 +186,18 @@ class LLMSession:
                 # Filter tools based on allowed_tools
                 all_tools_for_api = [tool for tool in all_tools_for_api if tool["name"] in allowed_tools]
                 logger.info(f"Using only the following tools in API call: {all_tools_for_api}")
+            
+            # Add structured output tool if provided
+            if structured_output_tool:
+                all_tools_for_api.append(structured_output_tool)
+                logger.info(f"Added structured output tool: {structured_output_tool['name']}")
+            
             # --- Conversation Loop ---
-            messages = [{"role": "user", "content": prompt}]
+            messages = [{"role": "user", "content": user_prompt}]
             final_response_parts = []
             tool_calls_executed = []
             stop_reason_info = None
+            structured_response = None
             max_turns = 5 # Add a safety limit for tool use loops
             turn = 0
 
@@ -193,7 +216,8 @@ class LLMSession:
                         messages=messages,
                         tools=all_tools_for_api,
                         max_tokens=4000,
-                        # Consider adding system prompt here if needed
+                        # Only include system if it's a valid string
+                        **({'system': system_prompt} if isinstance(system_prompt, str) else {})
                     )
                     logger.info(f"Received response from Anthropic. Stop reason: {response.stop_reason}")
                     logger.debug(f"Response: {response}")
@@ -252,10 +276,35 @@ class LLMSession:
                     if response.stop_reason == "tool_use" and tool_uses_in_response:
                         logger.info(f"Executing {len(tool_uses_in_response)} tool(s).")
                         tool_results_for_next_turn = []
+                        
+                        # Check if any tool is the structured output tool
+                        structured_tool_used = False
+                        for tool_use in tool_uses_in_response:
+                             if structured_output_tool and tool_use.name == structured_output_tool['name']:
+                                 logger.info(f"Structured output tool '{tool_use.name}' was used - capturing response and ending conversation.")
+                                 structured_response = tool_use.input
+                                 # Record in tool calls for consistency
+                                 tool_calls_executed.append({
+                                     "tool_name": tool_use.name,
+                                     "tool_args": tool_use.input,
+                                     "result": "Structured response captured"
+                                 })
+                                 structured_tool_used = True
+                                 # Don't add to tool_results_for_next_turn as we'll end the conversation
+                                 break
+                                 
+                        # If structured output tool was used, end the conversation
+                        if structured_tool_used:
+                            logger.info("Ending conversation loop after structured output tool use.")
+                            break
 
                         # Execute tools concurrently
                         tool_tasks = []
                         for tool_use in tool_uses_in_response:
+                             # Skip if this was the structured output tool (already handled)
+                             if structured_output_tool and tool_use.name == structured_output_tool['name']:
+                                 continue
+                                 
                              tool_name = tool_use.name
                              tool_args = tool_use.input
                              tool_id = tool_use.id
@@ -337,6 +386,7 @@ class LLMSession:
                 "success": True,
                 "response": final_response_text,
                 "error": None,
+                "structured_response": structured_response,
                 "tool_calls": tool_calls_executed,
                 "stop_reason_info": stop_reason_info,
                 "messages": messages if debug else None # Only include messages in debug mode
@@ -348,6 +398,7 @@ class LLMSession:
                 "success": False,
                 "response": None,
                 "error": str(e),
+                "structured_response": structured_response if 'structured_response' in locals() else None,
                 "tool_calls": tool_calls_executed if 'tool_calls_executed' in locals() else [],
                 "stop_reason_info": stop_reason_info if 'stop_reason_info' in locals() else None,
                 "messages": messages if debug and 'messages' in locals() else None
@@ -497,29 +548,18 @@ if __name__ == "__main__":
 
     session = LLMSession(servers)
     main_task = None # Keep track of the main task for potential cancellation
-
-    async def run_main():
-        global main_task
-        main_task = asyncio.current_task()
+    
+    async def run_standard_example():
+        """Run the standard LLM example that uses tools."""
         # Example prompt that requires a tool
-        # prompt = "list the available tools"
         prompt = "subtract 8 from 3"
         # prompt = "what is 5 plus 12 using the calculator?" # Another example
-        print(f"\n--- Starting Servers ---\n")
-
-        try:
-            await session.start_servers()  # Start all servers
-
-            print(f"\n--- Sending Request ---\nPrompt: {prompt}\n")
-            # The send_request method now includes its own try/finally for cleanup
-            result = await session.send_request(prompt, debug=True, show_stop_reason=True)
-        finally:
-            await session.stop_servers()  # Stop all servers
-
-
-
-
-        print("\n--- LLM Interaction Result ---")
+        
+        print(f"\n--- Sending Request ---\nPrompt: {prompt}\n")
+        result = await session.send_request(user_prompt=prompt, debug=True, show_stop_reason=True)
+        
+        # Print results
+        print("\n--- Standard LLM Interaction Result ---")
         print(f"Success: {result['success']}")
         if result["success"]:
             print("\nFinal Response:")
@@ -532,22 +572,96 @@ if __name__ == "__main__":
                     print(f"     Args: {json.dumps(call['tool_args'])}")
                     print(f"     Outcome: {outcome}")
             if result["stop_reason_info"]:
-                 print(f"\nStop Reason: {result['stop_reason_info'].get('reason', 'N/A')}")
-
+                print(f"\nStop Reason: {result['stop_reason_info'].get('reason', 'N/A')}")
         else:
             print(f"\nError: {result['error']}")
-
+            
         # Print messages only if debug was True during the call and they exist
         if result.get("messages"):
             print("\n--- Message History (Debug) ---")
             for msg in result["messages"]:
-                 role = msg.get('role', 'unknown')
-                 content = msg.get('content', '')
-                 if isinstance(content, list): # Handle tool use/result content blocks
-                      content_str = "\n".join([str(c) for c in content])
-                 else:
-                      content_str = str(content)
-                 print(f"[{role.upper()}]:\n{content_str}\n---")
+                role = msg.get('role', 'unknown')
+                content = msg.get('content', '')
+                if isinstance(content, list): # Handle tool use/result content blocks
+                    content_str = "\n".join([str(c) for c in content])
+                else:
+                    content_str = str(content)
+                print(f"[{role.upper()}]:\n{content_str}\n---")
+                
+        return result
+    
+    async def run_structured_example():
+        """Run the structured output example."""
+        print(f"\n--- Sending Request with Structured Output ---\n")
+
+        now = dt.now()
+        structured_prompt = f"Use subtract tool to calculate the age and then Extract the following information: name is John Doe, birth_year is 1970, occupation is Software Engineer. Current date is {now}"
+        
+        # Define a Pydantic model for person information
+        class PersonInfo(BaseModel):
+            name: str = Field(description="The person's full name")
+            age: int = Field(description="The person's age")
+            occupation: str = Field(description="The person's job or occupation")
+        
+        # Generate schema from Pydantic model
+        person_schema = {
+            "name": "extract_person_info",
+            "description": "Extract structured information about a person",
+            "input_schema": PersonInfo.model_json_schema()
+        }
+        
+        structured_result = await session.send_request(
+            user_prompt=structured_prompt, 
+            debug=True, 
+            show_stop_reason=True,
+            structured_output_tool=person_schema
+        )
+        
+        # Print results
+        print("\n--- Structured Output LLM Interaction Result ---")
+        print(f"Success: {structured_result['success']}")
+        if structured_result["success"]:
+            print("\nFinal Response:")
+            print(structured_result['response'])
+            
+            if structured_result["structured_response"]:
+                print("\nStructured Response:")
+                print(json.dumps(structured_result["structured_response"], indent=2))
+                
+                # Demonstrate parsing the response with Pydantic
+                try:
+                    parsed_person = PersonInfo(**structured_result["structured_response"])
+                    print("\nParsed with Pydantic:")
+                    print(f"Name: {parsed_person.name}")
+                    print(f"Age: {parsed_person.age}")
+                    print(f"Occupation: {parsed_person.occupation}")
+                except Exception as e:
+                    print(f"\nError parsing with Pydantic: {str(e)}")
+                
+            if structured_result["stop_reason_info"]:
+                print(f"\nStop Reason: {structured_result['stop_reason_info'].get('reason', 'N/A')}")
+        else:
+            print(f"\nError: {structured_result['error']}")
+            
+        return structured_result
+
+    async def run_main():
+        global main_task
+        main_task = asyncio.current_task()
+        
+        print(f"\n--- Starting Servers ---\n")
+
+        try:
+            await session.start_servers()  # Start all servers
+
+            # Run the standard example
+            # await run_standard_example()
+            
+            # Run the structured output example
+            await run_structured_example()
+            
+        finally:
+            await session.stop_servers()  # Stop all servers
 
     try:
         asyncio.run(run_main())

@@ -62,18 +62,20 @@ llm_session = LLMSession(servers=servers)
      await llm_session.start_servers()
      ```
 
-2. **`send_request(prompt, debug=False, show_stop_reason=False, allowed_tools=None)`**
+2. **`send_request(user_prompt, system_prompt=None, debug=False, show_stop_reason=False, allowed_tools=None, structured_output_tool=None)`**
    - Sends a prompt to the LLM and processes the response, potentially invoking tools.
    - Parameters:
-     - `prompt` (str): The input prompt for the LLM.
+     - `user_prompt` (str): The user's input prompt sent to the LLM as a "user" role message.
+     - `system_prompt` (Optional[str]): An optional string providing context or instructions to the LLM, passed as the `system` parameter to the Anthropic API. Defaults to `None`.
      - `debug` (bool): If `True`, includes detailed logging and message history in the result.
      - `show_stop_reason` (bool): If `True`, includes stop reason details in the result (useful for debugging).
      - `allowed_tools` (list[str] or None): Optional list of tool names to restrict tool usage.
+     - `structured_output_tool` (Optional[Dict[str, Any]]): Optional dictionary defining a tool for structured output, with keys `name` (str), `description` (str), and `input_schema` (dict). If provided, this tool is included in the tools list sent to Anthropic, and its use results in a structured response available in `result["structured_response"]`.
    - Returns: A dictionary with the response structure (see below).
    - Example:
      ```python
      result = await llm_session.send_request(
-         prompt="What is the capital of France?",
+         user_prompt="What is the capital of France?",
          debug=False,
          allowed_tools=["get_location_info"]
      )
@@ -95,6 +97,7 @@ The `send_request` method returns a dictionary with the following fields:
     "success": bool,                     # Indicates if the request was successful
     "response": str,                     # The final text response from the LLM
     "error": str or None,                # Error message if success=False
+    "structured_response": dict or None, # Structured data from structured_output_tool if used
     "tool_calls": list[dict],            # List of executed tool calls
     "stop_reason_info": dict or None,    # Details about why the LLM stopped (if show_stop_reason=True)
     "messages": list or None             # Full message history (if debug=True)
@@ -116,6 +119,120 @@ The `send_request` method returns a dictionary with the following fields:
       "stop_sequence": None
   }
   ```
+
+##### Structured Output Usage
+
+To request structured output, provide a `structured_output_tool` dictionary and instruct the LLM to use it via `system_prompt` or `user_prompt`. The tool's `input_schema` defines the expected output structure. When the LLM uses this tool, the structured data is returned in `result["structured_response"]` and the conversation ends immediately after capturing the structured output.
+
+**Important:** When the LLM uses the structured output tool, the conversation loop terminates immediately after capturing the structured data. This ensures you get a clean structured response without additional text output.
+
+**Example using Pydantic:**
+
+```python
+from pydantic import BaseModel, Field
+from datetime import datetime as dt
+from typing import Dict, Any
+import json
+import asyncio
+from evai.llm import LLMSession
+from evai.mcp.client_tools import MCPServerFactory
+
+# Define a Pydantic model for person information
+class PersonInfo(BaseModel):
+    name: str = Field(description="The person's full name")
+    age: int = Field(description="The person's age")
+    occupation: str = Field(description="The person's job or occupation")
+
+async def run_structured_example():
+    """Run the structured output example."""
+    print(f"\n--- Sending Request with Structured Output ---\n")
+
+    # Get current date for age calculation
+    now = dt.now()
+    structured_prompt = f"Use subtract tool to calculate the age and then Extract the following information: name is John Doe, birth_year is 1970, occupation is Software Engineer. Current date is {now}"
+    
+    # Generate schema from Pydantic model
+    person_schema = {
+        "name": "extract_person_info",
+        "description": "Extract structured information about a person",
+        "input_schema": PersonInfo.model_json_schema()
+    }
+    
+    # Initialize LLM session
+    servers = MCPServerFactory.load_servers()
+    session = LLMSession(servers=servers)
+    
+    try:
+        # Start servers
+        await session.start_servers()
+        
+        # Send request with structured output tool
+        structured_result = await session.send_request(
+            user_prompt=structured_prompt, 
+            debug=True, 
+            show_stop_reason=True,
+            structured_output_tool=person_schema
+        )
+        
+        # Print results
+        print("\n--- Structured Output LLM Interaction Result ---")
+        print(f"Success: {structured_result['success']}")
+        if structured_result["success"]:
+            print("\nFinal Response:")
+            print(structured_result['response'])
+            
+            if structured_result["structured_response"]:
+                print("\nStructured Response:")
+                print(json.dumps(structured_result["structured_response"], indent=2))
+                
+                # Demonstrate parsing the response with Pydantic
+                try:
+                    parsed_person = PersonInfo(**structured_result["structured_response"])
+                    print("\nParsed with Pydantic:")
+                    print(f"Name: {parsed_person.name}")
+                    print(f"Age: {parsed_person.age}")
+                    print(f"Occupation: {parsed_person.occupation}")
+                except Exception as e:
+                    print(f"\nError parsing with Pydantic: {str(e)}")
+                
+            if structured_result["stop_reason_info"]:
+                print(f"\nStop Reason: {structured_result['stop_reason_info'].get('reason', 'N/A')}")
+        else:
+            print(f"\nError: {structured_result['error']}")
+            
+        return structured_result
+            
+    finally:
+        # Clean up
+        await session.stop_servers()
+
+if __name__ == "__main__":
+    asyncio.run(run_structured_example())
+
+This example demonstrates:
+- Using Pydantic models to define structured data schemas
+- Automatic schema generation from Pydantic models
+- Type-safe data handling and validation
+- Integration with LLM tools for age calculation
+- Proper error handling and cleanup
+- Detailed output formatting and validation
+
+The structured output will be returned in the following format:
+```python
+{
+    "name": "John Doe",
+    "age": 55,  # Calculated from birth year
+    "occupation": "Software Engineer"
+}
+```
+
+Benefits of using Pydantic for structured output:
+1. **Type Safety**: Pydantic provides runtime type checking and validation
+2. **Schema Generation**: Automatic JSON Schema generation with `model_json_schema()`
+3. **Documentation**: Field descriptions are included in the schema
+4. **Validation**: Automatic validation of incoming data against the model
+5. **IDE Support**: Better code completion and type hints in modern IDEs
+6. **Extensibility**: Easy to add custom validators and field types
 
 ### `MCPServerFactory` (from `evai.mcp.client_tools`)
 
@@ -281,7 +398,7 @@ async def main():
         
         # Send request
         result = await session.send_request(
-            prompt="What is the capital of France?",
+            user_prompt="What is the capital of France?",
             debug=False,
             allowed_tools=None  # Use all available tools
         )
@@ -330,7 +447,11 @@ async def generate_response(prompt: str) -> str:
 
     try:
         # Send request
-        result = await llm_session.send_request(prompt=prompt, debug=False)
+        result = await llm_session.send_request(
+            user_prompt=prompt,
+            debug=False,
+            allowed_tools=None
+        )
         await llm_session.stop_servers()
 
         if not result["success"]:
@@ -350,6 +471,79 @@ if __name__ == "__main__":
     response = asyncio.run(generate_response("Summarize the weather today"))
     print(response)
 ```
+
+### Example 3: Using Structured Output
+
+```python
+import asyncio
+import os
+import json
+from typing import Dict, Any
+from evai.llm import LLMSession
+from evai.mcp.client_tools import MCPServerFactory
+from dotenv import load_dotenv
+
+async def get_structured_data():
+    # Load environment variables
+    load_dotenv()
+    
+    # Configure structured output tool
+    structured_output_tool = {
+        "name": "extract_data",
+        "description": "Extract structured data from the input",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "location": {"type": "string"},
+                "population": {"type": "integer"},
+                "landmarks": {
+                    "type": "array",
+                    "items": {"type": "string"}
+                }
+            },
+            "required": ["location", "population", "landmarks"]
+        }
+    }
+    
+    # Load server configurations
+    servers = MCPServerFactory.load_servers()
+    
+    # Initialize LLM session
+    session = LLMSession(servers=servers)
+    
+    try:
+        # Start servers
+        await session.start_servers()
+        
+        # Send request with structured output tool
+        result = await session.send_request(
+            user_prompt="Provide information about Paris, France.",
+            system_prompt="Extract structured data about the location using the extract_data tool.",
+            structured_output_tool=structured_output_tool,
+            debug=False
+        )
+        
+        if result["success"]:
+            if result["structured_response"]:
+                # We have structured data
+                print("Structured data:")
+                print(json.dumps(result["structured_response"], indent=2))
+                return result["structured_response"]
+            else:
+                # No structured data, just text response
+                print("No structured data received.")
+                print("Text response:", result["response"])
+                return None
+        else:
+            print(f"Error: {result['error']}")
+            return None
+            
+    finally:
+        # Clean up
+        await session.stop_servers()
+
+if __name__ == "__main__":
+    asyncio.run(get_structured_data())
 
 ## Error Handling
 
@@ -384,6 +578,8 @@ The library provides robust error handling:
 - **Server Management**: Start servers only when needed and stop them promptly to free resources.
 - **Tool Filtering**: Use `allowed_tools` to limit tool usage for specific requests, improving performance and security.
 - **Error Recovery**: Check `result["success"]` and handle errors gracefully, logging details for debugging.
+- **System Instructions**: Use the `system_prompt` parameter for providing consistent guidance to the LLM across user interactions, improving the reliability of responses.
+- **Structured Output**: When you need data in a specific format, use the `structured_output_tool` to get consistently structured responses that can be directly used in your application without parsing text.
 
 ## Troubleshooting
 
