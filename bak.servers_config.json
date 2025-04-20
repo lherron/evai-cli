@@ -17,6 +17,7 @@
         "run",
         "--directory",
         "/Users/lherron/projects/evai-cli",
+	"--no-sync",
         "--with",
         "mcp[cli]",
         "mcp",
@@ -29,12 +30,13 @@
       "args": [
         "run",
         "--directory",
-        "/Users/lherron/agents/email-triage-agent",
+        "/Users/lherron/projects/email-triage-agent",
+	"--no-sync",
         "--with",
         "mcp[cli]",
         "mcp",
         "run",
-        "/Users/lherron/agents/email-triage-agent/src/email_triage/mcp/server.py"
+        "/Users/lherron/projects/email-triage-agent/src/email_triage/mcp/server.py"
       ]
     }
   }

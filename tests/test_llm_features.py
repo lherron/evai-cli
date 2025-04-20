@@ -2,8 +2,8 @@ import asyncio
 import os
 from typing import Dict, Any, Optional
 
-from evai.llm import LLMSession
-from evai.mcp.client_tools import MCPServer, MCPConfiguration
+from evai_cli.llm import LLMSession
+from evai_cli.mcp.client_tools import MCPServer, MCPConfiguration
 
 async def test_new_features():
     """Test the new features in the LLMSession class."""

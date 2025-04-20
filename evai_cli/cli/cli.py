@@ -7,7 +7,7 @@ import click
 import importlib
 import pkgutil
 from typing import Any, Dict, List, Optional, Tuple
-from evai import __version__
+from evai_cli import __version__
 from rich.console import Console
 import logging
 
@@ -194,7 +194,7 @@ def tools(ctx: click.Context) -> None:
     """Manage custom tools."""
     if ctx.invoked_subcommand is None:
         # If no subcommand is provided, show both help and the list of tools
-        from evai.cli.commands.tools import list as list_cmd
+        from evai_cli.cli.commands.tools import list as list_cmd
         
         # Print the help text first
         click.echo(ctx.get_help())
@@ -217,7 +217,7 @@ def create_command_with_section(section: str = "Core Commands") -> Any:
 # Automatically add all commands from the commands submodule
 def import_commands() -> None:
     """Import all commands from the commands submodule and add them to the appropriate groups."""
-    from evai.cli import commands as commands_module
+    from evai_cli.cli import commands as commands_module
     
     # Define categories for commands
     CORE_COMMANDS = ["llm", "server", "deploy_artifact"]
@@ -238,7 +238,7 @@ def import_commands() -> None:
             continue
             
         # Import the module
-        module = importlib.import_module(f"evai.cli.commands.{module_name}")
+        module = importlib.import_module(f"evai_cli.cli.commands.{module_name}")
         
         # Find all Click commands in the module
         for attr_name in dir(module):
@@ -288,7 +288,7 @@ def import_commands() -> None:
 import_commands()
 
 # Load tools to the main CLI group with section
-from evai.cli.user_commands import load_tools_to_main_group
+from evai_cli.cli.user_commands import load_tools_to_main_group
 load_tools_to_main_group(cli, section="Tool Commands")
 
 # Organize command sections after all commands are loaded

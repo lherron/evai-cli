@@ -9,7 +9,7 @@ from unittest.mock import patch, MagicMock
 # Add the parent directory to the path so we can import the evai package
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
-from evai.tool_storage import save_tool_metadata
+from evai_cli.tool_storage import save_tool_metadata
 
 
 class TestCLIIntegration(unittest.TestCase):
@@ -99,7 +99,7 @@ def tool_subtract(minuend: float, subtrahend: float) -> float:
         # In a real test, you would use subprocess.run to run the CLI command
         
         # Instead, we'll just verify that our changes to run_tool work correctly
-        from evai.tool_storage import run_tool
+        from evai_cli.tool_storage import run_tool
         
         # Test with positional arguments as a list
         result = run_tool(self.tool_name, ["8", "5"])

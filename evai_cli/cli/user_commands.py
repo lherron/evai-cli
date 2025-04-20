@@ -4,7 +4,7 @@ import logging
 import json
 import sys
 from typing import Dict, Any
-from evai.tool_storage import (
+from evai_cli.tool_storage import (
     list_tools,
     load_tool_metadata,
     run_tool
@@ -52,7 +52,7 @@ def load_tools_to_main_group(main_group: click.Group, section: str = "Tool Comma
         
         # Create a new Click group with section information
         # Use AliasedGroup if available to support sections
-        from evai.cli.cli import AliasedGroup
+        from evai_cli.cli.cli import AliasedGroup
         if AliasedGroup is not None:
             new_group = AliasedGroup(name=group_name, 
                                 help=group["description"],

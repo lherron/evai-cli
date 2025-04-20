@@ -15,8 +15,8 @@ except ImportError:
         "Please install it with: pip install mcp"
     )
 
-from evai.tool_storage import list_tools, load_tool_metadata
-from evai.tool_storage import run_tool  # type: ignore
+from evai_cli.tool_storage import list_tools, load_tool_metadata
+from evai_cli.tool_storage import run_tool  # type: ignore
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -87,7 +87,7 @@ def register_tool(mcp: FastMCP, tool_path: str, mcp_tool_name: str, metadata: Di
     
     try:
         # Import the tool module to get the actual function signature
-        from evai.tool_storage import import_tool_module, run_tool
+        from evai_cli.tool_storage import import_tool_module, run_tool
         
         # Get the tool name from the path
         path_components = tool_path.replace('/', os.sep).split(os.sep)

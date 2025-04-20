@@ -23,8 +23,8 @@ except ImportError:
 # Add the parent directory to sys.path
 # sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 # Import the new modules
-from evai.mcp.prompts import register_prompts
-from evai.mcp.tools import register_tools
+from evai_cli.mcp.prompts import register_prompts
+from evai_cli.mcp.tools import register_tools
 
 # Set up logging
 logger = logging.getLogger(__name__)

@@ -7,7 +7,7 @@ import click
 import yaml
 import subprocess
 from typing import Optional
-from evai.tool_storage import (
+from evai_cli.tool_storage import (
     get_tool_dir, 
     list_tools,
     run_tool,
@@ -41,7 +41,7 @@ def add(type: str, name: str, parent: Optional[str]) -> None:
             }
             
             # Add the group using the new unified function
-            from evai.tool_storage import add_tool
+            from evai_cli.tool_storage import add_tool
             add_tool(path, metadata, "")
             
             click.echo(f"Group '{path}' created successfully.")
@@ -93,7 +93,7 @@ def add(type: str, name: str, parent: Optional[str]) -> None:
                 implementation = f'"""Custom tool implementation for {name}."""\n\n\ndef tool_{name}() -> dict:\n    """Execute the tool."""\n    return {{"status": "success"}}\n'
             
             # Add the tool using the new unified function
-            from evai.tool_storage import add_tool
+            from evai_cli.tool_storage import add_tool
             add_tool(path, default_metadata, implementation)
             
             click.echo(f"Tool '{path}' created successfully.")

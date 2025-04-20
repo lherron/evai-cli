@@ -7,12 +7,12 @@ import click
 from rich.console import Console
 from rich.panel import Panel
 from rich.syntax import Syntax
-from evai.tool_storage import (
+from evai_cli.tool_storage import (
     get_tool_dir, 
     save_tool_metadata,
     load_sample_tool_yaml
 )
-from evai.llm_client import (
+from evai_cli.llm_client import (
     generate_metadata_with_llm,
     generate_implementation_with_llm,
     check_additional_info_needed,

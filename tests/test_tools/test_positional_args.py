@@ -8,7 +8,7 @@ from unittest.mock import patch, MagicMock
 # Add the parent directory to the path so we can import the evai package
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
-from evai.tool_storage import save_tool_metadata, run_tool
+from evai_cli.tool_storage import save_tool_metadata, run_tool
 
 
 class TestPositionalArgs(unittest.TestCase):

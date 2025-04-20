@@ -1,16 +1,5 @@
 {
   "mcpServers": {
-    "Demo": {
-      "command": "uv",
-      "args": [
-        "run",
-        "--with",
-        "mcp[cli]",
-        "mcp",
-        "run",
-        "/Users/lherron/projects/mcp-sample/server.py"
-      ]
-    },
     "evai-mcp-server": {
       "command": "uv",
       "args": [
@@ -22,7 +11,7 @@
         "mcp[cli]",
         "mcp",
         "run",
-        "/Users/lherron/projects/evai-cli/evai/mcp/server.py"
+        "/Users/lherron/projects/evai-cli/evai_cli/mcp/server.py"
       ]
     },
     "email_triage_agent_mcp": {

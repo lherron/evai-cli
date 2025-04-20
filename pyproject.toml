@@ -21,7 +21,7 @@ dev = [
 ]
 
 [project.scripts]
-evai = "evai.cli.cli:main"
+evai = "evai_cli.cli.cli:main"
 
 [build-system]
 requires = ["setuptools>=61.0"]

@@ -6,7 +6,7 @@ import tempfile
 from unittest import mock
 import subprocess
 
-from evai.tool_storage import edit_tool_implementation, run_lint_check
+from evai_cli.tool_storage import edit_tool_implementation, run_lint_check
 
 
 class TestEditImplementation:

@@ -6,7 +6,7 @@ from typing import Any, Dict
 from mcp.server.fastmcp import FastMCP
 
 import logging
-from evai.tool_storage import (
+from evai_cli.tool_storage import (
     list_tools, 
     load_tool_metadata, 
     get_tool_dir
@@ -174,7 +174,7 @@ def register_built_in_tools(mcp: FastMCP) -> None:
             
             # Update the metadata
             # Import is done here to avoid circular imports
-            from evai.tool_storage import edit_tool
+            from evai_cli.tool_storage import edit_tool
             edit_tool(path, metadata=metadata)
             
             result = {

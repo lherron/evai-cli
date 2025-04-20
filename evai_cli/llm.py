@@ -17,7 +17,7 @@ from typing import Any, Dict, Tuple, Optional, Union
 import anthropic
 from pydantic import BaseModel, Field
 
-from evai.mcp.client_tools import MCPConfiguration, MCPServer
+from evai_cli.mcp.client_tools import MCPConfiguration, MCPServer
 # Conevai.mcp
 logger = logging.getLogger(__name__)
 
