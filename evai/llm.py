@@ -5,6 +5,7 @@ without directly printing to the console.
 """
 
 import asyncio
+import sys
 import datetime
 from datetime import datetime as dt
 import json
@@ -79,6 +80,7 @@ class LLMSession:
             server_name = self.servers[i].name
             if isinstance(result, Exception):
                 logger.error(f"Failed to initialize server '{server_name}': {result}")
+                sys.exit(1)
                 # Server's own initialize method should have reset its state
             else:
                 logger.info(f"Server '{server_name}' initialized successfully.")
@@ -524,10 +526,13 @@ if __name__ == "__main__":
     config = MCPConfiguration()
     servers = []
     try:
-        server_configs = config.load_config("servers_config.json")
+        # Get config path from environment or use default
+        server_config_path = os.getenv("EVAI_SERVERS_CONFIG", "servers_config.json")
+        logger.info(f"Loading MCP servers from {server_config_path}")
+        server_configs = config.load_config(server_config_path)
         mcp_servers_config = server_configs.get("mcpServers", {})
         if not mcp_servers_config:
-             logger.warning("No 'mcpServers' key found or empty in servers_config.json.")
+             logger.warning(f"No 'mcpServers' key found or empty in {server_config_path}.")
         else:
             servers = [
                 MCPServer(name, srv_config)
@@ -537,9 +542,9 @@ if __name__ == "__main__":
                  logger.warning("MCP server list is empty after processing config.")
 
     except FileNotFoundError:
-        logger.warning("servers_config.json not found. Proceeding without MCP servers.")
+        logger.warning(f"{os.getenv('EVAI_SERVERS_CONFIG', 'servers_config.json')} not found. Proceeding without MCP servers.")
     except json.JSONDecodeError:
-        logger.error("Invalid JSON in servers_config.json. Proceeding without MCP servers.")
+        logger.error(f"Invalid JSON in {os.getenv('EVAI_SERVERS_CONFIG', 'servers_config.json')}. Proceeding without MCP servers.")
     except Exception as e:
          logger.exception("Error loading server configuration.")
          # Depending on requirements, might want to exit here

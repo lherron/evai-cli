@@ -1,7 +1,3 @@
-Below is an updated and improved version of the `evai_client_library.md` documentation based on the provided codebase (`evai.llm` and `evai.mcp.client_tools`), incorporating the example client usage from `evai.cli.commands.llm` and the additional example you provided. The revised documentation is more detailed, structured, and includes practical examples, error handling guidance, and clarifications on key functionalities.
-
----
-
 # EVAI Client Library Documentation
 
 ## Overview
@@ -586,7 +582,3 @@ The library provides robust error handling:
 - **"ANTHROPIC_API_KEY not set"**: Ensure the environment variable is defined in `.env` or your shell.
 - **No Tools Available**: Verify `servers_config.json` exists and is correctly formatted.
 - **Server Initialization Fails**: Check the `command` and `args` in your config file for typos or missing executables.
-
----
-
-This updated documentation provides a comprehensive guide to using the EVAI Client Library, with clearer examples, detailed method descriptions, and practical advice for developers. It reflects the current implementation in `evai.llm` and `evai.mcp.client_tools` as of April 04, 2025, and aligns with the usage patterns in the provided examples. Let me know if you'd like further refinements!

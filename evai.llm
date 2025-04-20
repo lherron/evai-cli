@@ -1179,4 +1179,1389 @@ Stop Reason: tool_use
 
 --- Main execution finished ---
 Exiting.
-[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/evai-cli[39m$ [K[?2004h[H[2J[0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/evai-cli[39m$ [K
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/evai-cli[39m$ [K[?2004h[H[2J[0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/evai-cli[39m$ [Kccheck[?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/evai-cli[39m$ [K[?2004hcc d cd ../email-triage-agent[1m/[0m[0m [?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/email-triage-agent[39m$ [K[?2004hccheckin[?2004l
+On branch main
+Your branch is up to date with 'origin/main'.
+
+nothing to commit, working tree clean
+On branch main
+Your branch is up to date with 'origin/main'.
+
+nothing to commit, working tree clean
+Everything up-to-date
+On branch main
+Your branch is up to date with 'origin/main'.
+
+nothing to commit, working tree clean
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/email-triage-agent[39m$ [K[?2004h[H[2J[0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/email-triage-agent[39m$ [Krrepomix[?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/email-triage-agent[39m$ [K[?2004h[H[2J[0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/email-triage-agent[39m$ [Kggit status[?2004l
+On branch main
+Your branch is up to date with 'origin/main'.
+
+nothing to commit, working tree clean
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/email-triage-agent[39m$ [K[?2004hcchecking[?2004l
+zsh: command not found: checking
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/email-triage-agent[39m$ [K[?2004hlls[?2004l
+CLAUDE.md           config.yaml         [34moutput[39;49m[0m              repomix-output.txt  [34msrc[39;49m[0m
+README.md           config.yaml.sample  pyproject.toml      [34mscripts[39;49m[0m             [34mtests[39;49m[0m
+codehilite.css      [34mdocs[39;49m[0m                pytest.ini          servers_config.json uv.lock
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/email-triage-agent[39m$ [K[?2004h[H[2J[0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/email-triage-agent[39m$ [Krrepomix[?2004l
+[2m
+📦 Repomix v0.3.1
+[22m
+[?25l[36m⠙[39m Collect file... (33/43) [2mtests/test_email_triage.py[22m
+[?25l[2K[1A[2K[G[36m⠹[39m Generating output...
+[?25l[2K[1A[2K[G[36m⠸[39m Calculating metrics...
+[?25l[2K[1A[2K[G[36m⠼[39m Calculating metrics... (20/42) [2msrc/email_triage/util/__init__.py[22m
+[?25l[2K[1A[2K[G[32m✔[39m Packing completed successfully!
+[?25h
+[37m📈 Top 5 Files by Character Count and Token Count:[39m
+[2m──────────────────────────────────────────────────[22m
+[37m1. [39m [37msrc/email_triage/util/fastmail_client.py[39m [2m(25,744 chars, 4,712 tokens)[22m
+[37m2. [39m [37msrc/email_triage/config.py[39m [2m(17,797 chars, 3,891 tokens)[22m
+[37m3. [39m [37mdocs/evai_example.txt[39m [2m(15,168 chars, 3,255 tokens)[22m
+[37m4. [39m [37msrc/email_triage/email_triage.py[39m [2m(12,286 chars, 2,426 tokens)[22m
+[37m5. [39m [37moutput/code_highlighting_test.html[39m [2m(11,074 chars, 2,946 tokens)[22m
+
+[37m🔎 Security Check:[39m
+[2m──────────────────[22m
+[32m✔[39m [37mNo suspicious files detected.[39m
+
+[37m📊 Pack Summary:[39m
+[2m────────────────[22m
+[37m  Total Files:[39m [37m42[39m files
+[37m  Total Chars:[39m [37m201,238[39m chars
+[37m Total Tokens:[39m [37m44,444[39m tokens
+[37m       Output:[39m [37mrepomix-output.xml[39m
+[37m     Security:[39m [37m[37m✔ No suspicious files detected[37m[39m
+
+[32m🎉 All Done![39m
+[37mYour repository has been successfully packed.[39m
+
+💡 Repomix is now available in your browser! Try it at [4mhttps://repomix.com[24m
+[?25h[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/email-triage-agent[39m$ [K[?2004hccd ..l [?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects[39m$ [K[?2004hlls[?2004l
+DevStack.md               [34mflux_loras[39;49m[0m                [34mmemui[39;49m[0m                     string_normalizer.py
+[34maudiopearl-adminui[39;49m[0m        [34mgairecurrence[39;49m[0m             [34mmemui-bak[39;49m[0m                 [34mtest[39;49m[0m
+[34maws-infra[39;49m[0m                 [34mgemini-testing[39;49m[0m            [34mnew-project-pipeline[39;49m[0m      [34mtest-playwright[39;49m[0m
+[34mbike-training[39;49m[0m             [34mhelloapi[39;49m[0m                  [34mnextjs-starter[39;49m[0m            test_string_normalizer.py
+[34mbuilderbase[39;49m[0m               [34mhomebrew-evai[39;49m[0m             [34mnlrecurrence[39;49m[0m              [34mtimeblocker[39;49m[0m
+[34mclaude-artifacts[39;49m[0m          [34mhsdecks[39;49m[0m                   [34mnormalizer[39;49m[0m                [34mtodoist-ideation-agent[39;49m[0m
+[34mclaude-engineer[39;49m[0m           [34mideation-workflows[39;49m[0m        [34mold-evai-cli[39;49m[0m              [34mtraining_pics[39;49m[0m
+[34mcookiecutter-pyagent[39;49m[0m      [34mifhelix[39;49m[0m                   [34mpodthing[39;49m[0m                  [34mtts-audio-chunking[39;49m[0m
+[34mdevtools[39;49m[0m                  [34mmactools[39;49m[0m                  [34mpodthing-bak[39;49m[0m              [34mtts-websocket[39;49m[0m
+[34mdiscordlogs[39;49m[0m               [31mmakebtn.sh[39;49m[0m                [34mpoesage[39;49m[0m                   [34munhobbled-blog[39;49m[0m
+[34mdomainsearch[39;49m[0m              [31mmakegairecurrence.sh[39;49m[0m      [34mqwen25-coder[39;49m[0m              [34munhobbled-blog-admin[39;49m[0m
+[34mdotfiles[39;49m[0m                  [31mmakememapi.sh[39;49m[0m             [34mreactflowtest[39;49m[0m             [34munhobbled-content[39;49m[0m
+[34memail-triage-agent[39;49m[0m        [31mmakememui.sh[39;49m[0m              [34mrecurrencenotes[39;49m[0m           [34mwatchproc[39;49m[0m
+[34mevai-cli[39;49m[0m                  [34mmcp-sample[39;49m[0m                [34mrecurrent[39;49m[0m                 ytcheck.py
+[34mfastai-course[39;49m[0m             mcp-sample.tar.gz         [34mrex[39;49m[0m                       [34mytpods[39;49m[0m
+[34mfb-postproc[39;49m[0m               [34mmemapi[39;49m[0m                    [34mrex-memory[39;49m[0m                [34mztest[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects[39m$ [K[?2004hlls *templ*[?2004l
+zsh: no matches found: *templ*
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects[39m$ [K[?2004hlls[?2004l
+DevStack.md               [34mflux_loras[39;49m[0m                [34mmemui[39;49m[0m                     string_normalizer.py
+[34maudiopearl-adminui[39;49m[0m        [34mgairecurrence[39;49m[0m             [34mmemui-bak[39;49m[0m                 [34mtest[39;49m[0m
+[34maws-infra[39;49m[0m                 [34mgemini-testing[39;49m[0m            [34mnew-project-pipeline[39;49m[0m      [34mtest-playwright[39;49m[0m
+[34mbike-training[39;49m[0m             [34mhelloapi[39;49m[0m                  [34mnextjs-starter[39;49m[0m            test_string_normalizer.py
+[34mbuilderbase[39;49m[0m               [34mhomebrew-evai[39;49m[0m             [34mnlrecurrence[39;49m[0m              [34mtimeblocker[39;49m[0m
+[34mclaude-artifacts[39;49m[0m          [34mhsdecks[39;49m[0m                   [34mnormalizer[39;49m[0m                [34mtodoist-ideation-agent[39;49m[0m
+[34mclaude-engineer[39;49m[0m           [34mideation-workflows[39;49m[0m        [34mold-evai-cli[39;49m[0m              [34mtraining_pics[39;49m[0m
+[34mcookiecutter-pyagent[39;49m[0m      [34mifhelix[39;49m[0m                   [34mpodthing[39;49m[0m                  [34mtts-audio-chunking[39;49m[0m
+[34mdevtools[39;49m[0m                  [34mmactools[39;49m[0m                  [34mpodthing-bak[39;49m[0m              [34mtts-websocket[39;49m[0m
+[34mdiscordlogs[39;49m[0m               [31mmakebtn.sh[39;49m[0m                [34mpoesage[39;49m[0m                   [34munhobbled-blog[39;49m[0m
+[34mdomainsearch[39;49m[0m              [31mmakegairecurrence.sh[39;49m[0m      [34mqwen25-coder[39;49m[0m              [34munhobbled-blog-admin[39;49m[0m
+[34mdotfiles[39;49m[0m                  [31mmakememapi.sh[39;49m[0m             [34mreactflowtest[39;49m[0m             [34munhobbled-content[39;49m[0m
+[34memail-triage-agent[39;49m[0m        [31mmakememui.sh[39;49m[0m              [34mrecurrencenotes[39;49m[0m           [34mwatchproc[39;49m[0m
+[34mevai-cli[39;49m[0m                  [34mmcp-sample[39;49m[0m                [34mrecurrent[39;49m[0m                 ytcheck.py
+[34mfastai-course[39;49m[0m             mcp-sample.tar.gz         [34mrex[39;49m[0m                       [34mytpods[39;49m[0m
+[34mfb-postproc[39;49m[0m               [34mmemapi[39;49m[0m                    [34mrex-memory[39;49m[0m                [34mztest[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects[39m$ [K[?2004hccat [?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects[39m$ [K[?2004hccd new-project-pipeline[1m/[0m[0m [?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/new-project-pipeline[39m$ [K[?2004hlls[?2004l
+CLAUDE.md                  [34mexamples[39;49m[0m                   [34msamples[39;49m[0m                    test_component_registry.py
+README.md                  fetch_pypi_info.py         setup.py                   [34mtests[39;49m[0m
+SPEC.md                    package_info.md            [34msrc[39;49m[0m                        uv.lock
+[34mdocs[39;49m[0m                       pyproject.toml             [34mtest[39;49m[0m                       watchrepo.py
+example.npp_config.yaml    repomix-output.txt         [34mtest-project[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/new-project-pipeline[39m$ [K[?2004hccat .env[?2004l
+cat: .env: No such file or directory
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/new-project-pipeline[39m$ [K[?2004hccat npp[?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/new-project-pipeline[39m$ [K[?2004hccat example.npp_config.yaml[1m [0m[0m [?2004l
+project_context:  
+  project_name: "Example Project"
+  project_shortname: "example_project"
+  language: "python"
+  description: "An example project configuration demonstrating the new fields"
+  frameworks:
+    - fastapi
+    - pydantic
+    - pytest
+  github:
+    create_repo: true
+    private: true
+    description: "Example project repository"
+  todoist:
+    create_project: true
+    task_template: "python-api"
+  formatting:
+    use_black: true
+    line_length: 88
+npp_config:
+  frameworks_config:
+    always_use:
+      - pydantic
+      - pytest
+      - black
+      - mypy
+      - flake8
+    never_use:
+      - sqlalchemy
+      - poetry
+  components_config:
+    always_use: []
+    never_use: []
+  ai_assist: true
+  llm:
+    model: "claude-3-7-sonnet-latest"
+    generate_readme: true
+    suggest_frameworks: true [1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/new-project-pipeline[39m$ [K[?2004hlls[?2004l
+CLAUDE.md                  [34mexamples[39;49m[0m                   [34msamples[39;49m[0m                    test_component_registry.py
+README.md                  fetch_pypi_info.py         setup.py                   [34mtests[39;49m[0m
+SPEC.md                    package_info.md            [34msrc[39;49m[0m                        uv.lock
+[34mdocs[39;49m[0m                       pyproject.toml             [34mtest[39;49m[0m                       watchrepo.py
+example.npp_config.yaml    repomix-output.txt         [34mtest-project[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/new-project-pipeline[39m$ [K[?2004hlls samples[1m/[0m[0m [?2004l
+calc.yaml         [34msimple-calculator[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/new-project-pipeline[39m$ [K[?2004hccd samples[1m/[0m[0m [?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/new-project-pipeline/samples[39m$ [K[?2004hlls[?2004l
+calc.yaml         [34msimple-calculator[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/new-project-pipeline/samples[39m$ [K[?2004hcca [?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/new-project-pipeline/samples[39m$ [K[?2004hccat calc.yaml[1m [0m[0m [?2004l
+project_context:
+  project_name: simple-calculator
+  project_slug: simplcalc
+  language: python
+  description: "A simple calculator library for performing arithmetic operations"
+  frameworks:
+    - pytest
+    - typer
+    - pydantic
+    - rich
+  dependencies: []
+  github_username: lherron
+  github:
+    create_repo: true
+    private: true
+    description: "A simple calculator library for performing arithmetic operations"
+  todoist:
+    create_project: true
+  formatting:
+    use_black: true
+    line_length: 88
+  cookiecutter_template: "http://github.com/lherron/cookiecutter-pyagent"
+  readme_content: |
+    # Sampler Simple
+
+    A Python library for generating sample data with configurable distributions.
+
+    ## Installation
+
+    ```bash
+    pip install sampler-simple
+    ```
+
+    ## Usage
+
+    ```python
+    from sampler_simple import Sampler
+
+    # Generate random samples
+    sampler = Sampler()
+    samples = sampler.generate(count=100)
+    print(samples)
+    ```
+
+    ## Features
+
+    - Configurable distributions
+    - Efficient sampling algorithms
+    - Rich visualization options
+
+    ## Contributing
+
+    Contributions are welcome! Please feel free to submit a Pull Request.
+
+npp_config:
+  frameworks_config:
+    always_use:
+      - pydantic
+      - pytest
+    never_use: []
+  components_config:
+    always_use: []
+    never_use: []
+  ai_assist: true
+  llm:
+    model: "claude-3-7-sonnet-latest"
+    generate_readme: true
+    suggest_frameworks: true
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/new-project-pipeline/samples[39m$ [K[?2004hlless calc.yaml[1m [0m[0m [?2004l
+[?1049h[?1h=project_context:
+  project_name: simple-calculator
+  project_slug: simplcalc
+  language: python
+  description: "A simple calculator library for performing arithmetic operations"
+  frameworks:
+    - pytest
+    - typer
+    - pydantic
+    - rich
+  dependencies: []
+  github_username: lherron
+  github:
+    create_repo: true
+    private: true
+    description: "A simple calculator library for performing arithmetic operations"
+  todoist:
+    create_project: true
+  formatting:
+    use_black: true
+    line_length: 88
+  cookiecutter_template: "http://github.com/lherron/cookiecutter-pyagent"
+  readme_content: |
+    # Sampler Simple
+
+    A Python library for generating sample data with configurable distributions.
+
+    ## Installation
+
+    ```bash
+    pip install sampler-simple
+    ```
+
+    ## Usage
+
+    ```python
+    from sampler_simple import Sampler
+
+    # Generate random samples
+    sampler = Sampler()
+    samples = sampler.generate(count=100)
+    print(samples)
+    ```
+
+    ## Features
+
+    - Configurable distributions
+    - Efficient sampling algorithms
+    - Rich visualization options
+
+    ## Contributing
+
+    Contributions are welcome! Please feel free to submit a Pull Request.
+
+npp_config:
+  frameworks_config:
+    always_use:
+      - pydantic
+      - pytest
+[7mcalc.yaml[27m[K[K[?1l>[?1049l[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/new-project-pipeline/samples[39m$ [K[?2004hlls ~/projects[1m/[0m[0m/cookiecutter-pyagent[1m/[0m[0m [?2004l
+Makefile                      test_config.json
+cookiecutter.json             [34m{{cookiecutter.project_name}}[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/new-project-pipeline/samples[39m$ [K[?2004hccd ~/projects[1m/[0m[0m/cookiecutter-pyagent[1m/[0m[0m [?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hggit status[?2004l
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	[31mmodified:   {{cookiecutter.project_name}}/scripts/run_{{cookiecutter.project_slug}}.py[m
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hccheckin[?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hlls[?2004l
+Makefile                      test_config.json
+cookiecutter.json             [34m{{cookiecutter.project_name}}[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hccheckin[?2004l
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	[31mmodified:   {{cookiecutter.project_name}}/scripts/run_{{cookiecutter.project_slug}}.py[m
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[main 8cee525] Updated
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+Enumerating objects: 9, done.
+Counting objects:  11% (1/9)Counting objects:  22% (2/9)Counting objects:  33% (3/9)Counting objects:  44% (4/9)Counting objects:  55% (5/9)Counting objects:  66% (6/9)Counting objects:  77% (7/9)Counting objects:  88% (8/9)Counting objects: 100% (9/9)Counting objects: 100% (9/9), done.
+Delta compression using up to 16 threads
+Compressing objects:  20% (1/5)Compressing objects:  40% (2/5)Compressing objects:  60% (3/5)Compressing objects:  80% (4/5)Compressing objects: 100% (5/5)Compressing objects: 100% (5/5), done.
+Writing objects:  20% (1/5)Writing objects:  40% (2/5)Writing objects:  60% (3/5)Writing objects:  80% (4/5)Writing objects: 100% (5/5)Writing objects: 100% (5/5), 444 bytes | 444.00 KiB/s, done.
+Total 5 (delta 3), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas:   0% (0/3)[Kremote: Resolving deltas:  33% (1/3)[Kremote: Resolving deltas:  66% (2/3)[Kremote: Resolving deltas: 100% (3/3)[Kremote: Resolving deltas: 100% (3/3), completed with 3 local objects.[K
+To github.com:lherron/cookiecutter-pyagent
+   d68ea02..8cee525  main -> main
+On branch main
+Your branch is up to date with 'origin/main'.
+
+nothing to commit, working tree clean
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hlls[?2004l
+Makefile                      test_config.json
+cookiecutter.json             [34m{{cookiecutter.project_name}}[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hlls \P  l  mmake bake[?2004l
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.evai-cli) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hvvv[?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hlls[?2004l
+Makefile                      [34msimple-calculator[39;49m[0m             [34m{{cookiecutter.project_name}}[39;49m[0m
+cookiecutter.json             test_config.json
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hmmake bake[?2004l
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hlls simple-calculator[1m/[0m[0m [?2004l
+README.md      [34mdocs[39;49m[0m           pyproject.toml [34mscripts[39;49m[0m        [34msrc[39;49m[0m            [34mtests[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hlls simple-calculator[1m/[0m[0m [?2004l
+README.md      [34mdocs[39;49m[0m           pyproject.toml [34mscripts[39;49m[0m        [34msrc[39;49m[0m            [34mtests[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hvvi test_config.json[1m [0m[0m [?2004l
+[?1006;1000h[?1002h[?1049h[=1;1u[?1h=[?2004h[?1004h[1;60r[?12h[?12l[22;2t[22;1t[27m[23m[29m[m[H[2J[?25l[60;1H"test_config.json" 8L, 555B[2;1H▽[6n[2;1H  [3;1HPzz\[0%m[6n[3;1H           [1;1H[>c]10;?]11;?[1;3H[35m{[m
+      "[38;5;130mdefault_context[m": [35m{[m[2;27H[K[3;1H          "[38;5;130mproject_name[m": "[31msimple-calculator[m",[3;47H[K[4;11H"[38;5;130mproject_slug[m": "[31mcalc[m",[5;11H"[38;5;130mgithub_username[m": "[31mlherron[m",[6;11H"[38;5;130mdescription[m": "[31mA description of my awesome package[m"[7;7H[35m}[m[106C  [8;1H 
+  [35m}[m[110C  [10;1H 
+[94m~                                                                                                                 [12;1H~                                                                                                                 [13;1H~                                                                                                                 [14;1H~                                                                                                                 [15;1H~                                                                                                                 [16;1H~                                                                                                                 [17;1H~                                                                                                                 [18;1H~                                                                                                                 [19;1H~                                                                                                                 [20;1H~                                                                                                                 [21;1H~                                                                                                                 [22;1H~                                                                                                                 [23;1H~                                                                                                                 [24;1H~                                                                                                                 [25;1H~                                                                                                                 [26;1H~                                                                                                                 [27;1H~                                                                                                                 [28;1H~                                                                                                                 [29;1H~                                                                                                                 [30;1H~                                                                                                                 [31;1H~                                                                                                                 [32;1H~                                                                                                                 [33;1H~                                                                                                                 [34;1H~                                                                                                                 [35;1H~                                                                                                                 [36;1H~                                                                                                                 [37;1H~                                                                                                                 [38;1H~                                                                                                                 [39;1H~                                                                                                                 [40;1H~                                                                                                                 [41;1H~                                                                                                                 [42;1H~                                                                                                                 [43;1H~                                                                                                                 [44;1H~                                                                                                                 [45;1H~                                                                                                                 [46;1H~                                                                                                                 [47;1H~                                                                                                                 [48;1H~                                                                                                                 [49;1H~                                                                                                                 [50;1H~                                                                                                                 [51;1H~                                                                                                                 [52;1H~                                                                                                                 [53;1H~                                                                                                                 [54;1H~                                                                                                                 [55;1H~                                                                                                                 [56;1H~                                                                                                                 [57;1H~                                                                                                                 [58;1H~                                                                                                                 [59;1H~                                                                                                                 [m[60;97H3,44[10CAll[3;44H[?25h[?u[?12$p[?25l[60;87H/[3;44H[60;88H2[3;44H[60;89Hc[3;44H[60;90H2[3;44H[60;91Hc[3;44H[60;92H/[3;44H[60;93H3[3;44H[60;94H4[3;44H[60;95H3[3;44H[60;96H4[3;44H[60;87H          [3;44H[27m[23m[29m[m[H[2J[1;3H[38;5;224m{[m[2;7H"[93mdefault_context[m": [38;5;224m{[m[3;11H"[93mproject_name[m": "[95msimple-calculator[m",[4;11H"[93mproject_slug[m": "[95mcalc[m",[5;11H"[93mgithub_username[m": "[95mlherron[m",[6;11H"[93mdescription[m": "[95mA description of my awesome package[m"[7;7H[38;5;224m}[m[106C  [8;1H 
+  [38;5;224m}[m[110C  [10;1H 
+[94m~                                                                                                                 [12;1H~                                                                                                                 [13;1H~                                                                                                                 [14;1H~                                                                                                                 [15;1H~                                                                                                                 [16;1H~                                                                                                                 [17;1H~                                                                                                                 [18;1H~                                                                                                                 [19;1H~                                                                                                                 [20;1H~                                                                                                                 [21;1H~                                                                                                                 [22;1H~                                                                                                                 [23;1H~                                                                                                                 [24;1H~                                                                                                                 [25;1H~                                                                                                                 [26;1H~                                                                                                                 [27;1H~                                                                                                                 [28;1H~                                                                                                                 [29;1H~                                                                                                                 [30;1H~                                                                                                                 [31;1H~                                                                                                                 [32;1H~                                                                                                                 [33;1H~                                                                                                                 [34;1H~                                                                                                                 [35;1H~                                                                                                                 [36;1H~                                                                                                                 [37;1H~                                                                                                                 [38;1H~                                                                                                                 [39;1H~                                                                                                                 [40;1H~                                                                                                                 [41;1H~                                                                                                                 [42;1H~                                                                                                                 [43;1H~                                                                                                                 [44;1H~                                                                                                                 [45;1H~                                                                                                                 [46;1H~                                                                                                                 [47;1H~                                                                                                                 [48;1H~                                                                                                                 [49;1H~                                                                                                                 [50;1H~                                                                                                                 [51;1H~                                                                                                                 [52;1H~                                                                                                                 [53;1H~                                                                                                                 [54;1H~                                                                                                                 [55;1H~                                                                                                                 [56;1H~                                                                                                                 [57;1H~                                                                                                                 [58;1H~                                                                                                                 [59;1H~                                                                                                                 [m[60;97H3,44[10CAll"test_config.json" 8L, 555B[3;44H[?25h[?25l[60;87Hh[3;44H[60;87H [3;43H[60;100H3[3;43H[?25h[?25l[60;87Hh[3;43H[60;87H [3;42H[60;100H2[3;42H[?25h[?25l[60;87Hh[3;42H[60;87H [3;41H[60;100H1[3;41H[?25h[?25l[60;87Hh[3;41H[60;87H [3;40H[60;100H0[3;40H[?25h[?25l[60;87Hh[3;40H[60;87H [3;39H[60;99H39[3;39H[?25h[?25l[60;87Hh[3;39H[60;87H [3;38H[60;100H8[3;38H[?25h[?25l[60;87Hh[3;38H[60;87H [3;37H[60;100H7[3;37H[?25h[?25l[60;87Hh[3;37H[60;87H [3;36H[60;100H6[3;36H[?25h[?25l[60;87Hh[3;36H[60;87H [3;35H[60;100H5[3;35H[?25h[?25l[60;87Hh[3;35H[60;87H [3;34H[60;100H4[3;34H[?25h[?25l[60;87Hh[3;34H[60;87H [3;33H[60;100H3[3;33H[?25h[?25l[60;87Hh[3;33H[60;87H [3;32H[60;100H2[3;32H[?25h[?25l[60;87Hh[3;32H[60;87H [3;31H[60;100H1[3;31H[?25h[?25l[60;87Hh[3;31H[60;87H [3;30H[60;100H0[3;30H[?25h[?25l[60;87Hj[3;30H[60;87H [4;30H[60;97H4[4;30H[?25h[?25l[60;87H:[4;30H[60;1H[K[60;1H:[?25hq[?25l[?1006;1000l[?1002l[?2004l[>4;m[=0;1u[23;2t[23;1t[60;1H[K[60;1H[?1004l[?2004l[?1l>[>4;m[=0;1u[?1049l[?25h[>4;m[=0;1u[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hlls simple-calculator[1m/[0m[0m [?2004l
+README.md      [34mdocs[39;49m[0m           pyproject.toml [34mscripts[39;49m[0m        [34msrc[39;49m[0m            [34mtests[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hls simple-calculator/src[?2004l
+[34mcalc[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hls simple-calculator/src/calc[?2004l
+__init__.py calc.py     [34mcli[39;49m[0m         config.py   [34mflows[39;49m[0m       [34mutil[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hlls[?2004l
+Makefile                      [34msimple-calculator[39;49m[0m             [34m{{cookiecutter.project_name}}[39;49m[0m
+cookiecutter.json             test_config.json
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hrrepomix[?2004l
+[2m
+📦 Repomix v0.3.1
+[22m
+[?25l[36m⠙[39m Running security check...
+[?25l[2K[1A[2K[G[36m⠹[39m Generating output...
+[?25l[2K[1A[2K[G[36m⠸[39m Calculating metrics...
+[?25l[2K[1A[2K[G[32m✔[39m Packing completed successfully!
+[?25h
+[37m📈 Top 5 Files by Character Count and Token Count:[39m
+[2m──────────────────────────────────────────────────[22m
+[37m1. [39m [37m{{cookiecutter.project_name}}/src/{{cookiecutter.project_slug}}/util/todoist.py[39m [2m(17,051 chars, 3,514 tokens)[22m
+[37m2. [39m [37m{{cookiecutter.project_name}}/src/{{cookiecutter.project_slug}}/config.py[39m [2m(14,739 chars, 3,181 tokens)[22m
+[37m3. [39m [37m{{cookiecutter.project_name}}/src/{{cookiecutter.project_slug}}/util/llm.py[39m [2m(11,515 chars, 2,394 tokens)[22m
+[37m4. [39m [37m{{cookiecutter.project_name}}/src/{{cookiecutter.project_slug}}/flows/{{cookiecutter.project_slug}}_flow.py[39m [2m(4,141 chars, 915 tokens)[22m
+[37m5. [39m [37m{{cookiecutter.project_name}}/src/{{cookiecutter.project_slug}}/cli/cli.py[39m [2m(4,138 chars, 859 tokens)[22m
+
+[37m🔎 Security Check:[39m
+[2m──────────────────[22m
+[32m✔[39m [37mNo suspicious files detected.[39m
+
+[37m📊 Pack Summary:[39m
+[2m────────────────[22m
+[37m  Total Files:[39m [37m21[39m files
+[37m  Total Chars:[39m [37m64,665[39m chars
+[37m Total Tokens:[39m [37m14,175[39m tokens
+[37m       Output:[39m [37mrepomix-output.xml[39m
+[37m     Security:[39m [37m[37m✔ No suspicious files detected[37m[39m
+
+[32m🎉 All Done![39m
+[37mYour repository has been successfully packed.[39m
+
+💡 Repomix is now available in your browser! Try it at [4mhttps://repomix.com[24m
+[?25h[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hlls -la[?2004l
+total 160
+drwxr-xr-x@ 12 lherron  staff    384 Apr  5 17:40 [34m.[39;49m[0m
+drwxr-xr-x  68 lherron  staff   2176 Apr  3 13:19 [34m..[39;49m[0m
+drwxr-xr-x@ 14 lherron  staff    448 Apr  5 17:38 [34m.git[39;49m[0m
+-rw-r--r--@  1 lherron  staff   1421 Mar 31 11:51 .gitignore
+drwxr-xr-x@  8 lherron  staff    256 Mar 30 21:10 [34m.venv[39;49m[0m
+drwxr-xr-x   3 lherron  staff     96 Mar 30 21:29 [34m.vscode[39;49m[0m
+-rw-r--r--@  1 lherron  staff    602 Mar 31 09:27 Makefile
+-rw-r--r--@  1 lherron  staff    376 Mar 30 21:31 cookiecutter.json
+-rw-r--r--@  1 lherron  staff  64665 Apr  5 17:40 repomix-output.xml
+drwxr-xr-x@ 10 lherron  staff    320 Apr  5 17:39 [34msimple-calculator[39;49m[0m
+-rw-r--r--@  1 lherron  staff    555 Mar 31 09:29 test_config.json
+drwxr-xr-x@ 10 lherron  staff    320 Mar 31 09:09 [34m{{cookiecutter.project_name}}[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hrrepomix --ignore[?2004l
+error: option '-i, --ignore <patterns>' argument missing
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hrepomix --ignore **/samp   imple-calculator[?2004l
+[2m
+📦 Repomix v0.3.1
+[22m
+[?25l[36m⠙[39m Running security check...
+[?25l[2K[1A[2K[G[36m⠹[39m Calculating metrics...
+[?25l[2K[1A[2K[G[36m⠸[39m Calculating metrics...
+[?25l[2K[1A[2K[G[32m✔[39m Packing completed successfully!
+[?25h
+[37m📈 Top 5 Files by Character Count and Token Count:[39m
+[2m──────────────────────────────────────────────────[22m
+[37m1. [39m [37m{{cookiecutter.project_name}}/src/{{cookiecutter.project_slug}}/util/todoist.py[39m [2m(17,051 chars, 3,514 tokens)[22m
+[37m2. [39m [37m{{cookiecutter.project_name}}/src/{{cookiecutter.project_slug}}/config.py[39m [2m(14,739 chars, 3,181 tokens)[22m
+[37m3. [39m [37m{{cookiecutter.project_name}}/src/{{cookiecutter.project_slug}}/util/llm.py[39m [2m(11,515 chars, 2,394 tokens)[22m
+[37m4. [39m [37m{{cookiecutter.project_name}}/src/{{cookiecutter.project_slug}}/flows/{{cookiecutter.project_slug}}_flow.py[39m [2m(4,141 chars, 915 tokens)[22m
+[37m5. [39m [37m{{cookiecutter.project_name}}/src/{{cookiecutter.project_slug}}/cli/cli.py[39m [2m(4,138 chars, 859 tokens)[22m
+
+[37m🔎 Security Check:[39m
+[2m──────────────────[22m
+[32m✔[39m [37mNo suspicious files detected.[39m
+
+[37m📊 Pack Summary:[39m
+[2m────────────────[22m
+[37m  Total Files:[39m [37m21[39m files
+[37m  Total Chars:[39m [37m64,684[39m chars
+[37m Total Tokens:[39m [37m14,179[39m tokens
+[37m       Output:[39m [37mrepomix-output.xml[39m
+[37m     Security:[39m [37m[37m✔ No suspicious files detected[37m[39m
+
+[32m🎉 All Done![39m
+[37mYour repository has been successfully packed.[39m
+
+💡 Repomix is now available in your browser! Try it at [4mhttps://repomix.com[24m
+[?25h[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hrrepomix[?2004l
+[2m
+📦 Repomix v0.3.1
+[22m
+[?25l[36m⠙[39m Running security check...
+[?25l[2K[1A[2K[G[36m⠹[39m Calculating metrics...
+[?25l[2K[1A[2K[G[36m⠸[39m Calculating metrics...
+[?25l[2K[1A[2K[G[32m✔[39m Packing completed successfully!
+[?25h
+[37m📈 Top 5 Files by Character Count and Token Count:[39m
+[2m──────────────────────────────────────────────────[22m
+[37m1. [39m [37m{{cookiecutter.project_name}}/src/{{cookiecutter.project_slug}}/util/todoist.py[39m [2m(17,051 chars, 3,514 tokens)[22m
+[37m2. [39m [37m{{cookiecutter.project_name}}/src/{{cookiecutter.project_slug}}/config.py[39m [2m(14,739 chars, 3,181 tokens)[22m
+[37m3. [39m [37m{{cookiecutter.project_name}}/src/{{cookiecutter.project_slug}}/util/llm.py[39m [2m(11,515 chars, 2,394 tokens)[22m
+[37m4. [39m [37m{{cookiecutter.project_name}}/src/{{cookiecutter.project_slug}}/flows/{{cookiecutter.project_slug}}_flow.py[39m [2m(4,141 chars, 915 tokens)[22m
+[37m5. [39m [37m{{cookiecutter.project_name}}/src/{{cookiecutter.project_slug}}/cli/cli.py[39m [2m(4,138 chars, 859 tokens)[22m
+
+[37m🔎 Security Check:[39m
+[2m──────────────────[22m
+[32m✔[39m [37mNo suspicious files detected.[39m
+
+[37m📊 Pack Summary:[39m
+[2m────────────────[22m
+[37m  Total Files:[39m [37m21[39m files
+[37m  Total Chars:[39m [37m64,665[39m chars
+[37m Total Tokens:[39m [37m14,175[39m tokens
+[37m       Output:[39m [37mrepomix-output.xml[39m
+[37m     Security:[39m [37m[37m✔ No suspicious files detected[37m[39m
+
+[32m🎉 All Done![39m
+[37mYour repository has been successfully packed.[39m
+
+💡 Repomix is now available in your browser! Try it at [4mhttps://repomix.com[24m
+[?25h[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hlless repomix-output.xml[1m [0m[0m [?2004l
+[?1049h[?1h=This file is a merged representation of a subset of the codebase, containing files not matching ignore patterns, c ombined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section fo r a complete list of file paths, including binary files
+- Files matching these patterns are excluded: uv.lock
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+<additional_info>
+
+</additional_info>
+
+</file_summary>
+
+<directory_structure>
+{{cookiecutter.project_name}}/
+  .github/
+    ISSUE_TEMPLATE.md
+  docs/
+  scripts/
+    run_{{cookiecutter.project_slug}}.py
+  src/
+    {{cookiecutter.project_slug}}/
+      cli/
+        __init__.py
+        cli.py
+[7mrepomix-output.xml[27m[K[K/[Kss[Kii[Kmm[Kpp[Kll[Kee[K[K[K[K[K[K[Kcc[Kaa[Kll[Kcc[K[1;1HThis file is a merged representation of a subset of the codebase, containing files not matching ignore patterns, c [2;1Hombined into a single document by Repomix.
+[3;1H
+[4;1H<file_summary>
+[5;1HThis section contains a summary of this file.
+[6;1H
+[7;1H<purpose>
+[8;1HThis file contains a packed representation of the entire repository's contents.
+[9;1HIt is designed to be easily consumable by AI systems for analysis, code review,
+[10;1Hor other automated processes.
+[11;1H</purpose>
+[12;1H
+[13;1H<file_format>
+[14;1HThe content is organized as follows:
+[15;1H1. This summary section
+[16;1H2. Repository information
+[17;1H3. Directory structure
+[18;1H4. Repository files, each consisting of:
+[19;1H  - File path as an attribute
+[20;1H  - Full contents of the file
+[21;1H</file_format>
+[22;1H
+[23;1H<usage_guidelines>
+[24;1H- This file should be treated as read-only. Any changes should be made to the
+[25;1H  original repository files, not this packed version.
+[26;1H- When processing this file, use the file path to distinguish
+[27;1H  between different files in the repository.
+[28;1H- Be aware that this file may contain sensitive information. Handle it with
+[29;1H  the same level of security as you would the original repository.
+[30;1H</usage_guidelines>
+[31;1H
+[32;1H<notes>
+[33;1H- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+[34;1H- Binary files are not included in this packed representation. Please refer to the Repository Structure section fo [35;1Hr a complete list of file paths, including binary files
+[36;1H- Files matching these patterns are excluded: uv.lock
+[37;1H- Files matching patterns in .gitignore are excluded
+[38;1H- Files matching default ignore patterns are excluded
+[39;1H- Files are sorted by Git change count (files with more changes are at the bottom)
+[40;1H</notes>
+[41;1H
+[42;1H<additional_info>
+[43;1H
+[44;1H</additional_info>
+[45;1H
+[46;1H</file_summary>
+[47;1H
+[48;1H<directory_structure>
+[49;1H{{cookiecutter.project_name}}/
+[50;1H  .github/
+[51;1H    ISSUE_TEMPLATE.md
+[52;1H  docs/
+[53;1H  scripts/
+[54;1H    run_{{cookiecutter.project_slug}}.py
+[55;1H  src/
+[56;1H    {{cookiecutter.project_slug}}/
+[57;1H      cli/
+[58;1H        __init__.py
+[59;1H        cli.py
+[60;1H[1;1HThis file is a merged representation of a subset of the codebase, containing files not matching ignore patterns, c [2;1Hombined into a single document by Repomix.
+[3;1H
+[4;1H<file_summary>
+[5;1HThis section contains a summary of this file.
+[6;1H
+[7;1H<purpose>
+[8;1HThis file contains a packed representation of the entire repository's contents.
+[9;1HIt is designed to be easily consumable by AI systems for analysis, code review,
+[10;1Hor other automated processes.
+[11;1H</purpose>
+[12;1H
+[13;1H<file_format>
+[14;1HThe content is organized as follows:
+[15;1H1. This summary section
+[16;1H2. Repository information
+[17;1H3. Directory structure
+[18;1H4. Repository files, each consisting of:
+[19;1H  - File path as an attribute
+[20;1H  - Full contents of the file
+[21;1H</file_format>
+[22;1H
+[23;1H<usage_guidelines>
+[24;1H- This file should be treated as read-only. Any changes should be made to the
+[25;1H  original repository files, not this packed version.
+[26;1H- When processing this file, use the file path to distinguish
+[27;1H  between different files in the repository.
+[28;1H- Be aware that this file may contain sensitive information. Handle it with
+[29;1H  the same level of security as you would the original repository.
+[30;1H</usage_guidelines>
+[31;1H
+[32;1H<notes>
+[33;1H- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+[34;1H- Binary files are not included in this packed representation. Please refer to the Repository Structure section fo [35;1Hr a complete list of file paths, including binary files
+[36;1H- Files matching these patterns are excluded: uv.lock
+[37;1H- Files matching patterns in .gitignore are excluded
+[38;1H- Files matching default ignore patterns are excluded
+[39;1H- Files are sorted by Git change count (files with more changes are at the bottom)
+[40;1H</notes>
+[41;1H
+[42;1H<additional_info>
+[43;1H
+[44;1H</additional_info>
+[45;1H
+[46;1H</file_summary>
+[47;1H
+[48;1H<directory_structure>
+[49;1H{{cookiecutter.project_name}}/
+[50;1H  .github/
+[51;1H    ISSUE_TEMPLATE.md
+[52;1H  docs/
+[53;1H  scripts/
+[54;1H    run_{{cookiecutter.project_slug}}.py
+[55;1H  src/
+[56;1H    {{cookiecutter.project_slug}}/
+[57;1H      cli/
+[58;1H        __init__.py
+[59;1H        cli.py
+[60;1H...skipping...
+          "project_name": "simple-[7mcalc[27mulator",
+          "project_slug": "[7mcalc[27m",
+          "github_username": "lherron",
+          "description": "A description of my awesome package"
+      }                                                                                                                                                                   
+  }
+</file>
+
+<file path="Makefile">
+BAKE_OPTIONS=--no-input
+
+help:
+        @echo "bake     Generate project using defaults"
+        @echo "help     Show this help"
+        @echo "test     Run the tests"
+        @echo "replay   Replay last cookiecutter run and watch for changes"
+        @echo "watch    Generate project using defaults and watch for changes"
+        
+
+bake:  # Generate project using defaults
+        cookiecutter --config-file test_config.json $(BAKE_OPTIONS) . --overwrite-if-exists
+
+watch: bake
+        watchmedo shell-command -p '*.*' -c 'make bake -e BAKE_OPTIONS=$(BAKE_OPTIONS)' -W -R -D \{{cookiecutter.p roject_name}}/
+
+replay: BAKE_OPTIONS=--replay
+replay: watch
+        ;
+
+test:
+        pytest
+</file>
+
+<file path=".gitignore">
+# Byte-compiled / optimized / DLL files
+simple-[7mcalc[27mulator/
+my-awesome-package/
+my_awesome_package/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# OSX useful to ignore
+*.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+:[K[K/[K.com.apple.timemachine.donotpresent
+:[K[K/[K
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+.env
+env/
+venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+:[K[K/[K[K[7mPattern not found  (press RETURN)[27m[60;1H[K[K/[K[K[7mPattern not found  (press RETURN)[27m[60;1H[K[K/[K[K[7mPattern not found  (press RETURN)[27m[60;1H[K[K/[K[K[7mPattern not found  (press RETURN)[27m[60;1H[K[K
+:[K[K# Installer logs
+:[K[K[HMmy-awesome-package/
+[60;1H[K:[K[K[HMsimple-[7mcalc[27mulator/
+[60;1H[K:[K[K[HM# Byte-compiled / optimized / DLL files
+[60;1H[K:[K[K[HM<file path=".gitignore">
+[60;1H[K:[K[K[?1l>[?1049l[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hless repomix-output.xml[23Drepomix                [16D --ignore **/simple-calculator[P[17C [18D[P[17C [18D[P[17C [18D[?2004l
+[2m
+📦 Repomix v0.3.1
+[22m
+[?25l[36m⠙[39m Running security check...
+[?25l[2K[1A[2K[G[36m⠹[39m Calculating metrics...
+[?25l[2K[1A[2K[G[36m⠸[39m Calculating metrics...
+[?25l[2K[1A[2K[G[32m✔[39m Packing completed successfully!
+[?25h
+[37m📈 Top 5 Files by Character Count and Token Count:[39m
+[2m──────────────────────────────────────────────────[22m
+[37m1. [39m [37m{{cookiecutter.project_name}}/src/{{cookiecutter.project_slug}}/util/todoist.py[39m [2m(17,051 chars, 3,514 tokens)[22m
+[37m2. [39m [37m{{cookiecutter.project_name}}/src/{{cookiecutter.project_slug}}/config.py[39m [2m(14,739 chars, 3,181 tokens)[22m
+[37m3. [39m [37m{{cookiecutter.project_name}}/src/{{cookiecutter.project_slug}}/util/llm.py[39m [2m(11,515 chars, 2,394 tokens)[22m
+[37m4. [39m [37m{{cookiecutter.project_name}}/src/{{cookiecutter.project_slug}}/flows/{{cookiecutter.project_slug}}_flow.py[39m [2m(4,141 chars, 915 tokens)[22m
+[37m5. [39m [37m{{cookiecutter.project_name}}/src/{{cookiecutter.project_slug}}/cli/cli.py[39m [2m(4,138 chars, 859 tokens)[22m
+
+[37m🔎 Security Check:[39m
+[2m──────────────────[22m
+[32m✔[39m [37mNo suspicious files detected.[39m
+
+[37m📊 Pack Summary:[39m
+[2m────────────────[22m
+[37m  Total Files:[39m [37m21[39m files
+[37m  Total Chars:[39m [37m64,684[39m chars
+[37m Total Tokens:[39m [37m14,179[39m tokens
+[37m       Output:[39m [37mrepomix-output.xml[39m
+[37m     Security:[39m [37m[37m✔ No suspicious files detected[37m[39m
+
+[32m🎉 All Done![39m
+[37mYour repository has been successfully packed.[39m
+
+💡 Repomix is now available in your browser! Try it at [4mhttps://repomix.com[24m
+[?25h[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hlls[?2004l
+Makefile                      repomix-output.xml            test_config.json
+cookiecutter.json             [34msimple-calculator[39;49m[0m             [34m{{cookiecutter.project_name}}[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hlless ../evai-cli[1m/[0m[0m/r .rem o p[?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hlless ../email-triage-agent[1m/[0m[0m/./repomix-output.                repo   [?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hlless ../enw   new-project-pipeline[1m/[0m[0m/./ repomixignore[1m [0m[0m [?2004l
+[?1049h[?1h=**/spec-*.txt
+samples/**
+[7m../new-project-pipeline/.repomixignore (END)[27m[K[K[K[7m(END)[27m[K[K[K[7m(END)[27m[K[K[?1l>[?1049l[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hccp ../new-project-pipeline[1m/[0m[0m/.p repomixignore[1m [0m[0m [?2004l
+usage: cp [-R [-H | -L | -P]] [-fi | -n] [-aclpSsvXx] source_file target_file
+       cp [-R [-H | -L | -P]] [-fi | -n] [-aclpSsvXx] source_file ... target_directory
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hvviv  cp ../new-project-pipeline/.repomixignore .[?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hvvi .repomixignore[1m [0m[0m [?2004l
+[?1006;1000h[?1002h[?1049h[=1;1u[?1h=[?2004h[?1004h[1;60r[?12h[?12l[22;2t[22;1t[27m[23m[29m[m[H[2J[?25l[60;1H".repomixignore" 2L, 25B[2;1H▽[6n[2;1H  [3;1HPzz\[0%m[6n[3;1H           [1;1H[>c]10;?]11;?[1;1H**/spec-*.txt
+samples/**[2;11H[K[3;1H[94m~                                                                                                                 [4;1H~                                                                                                                 [5;1H~                                                                                                                 [6;1H~                                                                                                                 [7;1H~                                                                                                                 [8;1H~                                                                                                                 [9;1H~                                                                                                                 [10;1H~                                                                                                                 [11;1H~                                                                                                                 [12;1H~                                                                                                                 [13;1H~                                                                                                                 [14;1H~                                                                                                                 [15;1H~                                                                                                                 [16;1H~                                                                                                                 [17;1H~                                                                                                                 [18;1H~                                                                                                                 [19;1H~                                                                                                                 [20;1H~                                                                                                                 [21;1H~                                                                                                                 [22;1H~                                                                                                                 [23;1H~                                                                                                                 [24;1H~                                                                                                                 [25;1H~                                                                                                                 [26;1H~                                                                                                                 [27;1H~                                                                                                                 [28;1H~                                                                                                                 [29;1H~                                                                                                                 [30;1H~                                                                                                                 [31;1H~                                                                                                                 [32;1H~                                                                                                                 [33;1H~                                                                                                                 [34;1H~                                                                                                                 [35;1H~                                                                                                                 [36;1H~                                                                                                                 [37;1H~                                                                                                                 [38;1H~                                                                                                                 [39;1H~                                                                                                                 [40;1H~                                                                                                                 [41;1H~                                                                                                                 [42;1H~                                                                                                                 [43;1H~                                                                                                                 [44;1H~                                                                                                                 [45;1H~                                                                                                                 [46;1H~                                                                                                                 [47;1H~                                                                                                                 [48;1H~                                                                                                                 [49;1H~                                                                                                                 [50;1H~                                                                                                                 [51;1H~                                                                                                                 [52;1H~                                                                                                                 [53;1H~                                                                                                                 [54;1H~                                                                                                                 [55;1H~                                                                                                                 [56;1H~                                                                                                                 [57;1H~                                                                                                                 [58;1H~                                                                                                                 [59;1H~                                                                                                                 [m[60;97H1,1[11CAll[1;1H[?25h[?u[?12$p[?25l[60;87H/[1;1H[60;88H2[1;1H[60;89Hc[1;1H[60;90H2[1;1H[60;91Hc[1;1H[60;92H/[1;1H[60;93H3[1;1H[60;94H4[1;1H[60;95H3[1;1H[60;96H4[1;1H[60;87H          [1;1H[27m[23m[29m[m[H[2J[1;1H**/spec-*.txt
+samples/**
+[94m~                                                                                                                 [4;1H~                                                                                                                 [5;1H~                                                                                                                 [6;1H~                                                                                                                 [7;1H~                                                                                                                 [8;1H~                                                                                                                 [9;1H~                                                                                                                 [10;1H~                                                                                                                 [11;1H~                                                                                                                 [12;1H~                                                                                                                 [13;1H~                                                                                                                 [14;1H~                                                                                                                 [15;1H~                                                                                                                 [16;1H~                                                                                                                 [17;1H~                                                                                                                 [18;1H~                                                                                                                 [19;1H~                                                                                                                 [20;1H~                                                                                                                 [21;1H~                                                                                                                 [22;1H~                                                                                                                 [23;1H~                                                                                                                 [24;1H~                                                                                                                 [25;1H~                                                                                                                 [26;1H~                                                                                                                 [27;1H~                                                                                                                 [28;1H~                                                                                                                 [29;1H~                                                                                                                 [30;1H~                                                                                                                 [31;1H~                                                                                                                 [32;1H~                                                                                                                 [33;1H~                                                                                                                 [34;1H~                                                                                                                 [35;1H~                                                                                                                 [36;1H~                                                                                                                 [37;1H~                                                                                                                 [38;1H~                                                                                                                 [39;1H~                                                                                                                 [40;1H~                                                                                                                 [41;1H~                                                                                                                 [42;1H~                                                                                                                 [43;1H~                                                                                                                 [44;1H~                                                                                                                 [45;1H~                                                                                                                 [46;1H~                                                                                                                 [47;1H~                                                                                                                 [48;1H~                                                                                                                 [49;1H~                                                                                                                 [50;1H~                                                                                                                 [51;1H~                                                                                                                 [52;1H~                                                                                                                 [53;1H~                                                                                                                 [54;1H~                                                                                                                 [55;1H~                                                                                                                 [56;1H~                                                                                                                 [57;1H~                                                                                                                 [58;1H~                                                                                                                 [59;1H~                                                                                                                 [m[60;97H1,1[11CAll".repomixignore" 2L, 25B[1;1H[?25h[?25l[60;87Hj[1;1H[60;87H [2;1H[60;97H2[2;1H[?25h[?25l[60;87HA[2;1H[60;87H [2;11H[60;1H[1m-- INSERT --[m[60;13H[K[60;97H2,11[10CAll[2;11H[?25h[?25l[3;1H[K[60;97H3,1 [3;1H[?25h[?25ls[60;99H2[3;2H[?25h[?25li[60;99H3[3;3H[?25h[?25lm[60;99H4[3;4H[?25h[?25lp[60;99H5[3;5H[?25h[?25ll[60;99H6[3;6H[?25h[?25le[60;99H7[3;7H[?25h[?25l-[60;99H8[3;8H[?25h[?25lc[60;99H9[3;9H[?25h[?25la[60;99H10[3;10H[?25h[?25ll[60;100H1[3;11H[?25h[?25lc[60;100H2[3;12H[?25h[?25lu[60;100H3[3;13H[?25h[?25ll[60;100H4[3;14H[?25h[?25la[60;100H5[3;15H[?25h[?25lt[60;100H6[3;16H[?25h[?25lo[60;100H7[3;17H[?25h[?25lr[60;100H8[3;18H[?25h[?25l/[60;100H9[3;19H[?25h[?25l*[60;99H20[3;20H[?25h[?25l*[60;100H1[3;21H[?25h[?25l[60;1H[K[60;97H3,20[10CAll[3;20H[?25h[?25l[60;87H:[3;20H[60;87H[K[60;1H:[?25hwq[?25l[?1006;1000l[?1002l[?2004l[>4;m[=0;1u".repomixignore" 3L, 46B written[23;2t[23;1t
+[?1004l[?2004l[?1l>[>4;m[=0;1u[?1049l[?25h[>4;m[=0;1u[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hlls[?2004l
+Makefile                      repomix-output.xml            test_config.json
+cookiecutter.json             [34msimple-calculator[39;49m[0m             [34m{{cookiecutter.project_name}}[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hrrm repomix-output.xml[1m [0m[0m [?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hrrepomix[?2004l
+[2m
+📦 Repomix v0.3.1
+[22m
+[?25l[36m⠙[39m Running security check...
+[?25l[2K[1A[2K[G[36m⠹[39m Calculating metrics...
+[?25l[2K[1A[2K[G[36m⠸[39m Calculating metrics...
+[?25l[2K[1A[2K[G[32m✔[39m Packing completed successfully!
+[?25h
+[37m📈 Top 5 Files by Character Count and Token Count:[39m
+[2m──────────────────────────────────────────────────[22m
+[37m1. [39m [37m{{cookiecutter.project_name}}/src/{{cookiecutter.project_slug}}/util/todoist.py[39m [2m(17,051 chars, 3,514 tokens)[22m
+[37m2. [39m [37m{{cookiecutter.project_name}}/src/{{cookiecutter.project_slug}}/config.py[39m [2m(14,739 chars, 3,181 tokens)[22m
+[37m3. [39m [37m{{cookiecutter.project_name}}/src/{{cookiecutter.project_slug}}/util/llm.py[39m [2m(11,515 chars, 2,394 tokens)[22m
+[37m4. [39m [37m{{cookiecutter.project_name}}/src/{{cookiecutter.project_slug}}/flows/{{cookiecutter.project_slug}}_flow.py[39m [2m(4,141 chars, 915 tokens)[22m
+[37m5. [39m [37m{{cookiecutter.project_name}}/src/{{cookiecutter.project_slug}}/cli/cli.py[39m [2m(4,138 chars, 859 tokens)[22m
+
+[37m🔎 Security Check:[39m
+[2m──────────────────[22m
+[32m✔[39m [37mNo suspicious files detected.[39m
+
+[37m📊 Pack Summary:[39m
+[2m────────────────[22m
+[37m  Total Files:[39m [37m22[39m files
+[37m  Total Chars:[39m [37m64,764[39m chars
+[37m Total Tokens:[39m [37m14,205[39m tokens
+[37m       Output:[39m [37mrepomix-output.xml[39m
+[37m     Security:[39m [37m[37m✔ No suspicious files detected[37m[39m
+
+[32m🎉 All Done![39m
+[37mYour repository has been successfully packed.[39m
+
+💡 Repomix is now available in your browser! Try it at [4mhttps://repomix.com[24m
+[?25h[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hccd ../email-triage-agent[1m/[0m[0m [?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/email-triage-agent[39m$ [K[?2004hrrepomix[?2004l
+[2m
+📦 Repomix v0.3.1
+[22m
+[?25l[36m⠙[39m Running security check...
+[?25l[2K[1A[2K[G[36m⠹[39m Calculating metrics...
+[?25l[2K[1A[2K[G[36m⠸[39m Calculating metrics...
+[?25l[2K[1A[2K[G[32m✔[39m Packing completed successfully!
+[?25h
+[37m📈 Top 5 Files by Character Count and Token Count:[39m
+[2m──────────────────────────────────────────────────[22m
+[37m1. [39m [37msrc/email_triage/util/fastmail_client.py[39m [2m(25,744 chars, 4,712 tokens)[22m
+[37m2. [39m [37msrc/email_triage/config.py[39m [2m(17,797 chars, 3,891 tokens)[22m
+[37m3. [39m [37mdocs/evai_example.txt[39m [2m(15,168 chars, 3,255 tokens)[22m
+[37m4. [39m [37msrc/email_triage/email_triage.py[39m [2m(12,286 chars, 2,426 tokens)[22m
+[37m5. [39m [37moutput/code_highlighting_test.html[39m [2m(11,074 chars, 2,946 tokens)[22m
+
+[37m🔎 Security Check:[39m
+[2m──────────────────[22m
+[32m✔[39m [37mNo suspicious files detected.[39m
+
+[37m📊 Pack Summary:[39m
+[2m────────────────[22m
+[37m  Total Files:[39m [37m42[39m files
+[37m  Total Chars:[39m [37m201,238[39m chars
+[37m Total Tokens:[39m [37m44,444[39m tokens
+[37m       Output:[39m [37mrepomix-output.xml[39m
+[37m     Security:[39m [37m[37m✔ No suspicious files detected[37m[39m
+
+[32m🎉 All Done![39m
+[37mYour repository has been successfully packed.[39m
+
+💡 Repomix is now available in your browser! Try it at [4mhttps://repomix.com[24m
+[?25h[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/email-triage-agent[39m$ [K[?2004hlls[?2004l
+CLAUDE.md           config.yaml.sample  pytest.ini          servers_config.json
+README.md           [34mdocs[39;49m[0m                repomix-output.txt  [34msrc[39;49m[0m
+codehilite.css      [34moutput[39;49m[0m              repomix-output.xml  [34mtests[39;49m[0m
+config.yaml         pyproject.toml      [34mscripts[39;49m[0m             uv.lock
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/email-triage-agent[39m$ [K[?2004hggit staut  tus[?2004l
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	[31mrepomix-output.xml[m
+
+nothing added to commit but untracked files present (use "git add" to track)
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/email-triage-agent[39m$ [K[?2004hvvi .gitignore[1m [0m[0m [?2004l
+[?1006;1000h[?1002h[?1049h[=1;1u[?1h=[?2004h[?1004h[1;60r[?12h[?12l[22;2t[22;1t[27m[23m[29m[m[H[2J[?25l[60;1H".gitignore" 94L, 1295B[2;1H▽[6n[2;1H  [3;1HPzz\[0%m[6n[3;1H           [1;1H[>c]10;?]11;?[1;1H[34m#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.[m[2;80H[K[3;1H[34m# Byte-compiled / optimized / DLL files[m[3;40H[K[4;1H[34m# C extensions
+# Dask worker cache
+# Distribution / packaging
+# Django stuff:
+# Flask stuff:
+# IDE
+# IDE settings
+# Installer logs
+# Jupyter Notebook
+# PyBuilder
+# PyInstaller
+# Python
+# Rope project settings
+# SQLite
+# SageMath parsed files
+# Scrapy stuff:
+# Sphinx documentation
+# Spyder project settings
+# Translations
+# Unit test / coverage reports
+# Virtual Environments
+# celery beat schedule file
+# dotenv
+# mkdocs documentation
+# mypy
+# pyenv
+# virtualenv[m
+[35m*[m$py.class
+[35m*[m.cover
+[35m*[m.db
+[35m*[m.egg
+[35m*[m.egg-info[35m/
+*[m.log
+[35m*[m.manifest
+[35m*[m.mo
+[35m*[m.pot
+[35m*[m.py[35m[cod]
+*[m.sage.py
+[35m*[m.so
+[35m*[m.spec
+[35m*[m.swo
+[35m*[m.swp
+.Python
+.cache
+.coverage
+.coverage.[35m*[m
+.eggs[35m/[m
+.env
+.hypothesis[35m/[m
+.idea[35m/[m
+.installed.cfg
+.ipynb_checkpoints
+.mypy_cache[35m/[m
+.pytest_cache[35m/[m
+.python-version
+.ropeproject[60;97H1,1[11CTop[1;1H[?25h[?u[?12$p[?25l[60;87H/[1;1H[60;88H2[1;1H[60;89Hc[1;1H[60;90H2[1;1H[60;91Hc[1;1H[60;92H/[1;1H[60;93H3[1;1H[60;94H4[1;1H[60;95H3[1;1H[60;96H4[1;1H[60;87H          [1;1H[27m[23m[29m[m[H[2J[1;1H[96m#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+# Byte-compiled / optimized / DLL files
+# C extensions
+# Dask worker cache
+# Distribution / packaging
+# Django stuff:
+# Flask stuff:
+# IDE
+# IDE settings
+# Installer logs
+# Jupyter Notebook
+# PyBuilder
+# PyInstaller
+# Python
+# Rope project settings
+# SQLite
+# SageMath parsed files
+# Scrapy stuff:
+# Sphinx documentation
+# Spyder project settings
+# Translations
+# Unit test / coverage reports
+# Virtual Environments
+# celery beat schedule file
+# dotenv
+# mkdocs documentation
+# mypy
+# pyenv
+# virtualenv[m
+[38;5;224m*[m$py.class
+[38;5;224m*[m.cover
+[38;5;224m*[m.db
+[38;5;224m*[m.egg
+[38;5;224m*[m.egg-info[38;5;224m/
+*[m.log
+[38;5;224m*[m.manifest
+[38;5;224m*[m.mo
+[38;5;224m*[m.pot
+[38;5;224m*[m.py[38;5;224m[cod]
+*[m.sage.py
+[38;5;224m*[m.so
+[38;5;224m*[m.spec
+[38;5;224m*[m.swo
+[38;5;224m*[m.swp
+.Python
+.cache
+.coverage
+.coverage.[38;5;224m*[m
+.eggs[38;5;224m/[m
+.env
+.hypothesis[38;5;224m/[m
+.idea[38;5;224m/[m
+.installed.cfg
+.ipynb_checkpoints
+.mypy_cache[38;5;224m/[m
+.pytest_cache[38;5;224m/[m
+.python-version
+.ropeproject[60;97H1,1[11CTop".gitignore" 94L, 1295B[1;1H[?25h[?25l[60;87H/[1;1H[60;1H[K[60;1H/[?25hr[?25l[1;25H[7m[96mr[m[60;97H1,25[10CTop[60;97H[K[60;3H[?25he[?25l[1;26H[7m[96me[m[60;97H1,25[10CTop[60;97H[K[60;4H[?25hp[?25l[1;25H[96mre[m[23;24H[7m[96mrep[m[60;97H23,24[9CTop[60;97H[K[60;5H[?25ho[?25l[23;27H[7m[96mo[m[60;97H23,24[9CTop[60;97H[K[60;6H[?25hm[?25l[23;24H[96mrepo[m[60;97H1,1[11CTop[60;97H[K[60;7H[?25hi[?25l[89C1,1[11CTop[60;97H[K[60;8H[?25hx[?25l[88C1,1[11CTop[60;97H[K[60;9H[?25h[?25l[38;5;224msearch hit BOTTOM, continuing at TOP[m[97m[41mE486: Pattern not found: repomix[m[60;33H[K[1;1H[60;97H1,1[11CTop[1;1H[?25h[?25l[60;87H^M[1;1H[60;87H  [2;1H[60;97H2[2;1H[?25h[?25l[60;87Hj[2;1H[60;87H [3;1H[60;97H3[3;1H[?25h[?25l[60;87Hj[3;1H[60;87H [4;1H[60;97H4[4;1H[?25h[?25l[60;87Hj[4;1H[60;87H [5;1H[60;97H5[5;1H[?25h[?25l[60;87Hj[5;1H[60;87H [6;1H[60;97H6[6;1H[?25h[?25l[60;87Hj[6;1H[60;87H [7;1H[60;97H7[7;1H[?25h[?25l[60;87Hj[7;1H[60;87H [8;1H[60;97H8[8;1H[?25h[?25l[60;87Hj[8;1H[60;87H [9;1H[60;97H9[9;1H[?25h[?25l[60;87Hj[9;1H[60;87H [10;1H[60;97H10,1[10;1H[?25h[?25l[60;87Hj[10;1H[60;87H [11;1H[60;98H1[11;1H[?25h[?25l[60;87Hj[11;1H[60;87H [12;1H[60;98H2[12;1H[?25h[?25l[60;87Hj[12;1H[60;87H [13;1H[60;98H3[13;1H[?25h[?25l[60;87Hj[13;1H[60;87H [14;1H[60;98H4[14;1H[?25h[?25l[60;87Hj[14;1H[60;87H [15;1H[60;98H5[15;1H[?25h[?25l[60;87Hj[15;1H[60;87H [16;1H[60;98H6[16;1H[?25h[?25l[60;87Hj[16;1H[60;87H [17;1H[60;98H7[17;1H[?25h[?25l[60;87Hj[17;1H[60;87H [18;1H[60;98H8[18;1H[?25h[?25l[60;87Hj[18;1H[60;87H [19;1H[60;98H9[19;1H[?25h[?25l[60;87Hj[19;1H[60;87H [20;1H[60;97H20[20;1H[?25h[?25l[60;87Hj[20;1H[60;87H [21;1H[60;98H1[21;1H[?25h[?25l[60;87Hj[21;1H[60;87H [22;1H[60;98H2[22;1H[?25h[?25l[60;87Hj[22;1H[60;87H [23;1H[60;98H3[23;1H[?25h[?25l[60;87Hj[23;1H[60;87H [24;1H[60;98H4[24;1H[?25h[?25l[60;87Hj[24;1H[60;87H [25;1H[60;98H5[25;1H[?25h[?25l[60;87Hj[25;1H[60;87H [26;1H[60;98H6[26;1H[?25h[?25l[60;87Hj[26;1H[60;87H [27;1H[60;98H7[27;1H[?25h[?25l[60;87Hj[27;1H[60;87H [28;1H[60;98H8[28;1H[?25h[?25l[60;87Hj[28;1H[60;87H [29;1H[60;98H9[29;1H[?25h[?25l[60;87Hj[29;1H[60;87H [30;1H[60;97H30[30;1H[?25h[?25l[60;87H:[30;1H[60;1H[K[60;1H:[?25hq[?25l[?1006;1000l[?1002l[?2004l[>4;m[=0;1u[23;2t[23;1t[60;1H[K[60;1H[?1004l[?2004l[?1l>[>4;m[=0;1u[?1049l[?25h[>4;m[=0;1u[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/email-triage-agent[39m$ [K[?2004hvi .gitignore[?2004l
+[?1006;1000h[?1002h[?1049h[=1;1u[?1h=[?2004h[?1004h[1;60r[?12h[?12l[22;2t[22;1t[27m[23m[29m[m[H[2J[?25l[60;1H".gitignore" 94L, 1295B[2;1H▽[6n[2;1H  [3;1HPzz\[0%m[6n[3;1H           [1;1H[>c]10;?]11;?[1;1H[34m#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.[m[2;80H[K[3;1H[34m# Byte-compiled / optimized / DLL files[m[3;40H[K[4;1H[34m# C extensions
+# Dask worker cache
+# Distribution / packaging
+# Django stuff:
+# Flask stuff:
+# IDE
+# IDE settings
+# Installer logs
+# Jupyter Notebook
+# PyBuilder
+# PyInstaller
+# Python
+# Rope project settings
+# SQLite
+# SageMath parsed files
+# Scrapy stuff:
+# Sphinx documentation
+# Spyder project settings
+# Translations
+# Unit test / coverage reports
+# Virtual Environments
+# celery beat schedule file
+# dotenv
+# mkdocs documentation
+# mypy
+# pyenv
+# virtualenv[m
+[35m*[m$py.class
+[35m*[m.cover
+[35m*[m.db
+[35m*[m.egg
+[35m*[m.egg-info[35m/
+*[m.log
+[35m*[m.manifest
+[35m*[m.mo
+[35m*[m.pot
+[35m*[m.py[35m[cod]
+*[m.sage.py
+[35m*[m.so
+[35m*[m.spec
+[35m*[m.swo
+[35m*[m.swp
+.Python
+.cache
+.coverage
+.coverage.[35m*[m
+.eggs[35m/[m
+.env
+.hypothesis[35m/[m
+.idea[35m/[m
+.installed.cfg
+.ipynb_checkpoints
+.mypy_cache[35m/[m
+.pytest_cache[35m/[m
+.python-version
+.ropeproject[60;97H30,1[10CTop[30;1H[?25h[?u[?12$p[?25l[60;87H/[30;1H[60;88H2[30;1H[60;89Hc[30;1H[60;90H2[30;1H[60;91Hc[30;1H[60;92H/[30;1H[60;93H3[30;1H[60;94H4[30;1H[60;95H3[30;1H[60;96H4[30;1H[60;87H          [30;1H[27m[23m[29m[m[H[2J[1;1H[96m#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+# Byte-compiled / optimized / DLL files
+# C extensions
+# Dask worker cache
+# Distribution / packaging
+# Django stuff:
+# Flask stuff:
+# IDE
+# IDE settings
+# Installer logs
+# Jupyter Notebook
+# PyBuilder
+# PyInstaller
+# Python
+# Rope project settings
+# SQLite
+# SageMath parsed files
+# Scrapy stuff:
+# Sphinx documentation
+# Spyder project settings
+# Translations
+# Unit test / coverage reports
+# Virtual Environments
+# celery beat schedule file
+# dotenv
+# mkdocs documentation
+# mypy
+# pyenv
+# virtualenv[m
+[38;5;224m*[m$py.class
+[38;5;224m*[m.cover
+[38;5;224m*[m.db
+[38;5;224m*[m.egg
+[38;5;224m*[m.egg-info[38;5;224m/
+*[m.log
+[38;5;224m*[m.manifest
+[38;5;224m*[m.mo
+[38;5;224m*[m.pot
+[38;5;224m*[m.py[38;5;224m[cod]
+*[m.sage.py
+[38;5;224m*[m.so
+[38;5;224m*[m.spec
+[38;5;224m*[m.swo
+[38;5;224m*[m.swp
+.Python
+.cache
+.coverage
+.coverage.[38;5;224m*[m
+.eggs[38;5;224m/[m
+.env
+.hypothesis[38;5;224m/[m
+.idea[38;5;224m/[m
+.installed.cfg
+.ipynb_checkpoints
+.mypy_cache[38;5;224m/[m
+.pytest_cache[38;5;224m/[m
+.python-version
+.ropeproject[60;97H30,1[10CTop".gitignore" 94L, 1295B[30;1H[?25h[?25l[60;87Hi[30;1H[60;87H [30;1H[60;1H[1m-- INSERT --[m[60;14H[K[60;97H30,1[10CTop[30;1H[?25h[?25lr# virtualenv[60;100H2[30;2H[?25h[?25le# virtualenv[60;100H3[30;3H[?25h[?25lp# virtualenv[60;100H4[30;4H[?25h[?25lo# virtualenv[60;100H5[30;5H[?25h[?25lm# virtualenv[60;100H6[30;6H[?25h[?25li# virtualenv[60;100H7[30;7H[?25h[?25lx# virtualenv[60;100H8[30;8H[?25h[?25l-# virtualenv[60;100H9[30;9H[?25h[?25lo# virtualenv[60;100H10[30;10H[?25h[?25lu# virtualenv[60;101H1[30;11H[?25h[?25lt# virtualenv[60;101H2[30;12H[?25h[?25lp# virtualenv[60;101H3[30;13H[?25h[?25lu# virtualenv[60;101H4[30;14H[?25h[?25lt# virtualenv[60;101H5[30;15H[?25h[?25l.# virtualenv[60;101H6[30;16H[?25h[?25lx# virtualenv[60;101H7[30;17H[?25h[?25lm# virtualenv[60;101H8[30;18H[?25h[?25ll# virtualenv[60;101H9[30;19H[?25h[?25l[31;59r[31;1H[L[1;60r[30;19H[K[31;1H[96m# virtualenv[m[60;97H[K[60;97H31,1[10CTop[31;1H[?25h[?25l[60;1H[K[60;97H31,1[10CTop[31;1H[?25h[?25l[60;87Hk[31;1H[60;87H [30;1H[60;98H0[30;1H[?25h[?25l[60;87Hk[30;1H[60;87H [29;1H[60;97H29[29;1H[?25h[?25l[60;87H/[29;1H[60;87H[K[60;1H/[?25he[?25l[29;5H[7m[96me[m[60;97H29,5[10CTop[60;97H[K[60;3H[?25hn[?25l[29;6H[7m[96mn[m[60;97H29,5[10CTop[60;97H[K[60;4H[?25hv[?25l[29;7H[7m[96mv[m[60;97H29,5[10CTop[60;97H[K[60;5H[?25hn[?25l[29;5H[96menv[m[60;97H29,1[10CTop[60;97H[K[60;6H[?25h[?25l[60;5H[K[29;5H[7m[96menv[m[60;97H29,5[10CTop[60;97H[K[60;5H[?25h[?25l[29;5H[96menv[m[60;97H29,5[10CTop[29;5H[?25h[?25l[60;87Hn[29;5H[60;87H[K[60;1H[31;10H[60;97H31,10[9CTop[31;10H[?25h[?25l[60;87Hn[31;10H[60;87H[K[60;1H[52;2H[60;97H52,2[10CTop[52;2H[?25h[?25l[60;87Hn[52;2H[60;87H[K[60;1H[54;3H[1;59r[1;1H[11M[1;60r[49;1H.ropeproject
+.scrapy
+.spyderproject
+.spyproject
+.tox[38;5;224m/[m
+.venv
+.vscode[38;5;224m/[m
+.webassets-cache
+[38;5;224m/[msite
+ENV[38;5;224m/[m
+MANIFEST[60;1H[K[60;97H65,3[10C30%[54;3H[?25h[?25l[60;87H:[54;3H[60;87H[K[60;1H:[?25hq[?25l[97m[41mE37: No write since last change (add ! to override)[54;3H[m[60;97H65,3[10C30%[54;3H[?25h[?25l[60;87H:[54;3H[60;1H[K[60;1H:[?25hwq[?25l[?1006;1000l[?1002l[?2004l[>4;m[=0;1u".gitignore" 95L, 1314B written[23;2t[23;1t
+[?1004l[?2004l[?1l>[>4;m[=0;1u[?1049l[?25h[>4;m[=0;1u[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/email-triage-agent[39m$ [K[?2004hlls[?2004l
+CLAUDE.md           config.yaml.sample  pytest.ini          servers_config.json
+README.md           [34mdocs[39;49m[0m                repomix-output.txt  [34msrc[39;49m[0m
+codehilite.css      [34moutput[39;49m[0m              repomix-output.xml  [34mtests[39;49m[0m
+config.yaml         pyproject.toml      [34mscripts[39;49m[0m             uv.lock
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/email-triage-agent[39m$ [K[?2004hccheckin[?2004l
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	[31mmodified:   .gitignore[m
+
+no changes added to commit (use "git add" and/or "git commit -a")
+The following paths are ignored by one of your .gitignore files:
+repomix-output.xml
+[main 11fd3af] Updated
+ 1 file changed, 1 insertion(+)
+Enumerating objects: 5, done.
+Counting objects:  20% (1/5)Counting objects:  40% (2/5)Counting objects:  60% (3/5)Counting objects:  80% (4/5)Counting objects: 100% (5/5)Counting objects: 100% (5/5), done.
+Delta compression using up to 16 threads
+Compressing objects:  33% (1/3)Compressing objects:  66% (2/3)Compressing objects: 100% (3/3)Compressing objects: 100% (3/3), done.
+Writing objects:  33% (1/3)Writing objects:  66% (2/3)Writing objects: 100% (3/3)Writing objects: 100% (3/3), 307 bytes | 307.00 KiB/s, done.
+Total 3 (delta 2), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas:   0% (0/2)[Kremote: Resolving deltas:  50% (1/2)[Kremote: Resolving deltas: 100% (2/2)[Kremote: Resolving deltas: 100% (2/2), completed with 2 local objects.[K
+To github.com:lherron/email-triage-agent
+   7f8b0c2..11fd3af  main -> main
+On branch main
+Your branch is up to date with 'origin/main'.
+
+nothing to commit, working tree clean
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/email-triage-agent[39m$ [K[?2004hccd ..[?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects[39m$ [K[?2004hlls[?2004l
+DevStack.md               [34mflux_loras[39;49m[0m                [34mmemui[39;49m[0m                     string_normalizer.py
+[34maudiopearl-adminui[39;49m[0m        [34mgairecurrence[39;49m[0m             [34mmemui-bak[39;49m[0m                 [34mtest[39;49m[0m
+[34maws-infra[39;49m[0m                 [34mgemini-testing[39;49m[0m            [34mnew-project-pipeline[39;49m[0m      [34mtest-playwright[39;49m[0m
+[34mbike-training[39;49m[0m             [34mhelloapi[39;49m[0m                  [34mnextjs-starter[39;49m[0m            test_string_normalizer.py
+[34mbuilderbase[39;49m[0m               [34mhomebrew-evai[39;49m[0m             [34mnlrecurrence[39;49m[0m              [34mtimeblocker[39;49m[0m
+[34mclaude-artifacts[39;49m[0m          [34mhsdecks[39;49m[0m                   [34mnormalizer[39;49m[0m                [34mtodoist-ideation-agent[39;49m[0m
+[34mclaude-engineer[39;49m[0m           [34mideation-workflows[39;49m[0m        [34mold-evai-cli[39;49m[0m              [34mtraining_pics[39;49m[0m
+[34mcookiecutter-pyagent[39;49m[0m      [34mifhelix[39;49m[0m                   [34mpodthing[39;49m[0m                  [34mtts-audio-chunking[39;49m[0m
+[34mdevtools[39;49m[0m                  [34mmactools[39;49m[0m                  [34mpodthing-bak[39;49m[0m              [34mtts-websocket[39;49m[0m
+[34mdiscordlogs[39;49m[0m               [31mmakebtn.sh[39;49m[0m                [34mpoesage[39;49m[0m                   [34munhobbled-blog[39;49m[0m
+[34mdomainsearch[39;49m[0m              [31mmakegairecurrence.sh[39;49m[0m      [34mqwen25-coder[39;49m[0m              [34munhobbled-blog-admin[39;49m[0m
+[34mdotfiles[39;49m[0m                  [31mmakememapi.sh[39;49m[0m             [34mreactflowtest[39;49m[0m             [34munhobbled-content[39;49m[0m
+[34memail-triage-agent[39;49m[0m        [31mmakememui.sh[39;49m[0m              [34mrecurrencenotes[39;49m[0m           [34mwatchproc[39;49m[0m
+[34mevai-cli[39;49m[0m                  [34mmcp-sample[39;49m[0m                [34mrecurrent[39;49m[0m                 ytcheck.py
+[34mfastai-course[39;49m[0m             mcp-sample.tar.gz         [34mrex[39;49m[0m                       [34mytpods[39;49m[0m
+[34mfb-postproc[39;49m[0m               [34mmemapi[39;49m[0m                    [34mrex-memory[39;49m[0m                [34mztest[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects[39m$ [K[?2004hccd cookiecutter-pyagent[1m/[0m[0m [?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hlls[?2004l
+Makefile                      repomix-output.xml            test_config.json
+cookiecutter.json             [34msimple-calculator[39;49m[0m             [34m{{cookiecutter.project_name}}[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hrrm -rf simple-calculator[1m/[0m[0m [?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hggit clone git@github.com:lherron/email-triage-agent[?2004l
+Cloning into 'email-triage-agent'...
+remote: Enumerating objects: 245, done.[K
+remote: Counting objects:   0% (1/245)[Kremote: Counting objects:   1% (3/245)[Kremote: Counting objects:   2% (5/245)[Kremote: Counting objects:   3% (8/245)[Kremote: Counting objects:   4% (10/245)[Kremote: Counting objects:   5% (13/245)[Kremote: Counting objects:   6% (15/245)[Kremote: Counting objects:   7% (18/245)[Kremote: Counting objects:   8% (20/245)[Kremote: Counting objects:   9% (23/245)[Kremote: Counting objects:  10% (25/245)[Kremote: Counting objects:  11% (27/245)[Kremote: Counting objects:  12% (30/245)[Kremote: Counting objects:  13% (32/245)[Kremote: Counting objects:  14% (35/245)[Kremote: Counting objects:  15% (37/245)[Kremote: Counting objects:  16% (40/245)[Kremote: Counting objects:  17% (42/245)[Kremote: Counting objects:  18% (45/245)[Kremote: Counting objects:  19% (47/245)[Kremote: Counting objects:  20% (49/245)[Kremote: Counting objects:  21% (52/245)[Kremote: Counting objects:  22% (54/245)[Kremote: Counting objects:  23% (57/245)[Kremote: Counting objects:  24% (59/245)[Kremote: Counting objects:  25% (62/245)[Kremote: Counting objects:  26% (64/245)[Kremote: Counting objects:  27% (67/245)[Kremote: Counting objects:  28% (69/245)[Kremote: Counting objects:  29% (72/245)[Kremote: Counting objects:  30% (74/245)[Kremote: Counting objects:  31% (76/245)[Kremote: Counting objects:  32% (79/245)[Kremote: Counting objects:  33% (81/245)[Kremote: Counting objects:  34% (84/245)[Kremote: Counting objects:  35% (86/245)[Kremote: Counting objects:  36% (89/245)[Kremote: Counting objects:  37% (91/245)[Kremote: Counting objects:  38% (94/245)[Kremote: Counting objects:  39% (96/245)[Kremote: Counting objects:  40% (98/245)[Kremote: Counting objects:  41% (101/245)[Kremote: Counting objects:  42% (103/245)[Kremote: Counting objects:  43% (106/245)[Kremote: Counting objects:  44% (108/245)[Kremote: Counting objects:  45% (111/245)[Kremote: Counting objects:  46% (113/245)[Kremote: Counting objects:  47% (116/245)[Kremote: Counting objects:  48% (118/245)[Kremote: Counting objects:  49% (121/245)[Kremote: Counting objects:  50% (123/245)[Kremote: Counting objects:  51% (125/245)[Kremote: Counting objects:  52% (128/245)[Kremote: Counting objects:  53% (130/245)[Kremote: Counting objects:  54% (133/245)[Kremote: Counting objects:  55% (135/245)[Kremote: Counting objects:  56% (138/245)[Kremote: Counting objects:  57% (140/245)[Kremote: Counting objects:  58% (143/245)[Kremote: Counting objects:  59% (145/245)[Kremote: Counting objects:  60% (147/245)[Kremote: Counting objects:  61% (150/245)[Kremote: Counting objects:  62% (152/245)[Kremote: Counting objects:  63% (155/245)[Kremote: Counting objects:  64% (157/245)[Kremote: Counting objects:  65% (160/245)[Kremote: Counting objects:  66% (162/245)[Kremote: Counting objects:  67% (165/245)[Kremote: Counting objects:  68% (167/245)[Kremote: Counting objects:  69% (170/245)[Kremote: Counting objects:  70% (172/245)[Kremote: Counting objects:  71% (174/245)[Kremote: Counting objects:  72% (177/245)[Kremote: Counting objects:  73% (179/245)[Kremote: Counting objects:  74% (182/245)[Kremote: Counting objects:  75% (184/245)[Kremote: Counting objects:  76% (187/245)[Kremote: Counting objects:  77% (189/245)[Kremote: Counting objects:  78% (192/245)[Kremote: Counting objects:  79% (194/245)[Kremote: Counting objects:  80% (196/245)[Kremote: Counting objects:  81% (199/245)[Kremote: Counting objects:  82% (201/245)[Kremote: Counting objects:  83% (204/245)[Kremote: Counting objects:  84% (206/245)[Kremote: Counting objects:  85% (209/245)[Kremote: Counting objects:  86% (211/245)[Kremote: Counting objects:  87% (214/245)[Kremote: Counting objects:  88% (216/245)[Kremote: Counting objects:  89% (219/245)[Kremote: Counting objects:  90% (221/245)[Kremote: Counting objects:  91% (223/245)[Kremote: Counting objects:  92% (226/245)[Kremote: Counting objects:  93% (228/245)[Kremote: Counting objects:  94% (231/245)[Kremote: Counting objects:  95% (233/245)[Kremote: Counting objects:  96% (236/245)[Kremote: Counting objects:  97% (238/245)[Kremote: Counting objects:  98% (241/245)[Kremote: Counting objects:  99% (243/245)[Kremote: Counting objects: 100% (245/245)[Kremote: Counting objects: 100% (245/245), done.[K
+remote: Compressing objects:   0% (1/140)[Kremote: Compressing objects:   1% (2/140)[Kremote: Compressing objects:   2% (3/140)[Kremote: Compressing objects:   3% (5/140)[Kremote: Compressing objects:   4% (6/140)[Kremote: Compressing objects:   5% (7/140)[Kremote: Compressing objects:   6% (9/140)[Kremote: Compressing objects:   7% (10/140)[Kremote: Compressing objects:   8% (12/140)[Kremote: Compressing objects:   9% (13/140)[Kremote: Compressing objects:  10% (14/140)[Kremote: Compressing objects:  11% (16/140)[Kremote: Compressing objects:  12% (17/140)[Kremote: Compressing objects:  13% (19/140)[Kremote: Compressing objects:  14% (20/140)[Kremote: Compressing objects:  15% (21/140)[Kremote: Compressing objects:  16% (23/140)[Kremote: Compressing objects:  17% (24/140)[Kremote: Compressing objects:  18% (26/140)[Kremote: Compressing objects:  19% (27/140)[Kremote: Compressing objects:  20% (28/140)[Kremote: Compressing objects:  21% (30/140)[Kremote: Compressing objects:  22% (31/140)[Kremote: Compressing objects:  23% (33/140)[Kremote: Compressing objects:  24% (34/140)[Kremote: Compressing objects:  25% (35/140)[Kremote: Compressing objects:  26% (37/140)[Kremote: Compressing objects:  27% (38/140)[Kremote: Compressing objects:  28% (40/140)[Kremote: Compressing objects:  29% (41/140)[Kremote: Compressing objects:  30% (42/140)[Kremote: Compressing objects:  31% (44/140)[Kremote: Compressing objects:  32% (45/140)[Kremote: Compressing objects:  33% (47/140)[Kremote: Compressing objects:  34% (48/140)[Kremote: Compressing objects:  35% (49/140)[Kremote: Compressing objects:  36% (51/140)[Kremote: Compressing objects:  37% (52/140)[Kremote: Compressing objects:  38% (54/140)[Kremote: Compressing objects:  39% (55/140)[Kremote: Compressing objects:  40% (56/140)[Kremote: Compressing objects:  41% (58/140)[Kremote: Compressing objects:  42% (59/140)[Kremote: Compressing objects:  43% (61/140)[Kremote: Compressing objects:  44% (62/140)[Kremote: Compressing objects:  45% (63/140)[Kremote: Compressing objects:  46% (65/140)[Kremote: Compressing objects:  47% (66/140)[Kremote: Compressing objects:  48% (68/140)[Kremote: Compressing objects:  49% (69/140)[Kremote: Compressing objects:  50% (70/140)[Kremote: Compressing objects:  51% (72/140)[Kremote: Compressing objects:  52% (73/140)[Kremote: Compressing objects:  53% (75/140)[Kremote: Compressing objects:  54% (76/140)[Kremote: Compressing objects:  55% (77/140)[Kremote: Compressing objects:  56% (79/140)[Kremote: Compressing objects:  57% (80/140)[Kremote: Compressing objects:  58% (82/140)[Kremote: Compressing objects:  59% (83/140)[Kremote: Compressing objects:  60% (84/140)[Kremote: Compressing objects:  61% (86/140)[Kremote: Compressing objects:  62% (87/140)[Kremote: Compressing objects:  63% (89/140)[Kremote: Compressing objects:  64% (90/140)[Kremote: Compressing objects:  65% (91/140)[Kremote: Compressing objects:  66% (93/140)[Kremote: Compressing objects:  67% (94/140)[Kremote: Compressing objects:  68% (96/140)[Kremote: Compressing objects:  69% (97/140)[Kremote: Compressing objects:  70% (98/140)[Kremote: Compressing objects:  71% (100/140)[Kremote: Compressing objects:  72% (101/140)[Kremote: Compressing objects:  73% (103/140)[Kremote: Compressing objects:  74% (104/140)[Kremote: Compressing objects:  75% (105/140)[Kremote: Compressing objects:  76% (107/140)[Kremote: Compressing objects:  77% (108/140)[Kremote: Compressing objects:  78% (110/140)[Kremote: Compressing objects:  79% (111/140)[Kremote: Compressing objects:  80% (112/140)[Kremote: Compressing objects:  81% (114/140)[Kremote: Compressing objects:  82% (115/140)[Kremote: Compressing objects:  83% (117/140)[Kremote: Compressing objects:  84% (118/140)[Kremote: Compressing objects:  85% (119/140)[Kremote: Compressing objects:  86% (121/140)[Kremote: Compressing objects:  87% (122/140)[Kremote: Compressing objects:  88% (124/140)[Kremote: Compressing objects:  89% (125/140)[Kremote: Compressing objects:  90% (126/140)[Kremote: Compressing objects:  91% (128/140)[Kremote: Compressing objects:  92% (129/140)[Kremote: Compressing objects:  93% (131/140)[Kremote: Compressing objects:  94% (132/140)[Kremote: Compressing objects:  95% (133/140)[Kremote: Compressing objects:  96% (135/140)[Kremote: Compressing objects:  97% (136/140)[Kremote: Compressing objects:  98% (138/140)[Kremote: Compressing objects:  99% (139/140)[Kremote: Compressing objects: 100% (140/140)[Kremote: Compressing objects: 100% (140/140), done.[K
+Receiving objects:   0% (1/245)Receiving objects:   1% (3/245)Receiving objects:   2% (5/245)Receiving objects:   3% (8/245)Receiving objects:   4% (10/245)Receiving objects:   5% (13/245)Receiving objects:   6% (15/245)Receiving objects:   7% (18/245)Receiving objects:   8% (20/245)Receiving objects:   9% (23/245)Receiving objects:  10% (25/245)Receiving objects:  11% (27/245)Receiving objects:  12% (30/245)Receiving objects:  13% (32/245)Receiving objects:  14% (35/245)Receiving objects:  15% (37/245)Receiving objects:  16% (40/245)Receiving objects:  17% (42/245)Receiving objects:  18% (45/245)Receiving objects:  19% (47/245)Receiving objects:  20% (49/245)Receiving objects:  21% (52/245)Receiving objects:  22% (54/245)Receiving objects:  23% (57/245)Receiving objects:  24% (59/245)Receiving objects:  25% (62/245)Receiving objects:  26% (64/245)Receiving objects:  27% (67/245)Receiving objects:  28% (69/245)Receiving objects:  29% (72/245)Receiving objects:  30% (74/245)Receiving objects:  31% (76/245)Receiving objects:  32% (79/245)Receiving objects:  33% (81/245)Receiving objects:  34% (84/245)Receiving objects:  35% (86/245)Receiving objects:  36% (89/245)Receiving objects:  37% (91/245)Receiving objects:  38% (94/245)Receiving objects:  39% (96/245)Receiving objects:  40% (98/245)Receiving objects:  41% (101/245)Receiving objects:  42% (103/245)Receiving objects:  43% (106/245)Receiving objects:  44% (108/245)Receiving objects:  45% (111/245)Receiving objects:  46% (113/245)Receiving objects:  47% (116/245)Receiving objects:  48% (118/245)Receiving objects:  49% (121/245)Receiving objects:  50% (123/245)Receiving objects:  51% (125/245)Receiving objects:  52% (128/245)Receiving objects:  53% (130/245)Receiving objects:  54% (133/245)Receiving objects:  55% (135/245)Receiving objects:  56% (138/245)Receiving objects:  57% (140/245)Receiving objects:  58% (143/245)Receiving objects:  59% (145/245)Receiving objects:  60% (147/245)Receiving objects:  61% (150/245)Receiving objects:  62% (152/245)Receiving objects:  63% (155/245)Receiving objects:  64% (157/245)Receiving objects:  65% (160/245)Receiving objects:  66% (162/245)Receiving objects:  67% (165/245)Receiving objects:  68% (167/245)Receiving objects:  69% (170/245)Receiving objects:  70% (172/245)Receiving objects:  71% (174/245)Receiving objects:  72% (177/245)Receiving objects:  73% (179/245)Receiving objects:  74% (182/245)Receiving objects:  75% (184/245)Receiving objects:  76% (187/245)Receiving objects:  77% (189/245)remote: Total 245 (delta 122), reused 194 (delta 71), pack-reused 0 (from 0)[K
+Receiving objects:  78% (192/245)Receiving objects:  79% (194/245)Receiving objects:  80% (196/245)Receiving objects:  81% (199/245)Receiving objects:  82% (201/245)Receiving objects:  83% (204/245)Receiving objects:  84% (206/245)Receiving objects:  85% (209/245)Receiving objects:  86% (211/245)Receiving objects:  87% (214/245)Receiving objects:  88% (216/245)Receiving objects:  89% (219/245)Receiving objects:  90% (221/245)Receiving objects:  91% (223/245)Receiving objects:  92% (226/245)Receiving objects:  93% (228/245)Receiving objects:  94% (231/245)Receiving objects:  95% (233/245)Receiving objects:  96% (236/245)Receiving objects:  97% (238/245)Receiving objects:  98% (241/245)Receiving objects:  99% (243/245)Receiving objects: 100% (245/245)Receiving objects: 100% (245/245), 195.51 KiB | 2.41 MiB/s, done.
+Resolving deltas:   0% (0/122)Resolving deltas:   1% (2/122)Resolving deltas:   2% (3/122)Resolving deltas:   3% (4/122)Resolving deltas:   4% (5/122)Resolving deltas:   5% (7/122)Resolving deltas:   6% (8/122)Resolving deltas:   7% (9/122)Resolving deltas:   8% (10/122)Resolving deltas:  13% (17/122)Resolving deltas:  14% (18/122)Resolving deltas:  16% (20/122)Resolving deltas:  17% (21/122)Resolving deltas:  18% (22/122)Resolving deltas:  19% (24/122)Resolving deltas:  21% (26/122)Resolving deltas:  22% (27/122)Resolving deltas:  23% (29/122)Resolving deltas:  24% (30/122)Resolving deltas:  25% (31/122)Resolving deltas:  26% (32/122)Resolving deltas:  28% (35/122)Resolving deltas:  29% (36/122)Resolving deltas:  30% (37/122)Resolving deltas:  31% (38/122)Resolving deltas:  32% (40/122)Resolving deltas:  33% (41/122)Resolving deltas:  34% (42/122)Resolving deltas:  35% (43/122)Resolving deltas:  36% (44/122)Resolving deltas:  37% (46/122)Resolving deltas:  38% (47/122)Resolving deltas:  40% (49/122)Resolving deltas:  42% (52/122)Resolving deltas:  43% (53/122)Resolving deltas:  44% (54/122)Resolving deltas:  45% (55/122)Resolving deltas:  46% (57/122)Resolving deltas:  47% (58/122)Resolving deltas:  50% (61/122)Resolving deltas:  51% (63/122)Resolving deltas:  52% (64/122)Resolving deltas:  53% (65/122)Resolving deltas:  54% (66/122)Resolving deltas:  55% (68/122)Resolving deltas:  56% (69/122)Resolving deltas:  57% (70/122)Resolving deltas:  58% (71/122)Resolving deltas:  59% (72/122)Resolving deltas:  61% (75/122)Resolving deltas:  62% (76/122)Resolving deltas:  63% (78/122)Resolving deltas:  65% (80/122)Resolving deltas:  67% (82/122)Resolving deltas:  68% (84/122)Resolving deltas:  69% (85/122)Resolving deltas:  70% (86/122)Resolving deltas:  72% (88/122)Resolving deltas:  73% (90/122)Resolving deltas:  74% (91/122)Resolving deltas:  75% (92/122)Resolving deltas:  76% (93/122)Resolving deltas:  77% (94/122)Resolving deltas:  78% (96/122)Resolving deltas:  79% (97/122)Resolving deltas:  80% (98/122)Resolving deltas:  81% (99/122)Resolving deltas:  82% (101/122)Resolving deltas:  83% (102/122)Resolving deltas:  84% (103/122)Resolving deltas:  85% (104/122)Resolving deltas:  86% (105/122)Resolving deltas:  87% (107/122)Resolving deltas:  88% (108/122)Resolving deltas:  89% (109/122)Resolving deltas:  90% (110/122)Resolving deltas:  91% (112/122)Resolving deltas:  92% (113/122)Resolving deltas:  93% (114/122)Resolving deltas:  94% (115/122)Resolving deltas:  95% (116/122)Resolving deltas:  96% (118/122)Resolving deltas:  97% (119/122)Resolving deltas:  98% (120/122)Resolving deltas:  99% (121/122)Resolving deltas: 100% (122/122)Resolving deltas: 100% (122/122), done.
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hlls[?2004l
+Makefile                      [34memail-triage-agent[39;49m[0m            test_config.json
+cookiecutter.json             repomix-output.xml            [34m{{cookiecutter.project_name}}[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hlls email-triage-agent[1m/[0m[0m [?2004l
+CLAUDE.md           config.yaml         [34moutput[39;49m[0m              repomix-output.txt  [34msrc[39;49m[0m
+README.md           config.yaml.sample  pyproject.toml      [34mscripts[39;49m[0m             [34mtests[39;49m[0m
+codehilite.css      [34mdocs[39;49m[0m                pytest.ini          servers_config.json uv.lock
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hcclaude[?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004h[?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hccode .[?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004h[H[2J[0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [Kmmake watch[?2004l
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+watchmedo shell-command -p '*.*' -c 'make bake -e BAKE_OPTIONS=--no-input' -W -R -D \{{cookiecutter.project_name}}/
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+^Cmake: *** [watch] Error 130
+
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hlls[?2004l
+Makefile                      [34memail-triage-agent[39;49m[0m            test_config.json
+cookiecutter.json             [34msimple-calculator[39;49m[0m             [34m{{cookiecutter.project_name}}[39;49m[0m
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hrrm -rf simple-calculator[1m/[0m[0m [?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hmmake bake[?2004l
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004h[H[2J[0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [Kmmake watch[?2004l
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+watchmedo shell-command -p '*.*' -c 'make bake -e BAKE_OPTIONS=--no-input' -W -R -D \{{cookiecutter.project_name}}/
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+Unable to create file 'tests/test_{{cookiecutter.project_slug}}_integration.py'
+Error message: 'collections.OrderedDict object' has no attribute 'class_name'
+Context: {
+    "_cookiecutter": {
+        "create_author_file": "y",
+        "description": "A description of my awesome package",
+        "github_username": "lherron",
+        "project_name": "simple-calculator",
+        "project_slug": "calc",
+        "use_pytest": "y",
+        "version": "0.1.0"
+    },
+    "cookiecutter": {
+        "__gh_slug": "lherron/simple-calculator",
+        "_checkout": null,
+        "_output_dir": "/Users/lherron/projects/cookiecutter-pyagent",
+        "_repo_dir": ".",
+        "_template": ".",
+        "create_author_file": "y",
+        "description": "A description of my awesome package",
+        "github_username": "lherron",
+        "project_name": "simple-calculator",
+        "project_slug": "calc",
+        "use_pytest": "y",
+        "version": "0.1.0"
+    }
+}
+make[1]: *** [bake] Error 1
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+^Cmake: *** [watch] Error 130
+
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004h[H[2J[0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [Klls[?2004l
+Makefile                      instructions.txt              [34m{{cookiecutter.project_name}}[39;49m[0m
+cookiecutter.json             [34msimple-calculator[39;49m[0m
+[34memail-triage-agent[39;49m[0m            test_config.json
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hrrm-r   -rf simple-calculator[1m/[0m[0m [?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hmmake bake[?2004l
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004hmmake watch[?2004l
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+watchmedo shell-command -p '*.*' -c 'make bake -e BAKE_OPTIONS=--no-input' -W -R -D \{{cookiecutter.project_name}}/
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+^Cmake: *** [watch] Error 130
+
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004h[H[2J[0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [Kmake watch[?2004l
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+watchmedo shell-command -p '*.*' -c 'make bake -e BAKE_OPTIONS=--no-input' -W -R -D \{{cookiecutter.project_name}}/
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+^Cmake: *** [watch] Error 130
+
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004h[H[2J[0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [Kmake watch[?2004l
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+watchmedo shell-command -p '*.*' -c 'make bake -e BAKE_OPTIONS=--no-input' -W -R -D \{{cookiecutter.project_name}}/
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+^Cmake: *** [watch] Error 130
+
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004h[H[2J[0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [Kmake watch[?2004l
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+watchmedo shell-command -p '*.*' -c 'make bake -e BAKE_OPTIONS=--no-input' -W -R -D \{{cookiecutter.project_name}}/
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+^Cmake: *** [watch] Error 130
+
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004h[H[2J[0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [Kmake watch[?2004l
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+watchmedo shell-command -p '*.*' -c 'make bake -e BAKE_OPTIONS=--no-input' -W -R -D \{{cookiecutter.project_name}}/
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+cookiecutter --config-file test_config.json --no-input . --overwrite-if-exists
+^Cmake: *** [watch] Error 130
+
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004h[?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004h[?2004l
+[1m[7m%[27m[1m[0m                                                                                                                  [0m[27m[24m[J(.cc) [36mlherron@max3[39m:[32m~/projects/cookiecutter-pyagent[39m$ [K[?2004h[?2004l
+
+Script done on Tue Apr  8 10:12:08 2025

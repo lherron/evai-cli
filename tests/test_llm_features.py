@@ -17,7 +17,8 @@ async def test_new_features():
     config = MCPConfiguration()
     servers = []
     try:
-        server_configs = config.load_config("servers_config.json")
+        server_config_path = os.getenv("EVAI_SERVERS_CONFIG", "servers_config.json")
+        server_configs = config.load_config(server_config_path)
         mcp_servers_config = server_configs.get("mcpServers", {})
         servers = [
             MCPServer(name, srv_config)

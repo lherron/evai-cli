@@ -21,7 +21,7 @@ from rich.box import ROUNDED
 import asyncio
 
 from evai.mcp.client_tools import MCPConfiguration, MCPServer, MCPServerFactory
-from evai.llm_interaction import (
+from evai.llm import (
     LLMSession,
     extract_tool_result_value,
 )
@@ -140,7 +140,7 @@ def display_tool_calls(tool_calls: List[Dict[str, Any]]) -> None:
             )
             error_console.print(result_panel)
 
-async def llm_async(prompt: str, debug: bool = False, show_stop_reason: bool = False, allowed_tools: Optional[str] = None) -> Dict[str, Any]:
+async def llm_async(prompt: str, debug: bool = False, show_stop_reason: bool = False, allowed_tools: Optional[str] = None, mcp_config: Optional[str] = None) -> Dict[str, Any]:
     """Async function to handle all LLM operations.
     
     Args:
@@ -148,6 +148,7 @@ async def llm_async(prompt: str, debug: bool = False, show_stop_reason: bool = F
         debug: Whether to show debug information
         show_stop_reason: Whether to show the stop reason in the output
         allowed_tools: Optional comma-separated list of allowed tool names
+        mcp_config: Optional path to the MCP servers configuration file
         
     Returns:
         Dict containing the result of the LLM interaction
@@ -156,8 +157,12 @@ async def llm_async(prompt: str, debug: bool = False, show_stop_reason: bool = F
     error_console.print("[purple]Initializing LLM session with configured MCP servers...[/purple]")
     
     # Load server configurations using MCPServerFactory
-    mcp_servers_config_path = os.getenv("EVAI_SERVERS_CONFIG", "servers_config.json")
-    if debug:
+    local_config = os.path.join(os.getcwd(), "servers_config.json")
+    if os.path.exists(local_config):
+        mcp_servers_config_path = local_config
+        error_console.print(f"[purple]Using local MCP servers config from current directory: {mcp_servers_config_path}[/purple]")
+    else:
+        mcp_servers_config_path = mcp_config or os.getenv("EVAI_SERVERS_CONFIG", "servers_config.json")
         error_console.print(f"[purple]Using MCP servers config from: {mcp_servers_config_path}[/purple]")
     
     servers = MCPServerFactory.load_servers(mcp_servers_config_path)
@@ -171,6 +176,9 @@ async def llm_async(prompt: str, debug: bool = False, show_stop_reason: bool = F
         await session.start_servers()
         # Convert comma-separated string to list if provided
         allowed_tool_list = allowed_tools.split(",") if allowed_tools else None
+        print("************************************************")
+        print(f"******** LLM request: {prompt}")
+        print("************************************************")
         result = await session.send_request(
             user_prompt=prompt,
             debug=debug,
@@ -188,7 +196,8 @@ async def llm_async(prompt: str, debug: bool = False, show_stop_reason: bool = F
 @click.option("--debug", is_flag=True, help="Show debug information", default=False)
 @click.option("--show-stop-reason", is_flag=True, help="Show the stop reason in the output", default=False)
 @click.option("--allowed-tools", help="Comma-separated list of allowed tool names", default=None)
-def llm(prompt: str, debug: bool = False, show_stop_reason: bool = False, allowed_tools: Optional[str] = None) -> None:
+@click.option("--mcp-config", help="Path to the MCP servers configuration file", default=None)
+def llm(prompt: str, debug: bool = False, show_stop_reason: bool = False, allowed_tools: Optional[str] = None, mcp_config: Optional[str] = None) -> None:
     """Prompts Claude with configured tools.
     
     Uses MCP servers configured in servers_config.json to provide tools integration.
@@ -212,7 +221,7 @@ def llm(prompt: str, debug: bool = False, show_stop_reason: bool = False, allowe
         
         print(f"******** LLM request: {prompt}")
         # Run the async operations
-        result = asyncio.run(llm_async(prompt, debug, show_stop_reason, allowed_tools))
+        result = asyncio.run(llm_async(prompt, debug, show_stop_reason, allowed_tools, mcp_config))
 
         print(f"******** LLM result: {result}")
         # Check if the request was successful
