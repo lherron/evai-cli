@@ -6,7 +6,7 @@
         "run",
         "--directory",
         "/Users/lherron/projects/evai-cli",
-	"--no-sync",
+	      "--no-sync",
         "--with",
         "mcp[cli]",
         "mcp",
@@ -14,18 +14,16 @@
         "/Users/lherron/projects/evai-cli/evai_cli/mcp/server.py"
       ]
     },
-    "email_triage_agent_mcp": {
+    "evaitools": {
       "command": "uv",
       "args": [
         "run",
         "--directory",
-        "/Users/lherron/projects/email-triage-agent",
-	"--no-sync",
+        "/Users/lherron/projects/evaitools",
+	      "--no-sync",
         "--with",
-        "mcp[cli]",
-        "mcp",
-        "run",
-        "/Users/lherron/projects/email-triage-agent/src/email_triage/mcp/server.py"
+        "fastmcp",
+        "/Users/lherron/projects/evaitools/src/evaitools/mcp/evaitools_server.py"
       ]
     }
   }
